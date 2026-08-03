@@ -152,16 +152,8 @@ def sort_mix_ids(data):
         )
     )
 
-def is_part_configured(part):
-
-    return (
-        "sf2_bank" in part
-        and
-        "sf2_program" in part
-    )
-
 # Affichage
-def print_mix(mix_id, mix):
+def print_mix(project, mix_id, mix):
 
     print()
 
@@ -179,68 +171,74 @@ def print_mix(mix_id, mix):
     for part_id, part in iter_parts(mix):
 
         print_part(
+            project,
             part_id,
             part
         )
 
-def print_part(part_id, part):
+def print_part(
+    project,
+    part_id,
+    part
+):
 
     print()
-    print(f"PART {part_id}")
 
     print(
-        "  Canal MIDI :",
-        part.get("midi_channel", "?")
+        "PART",
+        part_id
     )
 
     print(
-        "  Fusion : Bank",
-        part.get("bank", "?"),
-        "Program",
-        part.get("program", "?")
+        "----------------"
     )
 
-    if "note_min" in part:
+
+    instrument = project.resolve_part_instrument(
+        part
+    )
+
+
+    if instrument:
 
         print(
-            "  Zone :",
-            f"{note_name(part['note_min'])}"
-            " - "
-            f"{note_name(part['note_max'])}"
-        )
-
-    if "velocity_min" in part:
-
-        print(
-            "  Velocity :",
-            part["velocity_min"],
-            "-",
-            part["velocity_max"]
-        )
-
-    if "sf2_program" in part:
-
-        print(
-            "  QSynth :",
-            part.get(
+            "Instrument :",
+            instrument.get(
                 "name",
                 "?"
             )
         )
 
         print(
-            "    SF2 Bank",
-            part["sf2_bank"],
-            "Program",
-            part["sf2_program"]
+            "Bank       :",
+            instrument.get(
+                "sf2_bank",
+                0
+            )
+        )
+
+        print(
+            "Program    :",
+            instrument.get(
+                "sf2_program",
+                0
+            )
         )
 
     else:
 
         print(
-            "  QSynth : Non configuré"
+            "Instrument : Non configuré"
         )
 
+
+    print(
+        "Canal MIDI :",
+        part.get(
+            "midi_channel",
+            "?"
+        )
+    )
 #def summarize_mix(mix):
 
 # System

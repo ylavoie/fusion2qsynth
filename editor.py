@@ -166,116 +166,79 @@ def load_instruments():
 
     return instruments
 
-def search_instruments():
+def choose_instrument(
+        project,
+        part
+):
+
+    instruments = project.list_instruments()
+
+    if not instruments:
+
+        print(
+            "Aucun instrument disponible."
+        )
+
+        return None
 
     print()
 
-    recherche = input(
-        "Recherche instrument (vide = tous) : "
-    ).strip().lower()
+    print(
+        "===================="
+    )
 
-    if not recherche:
+    print(
+        "Choix Instrument"
+    )
 
-        return INSTRUMENTS
+    print(
+        "===================="
+    )
 
-    results = []
-
-    for inst in INSTRUMENTS:
-
-        if (
-            recherche in inst["name"].lower()
-            or recherche in str(inst["sf2_program"]
-            or recherche in str(inst["sf2_bank"]))
-            ):
-
-            results.append(inst)
-
-    return results
-
-INSTRUMENTS = load_instruments()
-
-def choose_instrument(part):
-
-    print()
-
-    while True:
-
-        results = search_instruments()
-
-        if not results:
-
-            print(
-                "Aucun instrument trouvé"
-            )
-
-            continue
-
-        break
-
-    for i, inst in enumerate(
-        results,
+    for index, (instrument_id, instrument) in enumerate(
+        instruments,
         start=1
     ):
 
         print(
-            f"{i} - {inst['name']} "
-            f"(Bank {inst['sf2_bank']} "
-            f"Program {inst['sf2_program']})"
+            f"{index} - "
+            f"{instrument_id} : "
+            f"{instrument.get('name', '?')} "
+            f"(Bank {instrument.get('sf2_bank', 0)}, "
+            f"Program {instrument.get('sf2_program', 0)})"
         )
 
-    while True:
+    print(
+        "q - Annuler"
+    )
 
-        choix = input(
-            "Choix (q pour quitter) : "
-        )
+    choix = input(
+        "> "
+    )
 
-        if choix.lower() == "q":
+    if choix.lower() == "q":
 
-            return None
+        return None
 
-        try:
+    try:
 
-            num = int(choix)
+        index = int(choix) - 1
 
-            if 1 <= num <= len(INSTRUMENTS):
+        instrument_id, instrument = instruments[index]
 
-                inst = results[num-1]
-
-                preview = input(
-                    "Tester ce son ? (o/n) : "
-                )
-
-                if preview.lower() == "o":
-
-                    preview_instrument(
-                        part,
-                        inst
-                    )
-
-                confirm = input(
-                    "Utiliser ce son ? (o/n) : "
-                )
-
-                if confirm.lower()=="o":
-
-                    return {
-                        "sf2_bank":
-                            inst["sf2_bank"],
-
-                        "sf2_program":
-                            inst["sf2_program"],
-
-                        "name":
-                            inst["name"]
-                    }
-
-        except ValueError:
-
-            pass
+    except:
 
         print(
             "Choix invalide"
         )
+
+        return None
+
+    result = dict(instrument)
+
+    result["id"] = instrument_id
+
+    return result
 
 def preview_instrument(part,instrument):
 
@@ -417,28 +380,15 @@ def play_preview(part, instrument, duration=5):
                 )
             )
 
-def play_part_preview(part):
+def play_part_preview(project, part):
 
-    if "sf2_bank" not in part:
+    instrument = project.resolve_part_instrument(part)
 
-        print(
-            "PART non configurée"
-        )
+    if instrument is None:
+
+        print("Instrument non configuré.")
 
         return
-
-    instrument = {
-
-        "name":
-            part["name"],
-
-        "sf2_bank":
-            part["sf2_bank"],
-
-        "sf2_program":
-            part["sf2_program"]
-
-    }
 
     play_preview(
         part,
@@ -518,12 +468,14 @@ def edit_mix(project,mix_id):
             if choix == "1":
 
                 test_mix_parts(
+                    project,
                     mix
                 )
 
             elif choix == "2":
 
                 test_mix_all(
+                    project,
                     mix
                 )
 
@@ -537,8 +489,17 @@ def edit_mix(project,mix_id):
         mix_id
     )
 
+    if mix is None:
+
+        print(
+            "Mix inconnu"
+        )
+
+        return
+
     check_parts(mix)
     print_mix(
+        project,
         mix_id,
         mix
     )
@@ -562,12 +523,8 @@ def edit_mix(project,mix_id):
         )
 
         if part_id.lower() == "q":
-            project.save()
-            print()
-            print(
-                "Mix complet sauvegardé"
-            )
-            return
+
+            break
 
         if part_id not in mix["parts"]:
             print("PART inconnue")
@@ -575,7 +532,7 @@ def edit_mix(project,mix_id):
 
         part = mix["parts"][part_id]
 
-        print_part(part_id,part)
+        print_part(project, part_id,part)
 
         while True:
 
@@ -585,13 +542,7 @@ def edit_mix(project,mix_id):
 
             if rep.lower() == "q":
 
-                project.save()
-
-                print(
-                    "Edition terminée"
-                )
-
-                return
+                break
 
             if rep.lower() == "n":
 
@@ -599,27 +550,23 @@ def edit_mix(project,mix_id):
 
             if rep.lower() == "o":
 
-                old_instrument = {
-                    "name":
-                        part.get(
-                            "name",
-                            "Non configuré"
-                        ),
+                old_instrument = project.resolve_part_instrument(part)
 
-                    "sf2_bank":
-                        part.get(
-                            "sf2_bank",
-                            0
-                        ),
+                if old_instrument is None:
 
-                    "sf2_program":
-                        part.get(
-                            "sf2_program",
-                            0
-                        )
-                }
+                    old_instrument = {
+                        "name": "Non configuré",
+                        "sf2_bank": 0,
+                        "sf2_program": 0
+                    }
 
-                instrument = choose_instrument(part)
+                instrument = choose_instrument(project, part)
+
+                if instrument is None:
+
+                    # L'utilisateur a annulé.
+                    # On ne modifie rien.
+                    break
 
                 if instrument:
 
@@ -662,8 +609,10 @@ def edit_mix(project,mix_id):
 
                         elif choix == "3":
 
-                            part.update(
-                                instrument
+                            project.set_part_instrument(
+                                mix_id,
+                                part_id,
+                                instrument["id"]
                             )
 
                             project.save()
@@ -674,30 +623,10 @@ def edit_mix(project,mix_id):
 
                             break
 
-                if instrument is None:
-
-                    project.save()
-
-                    print(
-                        "Edition terminée"
-                    )
-
-                    return
-
-                part["sf2_bank"] = instrument["sf2_bank"]
-                part["sf2_program"] = instrument["sf2_program"]
-                part["name"] = instrument["name"]
-
-                project.save()
-
-                print(
-                    "Sauvegardé :",
-                    part
-                )
-
                 break
 
-def test_mix_parts(mix):
+
+def test_mix_parts(project, mix):
 
     print()
 
@@ -722,7 +651,11 @@ def test_mix_parts(mix):
             part_id
         )
 
-        if "sf2_bank" not in part:
+        instrument = project.resolve_part_instrument(
+            part
+        )
+
+        if not instrument:
 
             print(
                 "Non configurée"
@@ -731,7 +664,7 @@ def test_mix_parts(mix):
             continue
 
         print(
-            part["name"]
+            instrument["name"]
         )
 
         input(
@@ -739,10 +672,11 @@ def test_mix_parts(mix):
         )
 
         play_part_preview(
+            project,
             part
         )
 
-def test_mix_all(mix):
+def test_mix_all(project, mix):
 
     port_name = find_fluidsynth_output()
 
@@ -773,9 +707,15 @@ def test_mix_all(mix):
         # Préparer tous les sons
         #
 
+        active_parts = []
+
         for part_id, part in mix["parts"].items():
 
-            if "sf2_bank" not in part:
+            instrument = project.resolve_part_instrument(
+                part
+            )
+
+            if not instrument:
 
                 continue
 
@@ -788,7 +728,7 @@ def test_mix_all(mix):
                     "control_change",
                     channel=ch,
                     control=0,
-                    value=part["sf2_bank"]
+                    value=instrument["sf2_bank"]
                 )
             )
 
@@ -796,7 +736,7 @@ def test_mix_all(mix):
                 mido.Message(
                     "program_change",
                     channel=ch,
-                    program=part["sf2_program"]
+                    program=instrument["sf2_program"]
                 )
             )
 
@@ -805,7 +745,15 @@ def test_mix_all(mix):
                 part_id,
                 "CH",
                 part["midi_channel"],
-                part["name"]
+                instrument["name"]
+            )
+
+            active_parts.append(
+                (
+                    part_id,
+                    part,
+                    ch
+                )
             )
 
         time.sleep(0.2)
@@ -816,15 +764,7 @@ def test_mix_all(mix):
 
         for note in notes:
 
-            for part_id, part in mix["parts"].items():
-
-                if "sf2_bank" not in part:
-
-                    continue
-
-                ch = (
-                    part["midi_channel"] - 1
-                )
+            for part_id, part, ch in active_parts:
 
                 out.send(
                     mido.Message(
@@ -837,15 +777,7 @@ def test_mix_all(mix):
 
             time.sleep(0.5)
 
-            for part_id, part in mix["parts"].items():
-
-                if "sf2_bank" not in part:
-
-                    continue
-
-                ch = (
-                    part["midi_channel"] - 1
-                )
+            for part_id, part, ch in active_parts:
 
                 out.send(
                     mido.Message(
@@ -1065,6 +997,73 @@ def delete_instrument(project):
 
         print(
             "Suppression impossible."
+        )
+
+def edit_part_instrument(
+    project,
+    mix_id,
+    part_id
+):
+
+    instruments = project.list_instruments()
+
+    if not instruments:
+
+        print(
+            "Aucun instrument disponible."
+        )
+
+        return
+
+
+    print()
+
+    for index, (instrument_id, instrument) in enumerate(
+        instruments,
+        start=1
+    ):
+
+        print(
+            index,
+            "-",
+            instrument_id,
+            instrument.get(
+                "name",
+                "?"
+            )
+        )
+
+
+    choice = input(
+        "Choix instrument : "
+    )
+
+
+    try:
+
+        index = int(choice) - 1
+
+        instrument_id = instruments[index][0]
+
+    except:
+
+        print(
+            "Choix invalide."
+        )
+
+        return
+
+
+    if project.set_part_instrument(
+        mix_id,
+        part_id,
+        instrument_id
+    ):
+
+        project.save()
+
+        print(
+            "Instrument affecté."
         )
 
 def main():

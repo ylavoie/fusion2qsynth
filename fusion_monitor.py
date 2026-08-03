@@ -73,7 +73,7 @@ def main():
 
                     part_id = info["part_id"]
                     part = info["part"]
-                    print_part(part_id,part)
+                    print_part(project, part_id, part)
 
                 else:
 

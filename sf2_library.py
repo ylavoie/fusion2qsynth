@@ -50,8 +50,17 @@ def parse_presets(text):
                 match.group(3)
             )
 
+            preset_id = (
+                re.sub(
+                    r"[^a-z0-9]+",
+                    "_",
+                    name.lower()
+                ).strip("_")
+            )
+
             presets.append(
                 {
+                    "id": preset_id,
                     "name": name,
                     "sf2_bank": bank,
                     "sf2_program": program
@@ -112,6 +121,7 @@ def show_presets(presets):
     for p in presets:
 
         print(
+            f"{p['id']} : "
             f"Bank {p['sf2_bank']} "
             f"Program {p['sf2_program']} "
             f"- {p['name']}"

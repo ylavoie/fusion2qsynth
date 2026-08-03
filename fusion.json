@@ -310,7 +310,44 @@
   },
   "0:0": {
     "name": "Fusion Mix 0:0",
-    "parts": {}
+    "parts": {
+      "1": {
+        "midi_channel": 10,
+        "bank": 0,
+        "program": 0,
+        "note_min": 33,
+        "note_max": 57,
+        "velocity_min": 5,
+        "velocity_max": 70
+      },
+      "2": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 33,
+        "note_max": 57,
+        "velocity_min": 5,
+        "velocity_max": 70
+      },
+      "3": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 33,
+        "note_max": 57,
+        "velocity_min": 5,
+        "velocity_max": 70
+      },
+      "4": {
+        "midi_channel": 1,
+        "bank": 0,
+        "program": 0,
+        "note_min": 67,
+        "note_max": 91,
+        "velocity_min": 13,
+        "velocity_max": 67
+      }
+    }
   },
   "0:1": {
     "name": "Fusion Mix 0:1",
@@ -323,9 +360,7 @@
         "note_max": 101,
         "velocity_min": 14,
         "velocity_max": 63,
-        "sf2_bank": 0,
-        "sf2_program": 68,
-        "name": "Oboe"
+        "instrument": "grand_piano"
       },
       "2": {
         "midi_channel": 1,
@@ -336,8 +371,8 @@
         "velocity_min": 13,
         "velocity_max": 72,
         "sf2_bank": 0,
-        "sf2_program": 70,
-        "name": "Bassoon"
+        "sf2_program": 75,
+        "name": "Pan Flute"
       },
       "3": {
         "midi_channel": 3,

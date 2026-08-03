@@ -553,6 +553,7 @@ class FusionProject:
 
 
         print_mix_lib(
+            self,
             mix_id,
             mix
         )
@@ -745,6 +746,102 @@ class FusionProject:
 
         return None
 
+    def get_part_instrument(
+        self,
+        mix_id,
+        part_id
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return None
+
+
+        part = mix.get(
+            "parts",
+            {}
+        ).get(
+            str(part_id)
+        )
+
+        if not part:
+
+            return None
+
+
+        return part.get(
+            "instrument"
+        )
+
+    def set_part_instrument(
+        self,
+        mix_id,
+        part_id,
+        instrument_id
+    ):
+
+        mix = self.get_mix(mix_id)
+
+        if not mix:
+            return False
+
+        part = mix.get("parts", {}).get(str(part_id))
+
+        if not part:
+            return False
+
+        if not self.get_instrument(instrument_id):
+            return False
+
+        part["instrument"] = instrument_id
+
+        for key in (
+            "name",
+            "sf2_bank",
+            "sf2_program"
+        ):
+            part.pop(key, None)
+
+        return True
+
+    def clear_part_instrument(
+        self,
+        mix_id,
+        part_id
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return False
+
+
+        part = mix.get(
+            "parts",
+            {}
+        ).get(
+            str(part_id)
+        )
+
+        if not part:
+
+            return False
+
+
+        if "instrument" in part:
+
+            del part["instrument"]
+
+
+        return True
+
     def list_instruments(self):
 
         return sorted(
@@ -830,3 +927,14 @@ class FusionProject:
                     )
 
         return usages
+
+    def migrate_part_to_library(part, instrument_id):
+
+        part["instrument"] = instrument_id
+
+        for key in (
+            "name",
+            "sf2_bank",
+            "sf2_program"
+        ):
+            part.pop(key, None)
