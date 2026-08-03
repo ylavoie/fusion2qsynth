@@ -6,10 +6,10 @@ import time
 FILE = "fusion.json"
 
 from fusion_lib import (
-    load_json,
-    save_json,
     find_fusion_input
 )
+
+from fusion_project import FusionProject
 
 CAPTURE_TIME = 10
 
@@ -41,7 +41,7 @@ def main():
         "Ctrl+C pour quitter"
     )
 
-    data = load_json()
+    project = FusionProject()
 
     # mémoire MIDI permanente
     banks = {}
@@ -128,7 +128,9 @@ def main():
                                         part["program"]
                                     )
 
-                                if "parts" in data[current_mix] and data[current_mix]["parts"]:
+                                if project.mix_has_parts(
+                                    current_mix
+                                ):
 
                                     print(
                                         "Mix déjà existant."
@@ -142,7 +144,11 @@ def main():
 
                                         continue
 
-                                data[current_mix]["parts"] = {}
+                                mix = project.ensure_mix(
+                                    current_mix
+                                )
+
+                                mix["parts"] = {}
 
                                 for i, part in enumerate(
                                     parts_seen.values(),
@@ -169,11 +175,9 @@ def main():
                                             notes_seen[channel]["velocity"]
                                         )
 
-                                    data[current_mix]["parts"][
-                                        str(i)
-                                    ] = part
+                                    mix["parts"][str(i)] = part
 
-                                save_json(data)
+                                project.save()
 
                                 print()
                                 print(
@@ -225,16 +229,9 @@ def main():
                             parts_seen = {}
                             notes_seen = {}
 
-                            if current_mix not in data:
-
-                                data[current_mix] = {
-
-                                    "name":
-                                        f"Fusion Mix {current_mix}",
-
-                                    "parts": {}
-
-                                }
+                            mix = project.ensure_mix(
+                                current_mix
+                            )
 
                             capture_active = True
 

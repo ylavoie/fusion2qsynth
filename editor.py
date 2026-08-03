@@ -6,15 +6,14 @@ import mido
 import time
 
 from fusion_lib import (
-    load_json,
     save_json,
-    find_fusion_input,
     find_fluidsynth_output,
     note_name,
     print_mix,
-    print_part,
-    sort_mix_ids
+    print_part
 )
+
+from fusion_project import FusionProject
 
 SF2_FILE = "sf2_library.json"
 
@@ -491,7 +490,7 @@ def check_parts(mix):
 
     return not duplicates
 
-def edit_mix(mix_id):
+def edit_mix(project,mix_id):
 
     def test_mix_menu(mix):
 
@@ -533,17 +532,11 @@ def edit_mix(mix_id):
 
                 return
 
-    data = load_json()
+    project = FusionProject()
 
-    if mix_id not in data:
-
-        print(
-            "Mix inconnu"
-        )
-
-        return
-
-    mix = data[mix_id]
+    mix = project.get_mix(
+        mix_id
+    )
 
     check_parts(mix)
     print_mix(
@@ -565,33 +558,122 @@ def edit_mix(mix_id):
 
     while True:
 
-            part_id = input(
-                "PART à modifier (q pour quitter) : "
+        part_id = input(
+            "PART à modifier (q pour quitter) : "
+        )
+
+        if part_id.lower() == "q":
+            project.save()
+            return
+
+        if part_id not in mix["parts"]:
+            print("PART inconnue")
+            continue
+
+        part = mix["parts"][part_id]
+
+        print_part(part_id,part)
+
+        while True:
+
+            rep = input(
+                "Configurer cette PART ? (o/n/q) : "
             )
 
-            if part_id.lower() == "q":
-                save_json(data)
-                return
+            if rep.lower() == "q":
 
-            if part_id not in mix["parts"]:
-                print("PART inconnue")
-                continue
+                project.save()
 
-            part = mix["parts"][part_id]
-
-            midi_channel = part["midi_channel"]
-
-            print_part(part_id,part)
-
-            while True:
-
-                rep = input(
-                    "Configurer cette PART ? (o/n/q) : "
+                print(
+                    "Edition terminée"
                 )
 
-                if rep.lower() == "q":
+                return
 
-                    save_json(data)
+            if rep.lower() == "n":
+
+                break
+
+            if rep.lower() == "o":
+
+                old_instrument = {
+                    "name":
+                        part.get(
+                            "name",
+                            "Non configuré"
+                        ),
+
+                    "sf2_bank":
+                        part.get(
+                            "sf2_bank",
+                            0
+                        ),
+
+                    "sf2_program":
+                        part.get(
+                            "sf2_program",
+                            0
+                        )
+                }
+
+                instrument = choose_instrument(part)
+
+                if instrument:
+
+                    while True:
+
+                        print()
+
+                        print(
+                            "1 - Tester"
+                        )
+
+                        print(
+                            "2 - Comparer A/B"
+                        )
+
+                        print(
+                            "3 - Garder"
+                        )
+
+                        print(
+                            "q - Annuler"
+                        )
+
+                        choix = input("> ")
+
+                        if choix == "1":
+
+                            play_preview(
+                                part,
+                                instrument
+                            )
+
+                        elif choix == "2":
+
+                            compare_instrument(
+                                part,
+                                old_instrument,
+                                instrument
+                            )
+
+                        elif choix == "3":
+
+                            part.update(
+                                instrument
+                            )
+
+                            project.save()
+
+                            break
+
+                        elif choix.lower()=="q":
+
+                            break
+
+                if instrument is None:
+
+                    project.save()
 
                     print(
                         "Edition terminée"
@@ -599,109 +681,18 @@ def edit_mix(mix_id):
 
                     return
 
-                if rep.lower() == "n":
+                part["sf2_bank"] = instrument["sf2_bank"]
+                part["sf2_program"] = instrument["sf2_program"]
+                part["name"] = instrument["name"]
 
-                    break
+                project.save()
 
-                if rep.lower() == "o":
+                print(
+                    "Sauvegardé :",
+                    part
+                )
 
-                    old_instrument = {
-                        "name":
-                            part.get(
-                                "name",
-                                "Non configuré"
-                            ),
-
-                        "sf2_bank":
-                            part.get(
-                                "sf2_bank",
-                                0
-                            ),
-
-                        "sf2_program":
-                            part.get(
-                                "sf2_program",
-                                0
-                            )
-                    }
-
-                    instrument = choose_instrument(part)
-
-                    if instrument:
-
-                        while True:
-
-                            print()
-
-                            print(
-                                "1 - Tester"
-                            )
-
-                            print(
-                                "2 - Comparer A/B"
-                            )
-
-                            print(
-                                "3 - Garder"
-                            )
-
-                            print(
-                                "q - Annuler"
-                            )
-
-                            choix = input("> ")
-
-                            if choix == "1":
-
-                                play_preview(
-                                    part,
-                                    instrument
-                                )
-
-                            elif choix == "2":
-
-                                compare_instrument(
-                                    part,
-                                    old_instrument,
-                                    instrument
-                                )
-
-                            elif choix == "3":
-
-                                part.update(
-                                    instrument
-                                )
-
-                                save_json(data)
-
-                                break
-
-                            elif choix.lower()=="q":
-
-                                break
-
-                    if instrument is None:
-
-                        save_json(data)
-
-                        print(
-                            "Edition terminée"
-                        )
-
-                        return
-
-                    part["sf2_bank"] = instrument["sf2_bank"]
-                    part["sf2_program"] = instrument["sf2_program"]
-                    part["name"] = instrument["name"]
-
-                    save_json(data)
-
-                    print(
-                        "Sauvegardé :",
-                        part
-                    )
-
-                    break
+                break
 
     save_json(data)
 
@@ -869,30 +860,18 @@ def test_mix_all(mix):
                     )
                 )
 
-def list_mixes():
-
-    data = load_json()
-
-    if not data:
-
-        print(
-            "Aucun Mix"
-        )
-
-        return
+def list_mixes(project):
 
     print()
 
     print(
         "Mix disponibles :",
-        len(data)
+        project.count_mixes()
     )
 
     print()
 
-    for mix_id in sort_mix_ids(data):
-
-        mix = data[mix_id]
+    for mix_id, mix in project.iter_mixes():
 
         print(
             mix_id,
@@ -904,6 +883,8 @@ def list_mixes():
         )
 
 def main():
+
+    project = FusionProject()
 
     while True:
 
@@ -919,7 +900,7 @@ def main():
 
         if choix == "1":
 
-            list_mixes()
+            list_mixes(project)
 
         elif choix == "2":
 
@@ -927,7 +908,7 @@ def main():
                 "Numéro du Mix (ex: 2:4) : "
             )
 
-            edit_mix(mix)
+            edit_mix(project,mix)
 
         elif choix.lower() == "q":
 

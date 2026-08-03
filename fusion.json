@@ -157,7 +157,17 @@
   },
   "2:3": {
     "name": "Fusion Mix 2:3",
-    "parts": {}
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 2,
+        "program": 3,
+        "note_min": 21,
+        "note_max": 107,
+        "velocity_min": 5,
+        "velocity_max": 96
+      }
+    }
   },
   "2:2": {
     "name": "Fusion Mix 2:2",
@@ -233,7 +243,10 @@
         "note_min": 60,
         "note_max": 107,
         "velocity_min": 10,
-        "velocity_max": 51
+        "velocity_max": 51,
+        "sf2_bank": 0,
+        "sf2_program": 75,
+        "name": "Pan Flute"
       },
       "2": {
         "midi_channel": 10,
@@ -242,7 +255,10 @@
         "note_min": 23,
         "note_max": 59,
         "velocity_min": 6,
-        "velocity_max": 75
+        "velocity_max": 75,
+        "sf2_bank": 8,
+        "sf2_program": 61,
+        "name": "Brass 2"
       },
       "3": {
         "midi_channel": 2,

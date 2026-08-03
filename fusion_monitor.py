@@ -2,8 +2,9 @@
 
 import mido
 
+from fusion_project import FusionProject
+
 from fusion_lib import (
-    load_json,
     find_fusion_input,
     build_channel_map,
     note_name,
@@ -18,7 +19,9 @@ FUSION_IN = "CH345"
 
 def main():
 
-    data = load_json()
+    project = FusionProject()
+
+    data = project.data
 
     channel_map = build_channel_map(
         data

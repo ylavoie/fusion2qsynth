@@ -5,17 +5,19 @@ import os
 import json
 import mido
 
+from fusion_project import FusionProject
+
 FILE = "fusion.json"
 
 from fusion_lib import (
     load_json,
-    save_json,
     find_fusion_input,
     find_fluidsynth_output,
     panic,
     note_name,
     validate_mix,
-    print_mix
+    print_mix,
+    log_event
 )
 
 FILE_TIME = 0
@@ -219,6 +221,11 @@ def load_mix(mix_id, out, performances):
         ] = part
 
         loaded_parts += 1
+
+        log_event(
+            f"PART {part_id} CH {part['midi_channel']} "
+            f"SF2 {part.get('name','Non configuré')}"
+        )
 
     print()
     print(
@@ -477,11 +484,9 @@ def check_performances(performances):
 
 def main():
 
-    performances = load_json()
+    project = FusionProject()
 
-    errors = validate_mix(
-        performances
-    )
+    errors = project.validate()
 
     if errors:
 
@@ -504,6 +509,8 @@ def main():
             )
 
         print()
+
+    performances = project.data
 
     last_mix = load_last_mix()
     check_performances(
@@ -692,6 +699,10 @@ def main():
                             f"{bank}:{msg.program}"
                         )
 
+                        log_event(
+                            f"MIX détecté {mix_id}"
+                        )
+
                         print()
                         print(
                             "===================="
@@ -729,6 +740,10 @@ def main():
                             out,
                             performances
                         )
+                        log_event(
+                            f"MIX chargé {mix_id}"
+                        )
+
     except KeyboardInterrupt:
         print()
         print("Retour au menu")

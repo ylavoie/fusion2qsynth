@@ -5,10 +5,73 @@ import mido
 import json
 import os
 import shutil
+import logging
+import time
 
 FILE = "fusion.json"
 FUSION_IN = "CH345"
 SYNTH_OUT = "FLUID Synth"
+LOG_FILE = "fusion.log"
+
+# Logging
+
+def _log(level, message):
+
+    timestamp = time.strftime(
+        "%Y-%m-%d %H:%M:%S"
+    )
+
+    line = (
+        f"{timestamp} "
+        f"[{level}] "
+        f"{message}"
+    )
+
+    with open(
+        LOG_FILE,
+        "a",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(line + "\n")
+
+
+def log_info(message):
+
+    _log(
+        "INFO",
+        message
+    )
+
+
+def log_warning(message):
+
+    _log(
+        "WARN",
+        message
+    )
+
+
+def log_error(message):
+
+    _log(
+        "ERROR",
+        message
+    )
+
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s"
+)
+
+def log_event(message):
+
+    logging.info(message)
+
+def log_error(message):
+
+    logging.error(message)
 
 # JSON
 
@@ -23,6 +86,7 @@ def load_json():
 
 def save_json(data):
 
+    backup_json()
     with open(FILE, "w") as f:
         json.dump(
             data,
@@ -30,8 +94,6 @@ def save_json(data):
             indent=2,
             ensure_ascii=False
         )
-    backup_json()
-    #json.dump(...)
     errors = validate_mix(data)
 
     if errors:
