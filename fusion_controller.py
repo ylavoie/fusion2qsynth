@@ -46,14 +46,14 @@ def save_last_mix(mix_id):
             indent=2
         )
 
-def send_program(out, channel, part):
+def send_program(out, channel, instrument):
 
-    bank = part.get(
+    bank = instrument.get(
         "sf2_bank",
         0
     )
 
-    program = part.get(
+    program = instrument.get(
         "sf2_program",
         0
     )
@@ -168,10 +168,12 @@ def load_mix(mix_id, out, project):
             part["midi_channel"] - 1
         )
 
+        instrument = project.resolve_part_instrument(part)
+
         send_program(
             out,
             midi_channel,
-            part
+            instrument
         )
 
         state.current_parts[
