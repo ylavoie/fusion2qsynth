@@ -1,0 +1,9 @@
+Fusion2QSynth v1.1.0
+
+- Introduction de FusionProject
+- Centralisation complète de la gestion du projet
+- Validation déplacée hors de fusion_lib
+- Gestion de fusion.json entièrement encapsulée
+- Rechargement automatique centralisé
+- Nettoyage de l'architecture
+- Séparation claire entre modèle, contrôleur et utilitaires
