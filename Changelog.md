@@ -33,3 +33,23 @@ Fusion2QSynth v1.1.0
 - Audit complet des références effectué.
 - Tests de démarrage, capture, édition, contrôleur Live et monitor MIDI validés.
 
+# Changelog
+
+## 1.2.0
+
+### Added
+- Bibliothèque centralisée des instruments.
+- Gestion des instruments par identifiant dans les PARTS.
+- Ajout de la gestion complète des instruments dans l'éditeur.
+
+### Changed
+- Migration du modèle PART :
+  - suppression des références directes SF2 dans les PARTS ;
+  - résolution via la bibliothèque d'instruments.
+- Harmonisation du contrôleur Live, des previews et des tests audio.
+- Centralisation de la résolution instrument dans FusionProject.
+
+### Fixed
+- Annulation d'édition d'une PART sans modification accidentelle.
+- Gestion des Mix inexistants dans l'éditeur.
+- Nettoyage des anciens chemins v1.0.
