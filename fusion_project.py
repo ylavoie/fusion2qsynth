@@ -642,3 +642,72 @@ class FusionProject:
                 }
 
         return channels
+
+    #
+    # Instruments
+    #
+    def get_instruments(self):
+
+        return self.data.get(
+            "instruments",
+            {}
+        )
+
+    def get_instrument(
+        self,
+        instrument_id
+    ):
+
+        instruments = self.get_instruments()
+
+        return instruments.get(
+            instrument_id
+        )
+
+    def resolve_part_instrument(
+        self,
+        part
+    ):
+
+        #
+        # Nouveau format
+        #
+
+        if "instrument" in part:
+
+            instrument = self.get_instrument(
+                part["instrument"]
+            )
+
+            if instrument:
+
+                return instrument
+
+
+        #
+        # Ancien format
+        #
+
+        if (
+            "sf2_bank" in part
+            and
+            "sf2_program" in part
+        ):
+
+            return {
+
+                "name":
+                    part.get(
+                        "name",
+                        "Non configuré"
+                    ),
+
+                "sf2_bank":
+                    part["sf2_bank"],
+
+                "sf2_program":
+                    part["sf2_program"]
+            }
+
+
+        return None
