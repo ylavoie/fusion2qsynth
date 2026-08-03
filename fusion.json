@@ -7,69 +7,57 @@
         "bank": 2,
         "program": 5,
         "note_min": 60,
-        "note_max": 108,
-        "velocity_min": 15,
-        "velocity_max": 78
+        "note_max": 107,
+        "velocity_min": 18,
+        "velocity_max": 72,
+        "sf2_bank": 0,
+        "sf2_program": 73,
+        "name": "Flute"
       },
       "2": {
         "midi_channel": 2,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 24,
         "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 83,
-        "sf2_bank": 0,
-        "sf2_program": 75,
-        "name": "Pan Flute"
+        "velocity_min": 19,
+        "velocity_max": 59
       },
       "3": {
         "midi_channel": 3,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 24,
         "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 83,
-        "sf2_bank": 8,
-        "sf2_program": 63,
-        "name": "Synth Brass 4"
+        "velocity_min": 19,
+        "velocity_max": 59
       },
       "4": {
         "midi_channel": 4,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 24,
         "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 83,
-        "sf2_bank": 0,
-        "sf2_program": 63,
-        "name": "Synth Brass 2"
+        "velocity_min": 19,
+        "velocity_max": 59
       },
       "5": {
         "midi_channel": 5,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 24,
         "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 83,
-        "sf2_bank": 0,
-        "sf2_program": 48,
-        "name": "Strings"
+        "velocity_min": 19,
+        "velocity_max": 59
       },
       "6": {
         "midi_channel": 6,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 24,
         "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 83,
-        "sf2_bank": 0,
-        "sf2_program": 33,
-        "name": "Fingered Bass"
+        "velocity_min": 19,
+        "velocity_max": 59
       }
     }
   },
@@ -80,37 +68,40 @@
         "midi_channel": 1,
         "bank": 2,
         "program": 4,
-        "note_min": 21,
-        "note_max": 108,
-        "velocity_min": 2,
-        "velocity_max": 90
+        "note_min": 28,
+        "note_max": 103,
+        "velocity_min": 9,
+        "velocity_max": 75,
+        "sf2_bank": 0,
+        "sf2_program": 73,
+        "name": "Flute"
       },
       "2": {
         "midi_channel": 2,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 28,
         "note_max": 59,
-        "velocity_min": 36,
-        "velocity_max": 90
+        "velocity_min": 15,
+        "velocity_max": 61
       },
       "3": {
         "midi_channel": 3,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 28,
         "note_max": 59,
-        "velocity_min": 36,
-        "velocity_max": 90
+        "velocity_min": 15,
+        "velocity_max": 61
       },
       "4": {
         "midi_channel": 5,
         "bank": 0,
         "program": 0,
-        "note_min": 21,
+        "note_min": 28,
         "note_max": 59,
-        "velocity_min": 36,
-        "velocity_max": 90
+        "velocity_min": 15,
+        "velocity_max": 61
       }
     }
   },
@@ -122,36 +113,27 @@
         "bank": 3,
         "program": 0,
         "note_min": 53,
-        "note_max": 102,
-        "velocity_min": 8,
-        "velocity_max": 58,
-        "sf2_bank": 0,
-        "sf2_program": 19,
-        "name": "Church Organ"
+        "note_max": 108,
+        "velocity_min": 13,
+        "velocity_max": 75
       },
       "2": {
         "midi_channel": 2,
         "bank": 0,
         "program": 0,
-        "note_min": 23,
+        "note_min": 24,
         "note_max": 52,
-        "velocity_min": 6,
-        "velocity_max": 48,
-        "sf2_bank": 0,
-        "sf2_program": 32,
-        "name": "Acoustic Bass"
+        "velocity_min": 4,
+        "velocity_max": 69
       },
       "3": {
         "midi_channel": 3,
         "bank": 0,
         "program": 0,
-        "note_min": 23,
+        "note_min": 24,
         "note_max": 52,
-        "velocity_min": 6,
-        "velocity_max": 48,
-        "sf2_bank": 0,
-        "sf2_program": 118,
-        "name": "Synth Drum"
+        "velocity_min": 4,
+        "velocity_max": 69
       }
     }
   },
@@ -267,7 +249,10 @@
         "note_min": 23,
         "note_max": 59,
         "velocity_min": 6,
-        "velocity_max": 75
+        "velocity_max": 75,
+        "sf2_bank": 8,
+        "sf2_program": 40,
+        "name": "Slow Violin"
       },
       "4": {
         "midi_channel": 3,

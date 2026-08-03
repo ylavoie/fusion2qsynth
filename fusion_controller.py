@@ -7,29 +7,28 @@ import mido
 
 from fusion_project import FusionProject
 
-FILE = "fusion.json"
-
 from fusion_lib import (
-    load_json,
     find_fusion_input,
     find_fluidsynth_output,
     panic,
     note_name,
-    validate_mix,
-    print_mix,
     log_event
 )
 
-FILE_TIME = 0
+class ControllerState:
+
+    def __init__(self):
+
+        self.current_mix = None
+        self.current_parts = {}
+        self.active_notes = set()
+        self.pending_reload = False
+
+state = ControllerState()
+
 LAST_FILE = "last_mix.json"
 
 DEBUG = False
-
-CURRENT_MIX = None
-CURRENT_PARTS = {}
-
-ACTIVE_NOTES = set()
-PENDING_RELOAD = False
 
 def save_last_mix(mix_id):
 
@@ -84,49 +83,15 @@ def send_program(out, channel, part):
         )
     )
 
-def reload_if_changed():
-
-    global FILE_TIME
-
-    if not os.path.exists(FILE):
-
-        return None
-
-    new_time = os.path.getmtime(FILE)
-
-    if new_time != FILE_TIME:
-
-        FILE_TIME = new_time
-
-        print()
-
-        print(
-            "fusion.json modifié"
-        )
-
-        print(
-            "Rechargement..."
-        )
-
-        return load_json()
-
-    return None
-
-def validate_part(part):
-
-    return (
-        "midi_channel" in part
-        and
-        "sf2_bank" in part
-        and
-        "sf2_program" in part
-    )
-
-def load_mix(mix_id, out, performances):
+def load_mix(mix_id, out, project):
 
     loaded_parts = 0
 
-    if mix_id not in performances:
+    mix = project.get_mix(
+        mix_id
+    )
+
+    if not mix:
 
         print()
         print(
@@ -136,12 +101,8 @@ def load_mix(mix_id, out, performances):
 
         return
 
-    mix = performances[mix_id]
-
-    errors = validate_mix(
-        {
-            mix_id: mix
-        }
+    errors = project.validate_mix(
+        mix_id
     )
 
     if errors:
@@ -161,11 +122,8 @@ def load_mix(mix_id, out, performances):
 
         print()
 
-    global CURRENT_MIX
-    global CURRENT_PARTS
-
-    CURRENT_MIX = mix_id
-    CURRENT_PARTS = {}
+    state.current_mix = mix_id
+    state.current_parts = {}
 
     save_last_mix(
         mix_id
@@ -184,9 +142,8 @@ def load_mix(mix_id, out, performances):
         "Fusion Mix:",
         mix_id
     )
-    print_mix(
-        mix_id,
-        mix
+    project.print_mix(
+        mix_id
     )
     print("======================")
 
@@ -194,9 +151,9 @@ def load_mix(mix_id, out, performances):
 
     time.sleep(0.1)
 
-    for part_id, part in mix["parts"].items():
+    for part_id, part in project.get_parts(mix_id).items():
 
-        if not validate_part(part):
+        if not project.is_qsynth_ready(part):
 
             print(
                 "PART",
@@ -216,7 +173,7 @@ def load_mix(mix_id, out, performances):
             part
         )
 
-        CURRENT_PARTS[
+        state.current_parts[
             part["midi_channel"]
         ] = part
 
@@ -240,7 +197,7 @@ def load_mix(mix_id, out, performances):
         "Canaux actifs :"
     )
 
-    for ch, part in CURRENT_PARTS.items():
+    for ch, part in state.current_parts.items():
 
         print(
             " CH",
@@ -267,14 +224,14 @@ def forward_message(out, msg):
 
         out.send(msg)
 
-def reload_current_mix(out, performances):
+def reload_current_mix(out, project):
 
-    if CURRENT_MIX:
+    if state.current_mix:
 
         load_mix(
-            CURRENT_MIX,
+            state.current_mix,
             out,
-            performances
+            project
         )
 
 def load_last_mix():
@@ -290,197 +247,6 @@ def load_last_mix():
         return data.get(
             "mix"
         )
-
-def check_performances(performances):
-
-    print()
-    print("====================")
-    print("Diagnostic Fusion")
-    print("====================")
-
-    errors = 0
-
-    for mix_id, mix in performances.items():
-
-        print()
-        print(
-            "Mix :",
-            mix_id,
-            "-",
-            mix.get("name", "")
-        )
-
-        #
-        # Étape 3
-        # Détection canaux MIDI partagés
-        #
-
-        channels = []
-
-        for part in mix.get("parts", {}).values():
-
-            if "midi_channel" in part:
-
-                channels.append(
-                    part["midi_channel"]
-                )
-
-        duplicates = [
-            ch
-            for ch in set(channels)
-            if channels.count(ch) > 1
-        ]
-
-        if duplicates:
-
-            print()
-
-            print(
-                "⚠ Attention :"
-            )
-
-            print(
-                "Canaux MIDI partagés :",
-                duplicates
-            )
-
-            print(
-                "Certaines PARTS Fusion peuvent être indissociables."
-            )
-
-        #
-        # Vérification PARTS
-        #
-
-        for part_id, part in mix.get("parts", {}).items():
-
-            problems = []
-
-            if "midi_channel" not in part:
-
-                problems.append(
-                    "Canal MIDI absent"
-                )
-
-            if "sf2_bank" not in part:
-
-                problems.append(
-                    "SF2 Bank absent"
-                )
-
-            if "sf2_program" not in part:
-
-                problems.append(
-                    "SF2 Program absent"
-                )
-
-            print()
-
-            print(
-                "PART",
-                part_id
-            )
-
-            print(
-                " CH MIDI :",
-                part.get(
-                    "midi_channel",
-                    "?"
-                )
-            )
-
-            print(
-                " Fusion : Bank",
-                part.get(
-                    "bank",
-                    0
-                ),
-                "Program",
-                part.get(
-                    "program",
-                    0
-                )
-            )
-
-            print(
-                " SF2 :",
-                part.get(
-                    "name",
-                    "Non configuré"
-                ),
-                "Bank",
-                part.get(
-                    "sf2_bank",
-                    "-"
-                ),
-                "Program",
-                part.get(
-                    "sf2_program",
-                    "-"
-                )
-            )
-
-            #
-            # Étape 4
-            # Zone MIDI apprise
-            #
-
-            if "note_min" in part and "note_max" in part:
-
-                print(
-                    " Zone :",
-                    part["note_min"],
-                    "-",
-                    part["note_max"]
-                )
-
-            else:
-
-                print(
-                    " Zone : inconnue"
-                )
-
-            if "velocity_min" in part and "velocity_max" in part:
-
-                print(
-                    " Velocity :",
-                    part["velocity_min"],
-                    "-",
-                    part["velocity_max"]
-                )
-
-            if problems:
-
-                errors += 1
-
-                print(
-                    " ⚠",
-                    ", ".join(problems)
-                )
-
-            else:
-
-                print(
-                    " ✓ PART valide"
-                )
-
-    print()
-
-    if errors:
-
-        print(
-            "Diagnostic terminé :",
-            errors,
-            "problème(s)"
-        )
-
-    else:
-
-        print(
-            "Tous les Mix sont prêts"
-        )
-
-    print()
 
 def main():
 
@@ -510,20 +276,46 @@ def main():
 
         print()
 
-    performances = project.data
-
     last_mix = load_last_mix()
-    check_performances(
-        performances
-    )
 
-    global FILE_TIME
+    diagnostic = project.get_diagnostic()
+    for mix in diagnostic:
 
-    FILE_TIME = os.path.getmtime(FILE)
+        print()
+        print(
+            "Mix :",
+            mix["mix"],
+            "-",
+            mix["name"]
+        )
+
+
+        for part in mix["parts"]:
+
+            print(
+                " PART",
+                part["part"],
+                "Fusion:",
+                "OK"
+                if part["fusion_valid"]
+                else "ERREUR",
+                "QSynth:",
+                "OK"
+                if part["qsynth_configured"]
+                else "Non configuré"
+            )
+
+
+        if "shared_channels" in mix:
+
+            print(
+                " ⚠ Canaux partagés :",
+                mix["shared_channels"]
+            )
 
     print()
     print(
-        len(performances),
+        project.count_mixes(),
         "Mix chargés"
     )
     print()
@@ -581,21 +373,17 @@ def main():
 
                 for msg in inp:
 
-                    new_data = reload_if_changed()
+                    if project.reload_if_changed():
 
-                    if new_data:
+                        state.pending_reload = True
 
-                        performances = new_data
-
-                        PENDING_RELOAD = True
-
-                        if PENDING_RELOAD and len(ACTIVE_NOTES) == 0:
+                        if state.pending_reload and len(state.active_notes) == 0:
 
                             reload_current_mix(
                                 out,
-                                performances
+                                project
                             )
-                            PENDING_RELOAD = False
+                            state.pending_reload = False
 
                         else:
 
@@ -605,7 +393,7 @@ def main():
 
                     if DEBUG:
 
-                        part = CURRENT_PARTS.get(
+                        part = state.current_parts.get(
                             msg.channel + 1
                         )
                         name = "?"
@@ -619,7 +407,7 @@ def main():
 
                         if msg.type == "note_on" and msg.velocity > 0:
 
-                            ACTIVE_NOTES.add(
+                            state.active_notes.add(
                                 (
                                     msg.channel,
                                     msg.note
@@ -638,7 +426,7 @@ def main():
 
                         elif msg.type == "note_off":
 
-                            ACTIVE_NOTES.discard(
+                            state.active_notes.discard(
                                 (
                                     msg.channel,
                                     msg.note
@@ -655,7 +443,8 @@ def main():
 
                     if time.time() - last_reload > 5:
 
-                        performances = load_json()
+                        project.reload()
+
                         last_reload = time.time()
 
                     if msg.type in [
@@ -731,14 +520,14 @@ def main():
                             "===================="
                         )
 
-                        if mix_id == CURRENT_MIX:
+                        if mix_id == state.current_mix:
 
                             continue
 
                         load_mix(
                             mix_id,
                             out,
-                            performances
+                            project
                         )
                         log_event(
                             f"MIX chargé {mix_id}"

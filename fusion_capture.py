@@ -3,8 +3,6 @@
 import mido
 import time
 
-FILE = "fusion.json"
-
 from fusion_lib import (
     find_fusion_input
 )

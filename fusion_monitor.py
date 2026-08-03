@@ -6,26 +6,16 @@ from fusion_project import FusionProject
 
 from fusion_lib import (
     find_fusion_input,
-    build_channel_map,
     note_name,
     print_part
 )
-
-
-FILE = "fusion.json"
-
-FUSION_IN = "CH345"
 
 
 def main():
 
     project = FusionProject()
 
-    data = project.data
-
-    channel_map = build_channel_map(
-        data
-    )
+    channel_map = project.build_channel_map()
 
     port_name = find_fusion_input()
 

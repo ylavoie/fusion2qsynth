@@ -2,13 +2,9 @@ VERSION = "1.0"
 PROJECT = "Fusion2QSynth"
 
 import mido
-import json
-import os
-import shutil
 import logging
 import time
 
-FILE = "fusion.json"
 FUSION_IN = "CH345"
 SYNTH_OUT = "FLUID Synth"
 LOG_FILE = "fusion.log"
@@ -35,7 +31,6 @@ def _log(level, message):
 
         f.write(line + "\n")
 
-
 def log_info(message):
 
     _log(
@@ -43,19 +38,10 @@ def log_info(message):
         message
     )
 
-
 def log_warning(message):
 
     _log(
         "WARN",
-        message
-    )
-
-
-def log_error(message):
-
-    _log(
-        "ERROR",
         message
     )
 
@@ -72,47 +58,6 @@ def log_event(message):
 def log_error(message):
 
     logging.error(message)
-
-# JSON
-
-def load_json():
-
-    if os.path.exists(FILE):
-
-        with open(FILE, "r") as f:
-            return json.load(f)
-
-    return {}
-
-def save_json(data):
-
-    backup_json()
-    with open(FILE, "w") as f:
-        json.dump(
-            data,
-            f,
-            indent=2,
-            ensure_ascii=False
-        )
-    errors = validate_mix(data)
-
-    if errors:
-
-        print()
-        print(
-            "Attention : validation Fusion"
-        )
-
-        for e in errors:
-
-            print(
-                "-",
-                e
-            )
-
-def backup_json():
-    if os.path.exists(FILE):
-        shutil.copy2(FILE, FILE + ".bak")
 
 # MIDI
 
@@ -177,19 +122,6 @@ def note_name(note):
 #def note_range()
 
 # Mix
-def get_mix(data, mix_id):
-
-    return data.get(mix_id)
-
-def get_part(mix, part_id):
-
-    return mix.get(
-        "parts",
-        {}
-    ).get(
-        str(part_id)
-    )
-
 def iter_parts(mix):
 
     for part_id in sorted(
@@ -222,182 +154,6 @@ def is_part_configured(part):
         and
         "sf2_program" in part
     )
-
-def build_channel_map(data):
-
-    channels = {}
-
-    for mix_id, mix in data.items():
-
-        for part_id, part in mix.get(
-            "parts",
-            {}
-        ).items():
-
-            ch = part.get(
-                "midi_channel"
-            )
-
-            if ch is None:
-
-                continue
-
-            channels[ch] = {
-
-                "mix_id":
-                    mix_id,
-
-                "part_id":
-                    part_id,
-
-                "part":
-                    part
-            }
-
-    return channels
-
-# Validation
-def validate_mix(data):
-
-    errors = []
-
-    if not isinstance(data, dict):
-
-        return [
-            "Le fichier fusion.json n'est pas un dictionnaire."
-        ]
-
-    for mix_id, mix in data.items():
-
-        if not isinstance(mix, dict):
-
-            errors.append(
-                f"{mix_id} : définition invalide."
-            )
-
-            continue
-
-        if "parts" not in mix:
-
-            errors.append(
-                f"{mix_id} : aucune PART."
-            )
-
-            continue
-
-        channels = []
-
-        for part_id, part in mix["parts"].items():
-
-            prefix = f"{mix_id} PART {part_id}"
-
-            #
-            # Canal
-            #
-
-            ch = part.get("midi_channel")
-
-            if ch is None:
-
-                errors.append(
-                    f"{prefix} : midi_channel absent."
-                )
-
-            elif not (1 <= ch <= 16):
-
-                errors.append(
-                    f"{prefix} : canal MIDI invalide ({ch})."
-                )
-
-            else:
-
-                channels.append(ch)
-
-            #
-            # Fusion
-            #
-
-            if "bank" not in part:
-
-                errors.append(
-                    f"{prefix} : bank Fusion absente."
-                )
-
-            if "program" not in part:
-
-                errors.append(
-                    f"{prefix} : program Fusion absent."
-                )
-
-            #
-            # SF2
-            #
-
-            if "name" in part:
-
-                if "sf2_bank" not in part:
-
-                    errors.append(
-                        f"{prefix} : sf2_bank absent."
-                    )
-
-                if not is_part_configured(part):
-
-                    errors.append(
-                        f"{prefix} : sf2_program absent."
-                    )
-
-            #
-            # Zone notes
-            #
-
-            if "note_min" in part and "note_max" in part:
-
-                a = part["note_min"]
-                b = part["note_max"]
-
-                if not (0 <= a <= b <= 127):
-
-                    errors.append(
-                        f"{prefix} : zone de notes invalide."
-                    )
-
-            #
-            # Velocity
-            #
-
-            if (
-                "velocity_min" in part
-                and
-                "velocity_max" in part
-            ):
-
-                a = part["velocity_min"]
-                b = part["velocity_max"]
-
-                if not (0 <= a <= b <= 127):
-
-                    errors.append(
-                        f"{prefix} : plage de vélocité invalide."
-                    )
-
-        #
-        # Doublons de canaux
-        #
-
-        duplicates = sorted({
-            ch
-            for ch in channels
-            if channels.count(ch) > 1
-        })
-
-        if duplicates:
-
-            errors.append(
-                f"{mix_id} : canaux MIDI partagés {duplicates}."
-            )
-
-    return errors
 
 # Affichage
 def print_mix(mix_id, mix):
@@ -483,7 +239,7 @@ def print_part(part_id, part):
 #def summarize_mix(mix):
 
 # System
-def system_status():
+def system_status(project):
 
     status = {}
 
@@ -497,8 +253,6 @@ def system_status():
         is not None
     )
 
-    data = load_json()
-
-    status["mix_count"] = len(data)
+    status["mix_count"] = project.count_mixes()
 
     return status

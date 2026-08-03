@@ -6,7 +6,6 @@ import mido
 import time
 
 from fusion_lib import (
-    save_json,
     find_fluidsynth_output,
     note_name,
     print_mix,
@@ -564,6 +563,10 @@ def edit_mix(project,mix_id):
 
         if part_id.lower() == "q":
             project.save()
+            print()
+            print(
+                "Mix complet sauvegardé"
+            )
             return
 
         if part_id not in mix["parts"]:
@@ -693,13 +696,6 @@ def edit_mix(project,mix_id):
                 )
 
                 break
-
-    save_json(data)
-
-    print()
-    print(
-        "Mix complet sauvegardé"
-    )
 
 def test_mix_parts(mix):
 

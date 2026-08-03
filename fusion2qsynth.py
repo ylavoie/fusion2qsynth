@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
+VERSION = "1.1.0"
+
 import editor
 import fusion_capture
 import fusion_controller
 import fusion_monitor
+from fusion_project import FusionProject
 
 from fusion_lib import(
-    load_json,
-    find_fusion_input,
-    find_fluidsynth_output,
     system_status
 )
 
-def show_status():
+def show_status(project):
 
-    status = system_status()
+    status = system_status(project)
 
     print()
 
@@ -39,6 +39,8 @@ def show_status():
 
 def main():
 
+    project = FusionProject()
+
     while True:
 
         print()
@@ -46,7 +48,7 @@ def main():
         print(" Fusion → QSynth")
         print("==========================")
 
-        show_status()
+        show_status(project)
 
         print()
 
