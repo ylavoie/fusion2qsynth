@@ -138,8 +138,14 @@ def iter_parts(mix):
 
 def sort_mix_ids(data):
 
+    mix_ids = [
+        key
+        for key in data.keys()
+        if ":" in key
+    ]
+
     return sorted(
-        data.keys(),
+        mix_ids,
         key=lambda x: (
             int(x.split(":")[0]),
             int(x.split(":")[1])

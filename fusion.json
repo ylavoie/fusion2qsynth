@@ -1,4 +1,11 @@
 {
+  "instruments": {
+    "grand_piano": {
+      "name": "Grand Piano",
+      "sf2_bank": 0,
+      "sf2_program": 0
+    }
+  },
   "2:5": {
     "name": "Fusion Mix 2:5",
     "parts": {
@@ -352,9 +359,9 @@
         "note_max": 57,
         "velocity_min": 13,
         "velocity_max": 72,
-        "sf2_bank": 128,
-        "sf2_program": 48,
-        "name": "Orchestra Kit"
+        "sf2_bank": 0,
+        "sf2_program": 55,
+        "name": "Orchestra Hit"
       }
     }
   }

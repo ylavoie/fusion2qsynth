@@ -878,6 +878,175 @@ def list_mixes(project):
             )
         )
 
+def instruments_menu(project):
+
+    while True:
+
+        print()
+        print("===================")
+        print(" Instruments ")
+        print("===================")
+
+        print("1 - Liste")
+        print("2 - Ajouter")
+        print("3 - Modifier")
+        print("4 - Supprimer")
+        print("q - Retour")
+
+        choice = input("> ")
+
+        if choice == "1":
+
+            list_instruments(project)
+
+        elif choice == "2":
+
+            add_instrument(project)
+
+        elif choice == "3":
+
+            edit_instrument(project)
+
+        elif choice == "4":
+
+            delete_instrument(project)
+
+        elif choice.lower() == "q":
+
+            break
+
+def list_instruments(project):
+
+    instruments = project.list_instruments()
+
+    print()
+
+    if not instruments:
+
+        print("Aucun instrument.")
+
+        return
+
+
+    for instrument_id, instrument in instruments:
+
+        print(
+            f"{instrument_id} : "
+            f"{instrument.get('name','?')} "
+            f"(Bank {instrument.get('sf2_bank')} "
+            f"Program {instrument.get('sf2_program')})"
+        )
+
+def add_instrument(project):
+
+    instrument_id = input(
+        "Identifiant : "
+    )
+
+    name = input(
+        "Nom : "
+    )
+
+    bank = int(
+        input(
+            "SF2 Bank : "
+        )
+    )
+
+    program = int(
+        input(
+            "SF2 Program : "
+        )
+    )
+
+
+    project.add_instrument(
+        instrument_id,
+        {
+            "name": name,
+            "sf2_bank": bank,
+            "sf2_program": program
+        }
+    )
+
+    project.save()
+
+def delete_instrument(project):
+
+    instruments = project.list_instruments()
+
+    if not instruments:
+
+        print(
+            "Aucun instrument."
+        )
+
+        return
+
+
+    print()
+
+    for instrument_id, instrument in instruments:
+
+        print(
+            instrument_id,
+            "-",
+            instrument.get(
+                "name",
+                "?"
+            )
+        )
+
+
+    instrument_id = input(
+        "Instrument à supprimer : "
+    )
+
+
+    instrument = project.get_instrument(
+        instrument_id
+    )
+
+
+    if not instrument:
+
+        print(
+            "Instrument inconnu."
+        )
+
+        return
+
+
+    confirm = input(
+        f"Supprimer {instrument.get('name', instrument_id)} ? (o/n) : "
+    )
+
+
+    if confirm.lower() != "o":
+
+        print(
+            "Annulé."
+        )
+
+        return
+
+
+    if project.remove_instrument(
+        instrument_id
+    ):
+
+        project.save()
+
+        print(
+            "Instrument supprimé."
+        )
+
+    else:
+
+        print(
+            "Suppression impossible."
+        )
+
 def main():
 
     project = FusionProject()
@@ -890,6 +1059,7 @@ def main():
         print("===================")
         print("1 - Liste des Mix")
         print("2 - Editer un Mix")
+        print("3 - Gestion Instruments")
         print("q - Quitter")
 
         choix = input("> ")
@@ -905,6 +1075,10 @@ def main():
             )
 
             edit_mix(project,mix)
+
+        elif choix == "3":
+
+            instruments_menu(project)
 
         elif choix.lower() == "q":
 

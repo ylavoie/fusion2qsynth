@@ -185,14 +185,63 @@ class FusionProject:
 
         errors = []
 
-        for mix_id, mix in self.data.items():
+        errors.extend(
+            self.validate_instruments()
+        )
+
+        for mix_id in fusion_lib.sort_mix_ids(
+            self.data
+        ):
 
             errors.extend(
-                self.validate_mix_data(
-                    mix_id,
-                    mix
+                self.validate_mix(
+                    mix_id
                 )
             )
+
+        return errors
+
+    def validate_instruments(self):
+
+        errors = []
+
+        for instrument_id, instrument in self.get_instruments().items():
+
+            prefix = f"Instrument {instrument_id}"
+
+            if "name" not in instrument:
+
+                errors.append(
+                    f"{prefix} : nom absent"
+                )
+
+            if "sf2_bank" not in instrument:
+
+                errors.append(
+                    f"{prefix} : sf2_bank absent"
+                )
+
+            if "sf2_program" not in instrument:
+
+                errors.append(
+                    f"{prefix} : sf2_program absent"
+                )
+
+            if "sf2_bank" in instrument:
+
+                if not 0 <= instrument["sf2_bank"] <= 127:
+
+                    errors.append(
+                        f"{prefix} : sf2_bank invalide"
+                    )
+
+            if "sf2_program" in instrument:
+
+                if not 0 <= instrument["sf2_program"] <= 127:
+
+                    errors.append(
+                        f"{prefix} : sf2_program invalide"
+                    )
 
         return errors
 
@@ -669,10 +718,6 @@ class FusionProject:
         part
     ):
 
-        #
-        # Nouveau format
-        #
-
         if "instrument" in part:
 
             instrument = self.get_instrument(
@@ -683,11 +728,6 @@ class FusionProject:
 
                 return instrument
 
-
-        #
-        # Ancien format
-        #
-
         if (
             "sf2_bank" in part
             and
@@ -695,19 +735,65 @@ class FusionProject:
         ):
 
             return {
-
-                "name":
-                    part.get(
-                        "name",
-                        "Non configuré"
-                    ),
-
-                "sf2_bank":
-                    part["sf2_bank"],
-
-                "sf2_program":
-                    part["sf2_program"]
+                "name": part.get(
+                    "name",
+                    "Non configuré"
+                ),
+                "sf2_bank": part["sf2_bank"],
+                "sf2_program": part["sf2_program"]
             }
 
-
         return None
+
+    def list_instruments(self):
+
+        return sorted(
+            self.get_instruments().items()
+        )
+
+    def add_instrument(
+        self,
+        instrument_id,
+        instrument
+    ):
+
+        if "instruments" not in self.data:
+
+            self.data["instruments"] = {}
+
+        if instrument_id in self.data["instruments"]:
+
+            return False
+
+        self.data["instruments"][instrument_id] = instrument
+
+        return True
+
+    def update_instrument(
+        self,
+        instrument_id,
+        instrument
+    ):
+
+        if "instruments" not in self.data:
+
+            self.data["instruments"] = {}
+
+        self.data["instruments"][instrument_id] = instrument
+
+        return True
+
+    def remove_instrument(
+        self,
+        instrument_id
+    ):
+
+        instruments = self.get_instruments()
+
+        if instrument_id not in instruments:
+
+            return False
+
+        del instruments[instrument_id]
+
+        return True
