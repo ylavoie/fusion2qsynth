@@ -1,0 +1,299 @@
+{
+  "2:5": {
+    "name": "Fusion Mix 2:5",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 2,
+        "program": 5,
+        "note_min": 60,
+        "note_max": 108,
+        "velocity_min": 15,
+        "velocity_max": 78
+      },
+      "2": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 14,
+        "velocity_max": 83,
+        "sf2_bank": 0,
+        "sf2_program": 75,
+        "name": "Pan Flute"
+      },
+      "3": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 14,
+        "velocity_max": 83,
+        "sf2_bank": 8,
+        "sf2_program": 63,
+        "name": "Synth Brass 4"
+      },
+      "4": {
+        "midi_channel": 4,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 14,
+        "velocity_max": 83,
+        "sf2_bank": 0,
+        "sf2_program": 63,
+        "name": "Synth Brass 2"
+      },
+      "5": {
+        "midi_channel": 5,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 14,
+        "velocity_max": 83,
+        "sf2_bank": 0,
+        "sf2_program": 48,
+        "name": "Strings"
+      },
+      "6": {
+        "midi_channel": 6,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 14,
+        "velocity_max": 83,
+        "sf2_bank": 0,
+        "sf2_program": 33,
+        "name": "Fingered Bass"
+      }
+    }
+  },
+  "2:4": {
+    "name": "Fusion Mix 2:4",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 2,
+        "program": 4,
+        "note_min": 21,
+        "note_max": 108,
+        "velocity_min": 2,
+        "velocity_max": 90
+      },
+      "2": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 36,
+        "velocity_max": 90
+      },
+      "3": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 36,
+        "velocity_max": 90
+      },
+      "4": {
+        "midi_channel": 5,
+        "bank": 0,
+        "program": 0,
+        "note_min": 21,
+        "note_max": 59,
+        "velocity_min": 36,
+        "velocity_max": 90
+      }
+    }
+  },
+  "3:0": {
+    "name": "Fusion Mix 3:0",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 3,
+        "program": 0,
+        "note_min": 53,
+        "note_max": 102,
+        "velocity_min": 8,
+        "velocity_max": 58,
+        "sf2_bank": 0,
+        "sf2_program": 19,
+        "name": "Church Organ"
+      },
+      "2": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 23,
+        "note_max": 52,
+        "velocity_min": 6,
+        "velocity_max": 48,
+        "sf2_bank": 0,
+        "sf2_program": 32,
+        "name": "Acoustic Bass"
+      },
+      "3": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 23,
+        "note_max": 52,
+        "velocity_min": 6,
+        "velocity_max": 48,
+        "sf2_bank": 0,
+        "sf2_program": 118,
+        "name": "Synth Drum"
+      }
+    }
+  },
+  "2:3": {
+    "name": "Fusion Mix 2:3",
+    "parts": {}
+  },
+  "2:2": {
+    "name": "Fusion Mix 2:2",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 2,
+        "program": 2,
+        "note_min": 21,
+        "note_max": 108,
+        "velocity_min": 6,
+        "velocity_max": 85
+      }
+    }
+  },
+  "2:1": {
+    "name": "Fusion Mix 2:1",
+    "parts": {
+      "1": {
+        "midi_channel": 5,
+        "bank": 0,
+        "program": 0,
+        "note_min": 60,
+        "note_max": 98,
+        "velocity_min": 8,
+        "velocity_max": 72
+      },
+      "2": {
+        "midi_channel": 1,
+        "bank": 2,
+        "program": 1,
+        "note_min": 22,
+        "note_max": 74,
+        "velocity_min": 15,
+        "velocity_max": 62
+      },
+      "3": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 22,
+        "note_max": 60,
+        "velocity_min": 15,
+        "velocity_max": 62
+      },
+      "4": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 22,
+        "note_max": 60,
+        "velocity_min": 15,
+        "velocity_max": 62
+      },
+      "5": {
+        "midi_channel": 4,
+        "bank": 0,
+        "program": 0,
+        "note_min": 22,
+        "note_max": 60,
+        "velocity_min": 15,
+        "velocity_max": 62
+      }
+    }
+  },
+  "2:0": {
+    "name": "Fusion Mix 2:0",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 2,
+        "program": 0,
+        "note_min": 60,
+        "note_max": 107,
+        "velocity_min": 10,
+        "velocity_max": 51
+      },
+      "2": {
+        "midi_channel": 10,
+        "bank": 0,
+        "program": 0,
+        "note_min": 23,
+        "note_max": 59,
+        "velocity_min": 6,
+        "velocity_max": 75
+      },
+      "3": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 23,
+        "note_max": 59,
+        "velocity_min": 6,
+        "velocity_max": 75
+      },
+      "4": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 23,
+        "note_max": 59,
+        "velocity_min": 6,
+        "velocity_max": 75
+      }
+    }
+  },
+  "1:127": {
+    "name": "Fusion Mix 1:127",
+    "parts": {}
+  },
+  "1:124": {
+    "name": "Fusion Mix 1:124",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 1,
+        "program": 124,
+        "note_min": 25,
+        "note_max": 108,
+        "velocity_min": 9,
+        "velocity_max": 66
+      }
+    }
+  },
+  "1:123": {
+    "name": "Fusion Mix 1:123",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 1,
+        "program": 123,
+        "note_min": 26,
+        "note_max": 108,
+        "velocity_min": 5,
+        "velocity_max": 77
+      }
+    }
+  }
+}

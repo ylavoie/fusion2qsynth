@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Environnements
+venv/
+.env/
+
+# Logs
+*.log
+
+# Fichiers temporaires
+*~
+*.tmp
+
+# Sauvegardes locales
+fusion.json.bak
+
+# Archives de release
+releases/*.tar.gz
