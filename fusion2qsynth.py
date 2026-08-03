@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-VERSION = "1.1.0"
-
 import editor
 import fusion_capture
 import fusion_controller

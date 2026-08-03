@@ -1,13 +1,12 @@
-VERSION = "1.0"
-PROJECT = "Fusion2QSynth"
-
 import mido
 import logging
 import time
 
-FUSION_IN = "CH345"
-SYNTH_OUT = "FLUID Synth"
-LOG_FILE = "fusion.log"
+from fusion_constants import (
+    FUSION_INPUT_NAME,
+    FLUIDSYNTH_OUTPUT_NAME,
+    LOG_FILE
+)
 
 # Logging
 
@@ -65,7 +64,7 @@ def find_fusion_input():
 
     for port in mido.get_input_names():
 
-        if FUSION_IN.lower() in port.lower():
+        if FUSION_INPUT_NAME.lower() in port.lower():
 
             return port
 
@@ -75,7 +74,7 @@ def find_fluidsynth_output():
 
     for port in mido.get_output_names():
 
-        if SYNTH_OUT.lower() in port.lower():
+        if FLUIDSYNTH_OUTPUT_NAME.lower() in port.lower():
 
             return port
 

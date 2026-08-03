@@ -296,5 +296,66 @@
         "velocity_max": 77
       }
     }
+  },
+  "3:1": {
+    "name": "Fusion Mix 3:1",
+    "parts": {}
+  },
+  "0:0": {
+    "name": "Fusion Mix 0:0",
+    "parts": {}
+  },
+  "0:1": {
+    "name": "Fusion Mix 0:1",
+    "parts": {
+      "1": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "note_min": 62,
+        "note_max": 101,
+        "velocity_min": 14,
+        "velocity_max": 63,
+        "sf2_bank": 0,
+        "sf2_program": 68,
+        "name": "Oboe"
+      },
+      "2": {
+        "midi_channel": 1,
+        "bank": 0,
+        "program": 1,
+        "note_min": 26,
+        "note_max": 57,
+        "velocity_min": 13,
+        "velocity_max": 72,
+        "sf2_bank": 0,
+        "sf2_program": 70,
+        "name": "Bassoon"
+      },
+      "3": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "note_min": 26,
+        "note_max": 57,
+        "velocity_min": 13,
+        "velocity_max": 72,
+        "sf2_bank": 0,
+        "sf2_program": 37,
+        "name": "Pop Bass"
+      },
+      "4": {
+        "midi_channel": 4,
+        "bank": 0,
+        "program": 0,
+        "note_min": 26,
+        "note_max": 57,
+        "velocity_min": 13,
+        "velocity_max": 72,
+        "sf2_bank": 128,
+        "sf2_program": 48,
+        "name": "Orchestra Kit"
+      }
+    }
   }
 }

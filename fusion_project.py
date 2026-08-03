@@ -6,12 +6,13 @@ import shutil
 
 import fusion_lib
 from fusion_lib import print_mix as print_mix_lib
+from fusion_constants import FUSION_FILE
 
 class FusionProject:
 
     def __init__(
         self,
-        filename="fusion.json"
+        filename=FUSION_FILE
     ):
 
         self.filename = filename

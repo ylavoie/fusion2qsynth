@@ -5,6 +5,7 @@ import os
 import json
 import mido
 
+from fusion_constants import LAST_MIX_FILE
 from fusion_project import FusionProject
 
 from fusion_lib import (
@@ -26,14 +27,14 @@ class ControllerState:
 
 state = ControllerState()
 
-LAST_FILE = "last_mix.json"
+LAST_MIX_FILE = "last_mix.json"
 
 DEBUG = False
 
 def save_last_mix(mix_id):
 
     with open(
-        LAST_FILE,
+        LAST_MIX_FILE,
         "w"
     ) as f:
 
@@ -236,11 +237,11 @@ def reload_current_mix(out, project):
 
 def load_last_mix():
 
-    if not os.path.exists(LAST_FILE):
+    if not os.path.exists(LAST_MIX_FILE):
 
         return None
 
-    with open(LAST_FILE) as f:
+    with open(LAST_MIX_FILE) as f:
 
         data = json.load(f)
 
