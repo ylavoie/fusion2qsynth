@@ -1030,6 +1030,26 @@ def delete_instrument(project):
 
         return
 
+    usages = project.find_instrument_usage(
+        instrument_id
+    )
+
+    if usages:
+
+        print(
+            "Instrument utilisé par :"
+        )
+
+        for usage in usages:
+
+            print(
+                "-",
+                usage["mix_id"],
+                "PART",
+                usage["part_id"]
+            )
+
+        return
 
     if project.remove_instrument(
         instrument_id

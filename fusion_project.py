@@ -794,6 +794,39 @@ class FusionProject:
 
             return False
 
+        if self.find_instrument_usage(
+            instrument_id
+        ):
+
+            return False
+
         del instruments[instrument_id]
 
         return True
+
+    def find_instrument_usage(
+        self,
+        instrument_id
+    ):
+
+        usages = []
+
+        for mix_id, mix in self.iter_mixes():
+
+            for part_id, part in mix.get(
+                "parts",
+                {}
+            ).items():
+
+                if part.get(
+                    "instrument"
+                ) == instrument_id:
+
+                    usages.append(
+                        {
+                            "mix_id": mix_id,
+                            "part_id": part_id
+                        }
+                    )
+
+        return usages
