@@ -439,6 +439,81 @@ def check_parts(mix):
 
     return not duplicates
 
+def repair_instrument_errors(
+    project,
+    errors
+):
+
+    repaired = False
+
+    for error in errors:
+
+        if error.get("type") != "missing_instrument":
+
+            continue
+
+        print()
+
+        print(
+            "Instrument absent :"
+        )
+
+        print(
+            "Mix",
+            error["mix_id"],
+            "PART",
+            error["part_id"]
+        )
+
+        print(
+            error["instrument"]
+        )
+
+        print()
+
+        choix = input(
+            "Remplacer cet instrument ? (o/n) : "
+        )
+
+        if choix.lower() != "o":
+
+            continue
+
+        mix = project.get_mix(
+            error["mix_id"]
+        )
+
+        part = mix["parts"][
+            error["part_id"]
+        ]
+
+        instrument = choose_instrument(
+            project,
+            part
+        )
+
+        if instrument is None:
+
+            continue
+
+        project.set_part_instrument(
+            error["mix_id"],
+            error["part_id"],
+            instrument["id"]
+        )
+
+        repaired = True
+
+        print(
+            "Instrument remplacé."
+        )
+
+    if repaired:
+
+        project.save()
+
+    return repaired
+
 def edit_mix(project,mix_id):
 
     def test_mix_menu(mix):
@@ -1097,6 +1172,19 @@ def main():
                 )
 
         print()
+
+        repair = input(
+            "Réparer maintenant ? (o/n) : "
+        )
+
+        if repair.lower() == "o":
+
+            repair_instrument_errors(
+                project,
+                errors
+            )
+
+            errors = project.validate()
 
     while True:
 
