@@ -172,7 +172,7 @@ Cette version constitue la première base stable :
 - contrôle live fonctionnel ;
 - diagnostic fonctionnel.
 
-## [v1.1.0] - 2026-08-02
+## Changelog 1.1.0 - 2026-08-02
 
 - Introduction de FusionProject
 - Centralisation complète de la gestion du projet
@@ -182,7 +182,7 @@ Cette version constitue la première base stable :
 - Nettoyage de l'architecture
 - Séparation claire entre modèle, contrôleur et utilitaires
 
-## [1.1.1] - 2026-08-03
+## Changelog 1.1.1 - 2026-08-03
 
 ### Architecture
 
@@ -205,7 +205,7 @@ Cette version constitue la première base stable :
 - Audit complet des références effectué.
 - Tests de démarrage, capture, édition, contrôleur Live et monitor MIDI validés.
 
-## 1.2.0
+## Changelog 1.2 - 2026-08-03
 
 ### Ajouté
 
@@ -227,7 +227,7 @@ Cette version constitue la première base stable :
 - Gestion des Mix inexistants dans l'éditeur.
 - Nettoyage des anciens chemins v1.0.
 
-## v1.3
+## Changelog 1.3 - 2026-08-03
 
 ### Ajouté
 
@@ -254,3 +254,70 @@ Cette version constitue la première base stable :
 - Correction de l'annulation d'une édition de PART qui pouvait appliquer un changement non confirmé.
 - Correction des erreurs lors de la validation de références d'instruments absentes.
 - Correction de la boucle validation/réparation afin de permettre plusieurs corrections successives.
+
+## Changelog 1.4 - 2026-08-04
+
+### Sauvegarde sécurisée du projet
+
+#### Ajout de `save_safe()`
+
+- Remplacement complet de l'ancien mécanisme `save()`.
+- Centralisation de toutes les écritures persistantes via `save_safe()`.
+- Suppression de la méthode `save()` devenue obsolète.
+- Validation du projet avant toute sauvegarde.
+
+#### Protection des données
+
+- Ajout d'une sauvegarde automatique `fusion.json.bak` avant remplacement du fichier principal.
+- Utilisation d'un fichier temporaire `fusion.json.tmp` lors de l'écriture.
+- Remplacement sécurisé du fichier projet après écriture complète.
+- Nettoyage automatique des fichiers temporaires en cas de succès ou d'échec.
+
+#### Gestion des erreurs
+
+- Gestion des erreurs d'écriture disque sans arrêt brutal de l'application.
+- Retour booléen de `save_safe()` utilisé par les appelants.
+- Correction des messages utilisateurs afin qu'une sauvegarde ne soit annoncée réussie qu'après confirmation réelle.
+
+### Améliorations de l'éditeur
+
+- Adaptation des opérations de l'éditeur au nouveau mécanisme de sauvegarde.
+- Correction de la gestion des échecs de sauvegarde lors :
+
+  - des changements d'instruments ;
+  - des réparations automatiques ;
+  - de l'ajout d'instruments ;
+  - de la suppression d'instruments.
+- Messages utilisateur ajustés pour refléter l'état réel de persistance.
+
+### Capture Fusion
+
+- Gestion correcte des échecs de sauvegarde après capture.
+- L'utilisateur est informé lorsqu'un Mix est créé en mémoire mais n'a pas pu être écrit sur disque.
+
+### Robustesse du chargement
+
+- Détection des fichiers `fusion.json` invalides.
+- Remplacement des erreurs techniques JSON par un message utilisateur clair.
+- Arrêt propre du programme lorsqu'un projet ne peut pas être chargé.
+
+### Validation et tests
+
+Tests complétés :
+
+- sauvegarde normale ;
+- sauvegarde successive avec création du `.bak` ;
+- échec d'écriture par permission refusée ;
+- absence de fichiers `.tmp` résiduels après erreur ;
+- corruption volontaire de `fusion.json` ;
+- restauration manuelle depuis `fusion.json.bak` ;
+- validation des flux éditeur et capture.
+
+### État final
+
+La v1.4 apporte une couche de persistance fiable :
+
+- écritures sécurisées ;
+- protection contre les corruptions partielles ;
+- récupération possible depuis une sauvegarde ;
+- gestion propre des erreurs utilisateur.
