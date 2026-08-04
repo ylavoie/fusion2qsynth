@@ -360,7 +360,7 @@
         "note_max": 101,
         "velocity_min": 14,
         "velocity_max": 63,
-        "instrument": "grand_piano"
+        "instrument": "instrument inexistant"
       },
       "2": {
         "midi_channel": 1,

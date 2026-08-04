@@ -1070,6 +1070,25 @@ def main():
 
     project = FusionProject()
 
+    errors = project.validate()
+
+    if errors:
+
+        print()
+
+        print(
+            "Erreurs de validation :"
+        )
+
+        for error in errors:
+
+            print(
+                "-",
+                error
+            )
+
+        print()
+
     while True:
 
         print()

@@ -189,6 +189,10 @@ class FusionProject:
             self.validate_instruments()
         )
 
+        errors.extend(
+            self.validate_part_instruments()
+        )
+
         for mix_id in fusion_lib.sort_mix_ids(
             self.data
         ):
@@ -241,6 +245,33 @@ class FusionProject:
 
                     errors.append(
                         f"{prefix} : sf2_program invalide"
+                    )
+
+        return errors
+
+    def validate_part_instruments(self):
+
+        errors = []
+
+        instruments = self.get_instruments()
+
+        for mix_id, mix in self.iter_mixes():
+
+            for part_id, part in mix.get("parts", {}).items():
+
+                instrument_id = part.get(
+                    "instrument"
+                )
+
+                if not instrument_id:
+
+                    continue
+
+                if instrument_id not in instruments:
+
+                    errors.append(
+                        f"Mix {mix_id} PART {part_id} : "
+                        f"instrument {instrument_id} absent"
                     )
 
         return errors
@@ -938,3 +969,40 @@ class FusionProject:
             "sf2_program"
         ):
             part.pop(key, None)
+
+
+        errors = []
+
+        instruments = dict(
+            self.list_instruments()
+        )
+
+        for mix_id, mix in self.iter_mixes():
+
+            parts = mix.get(
+                "parts",
+                {}
+            )
+
+            for part_id, part in parts.items():
+
+                instrument_id = part.get(
+                    "instrument"
+                )
+
+                if not instrument_id:
+
+                    continue
+
+                if instrument_id not in instruments:
+
+                    errors.append(
+                        {
+                            "mix_id": mix_id,
+                            "part_id": part_id,
+                            "instrument": instrument_id,
+                            "error": "Instrument introuvable"
+                        }
+                    )
+
+        return errors
