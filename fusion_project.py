@@ -3,6 +3,7 @@
 import os
 import json
 import shutil
+import time
 
 import fusion_lib
 from fusion_lib import print_mix as print_mix_lib
@@ -149,9 +150,28 @@ class FusionProject:
 
         return {
             "filename": backup,
-            "size": stat.st_size,
-            "time": stat.st_mtime
+            "size": cls.format_size(stat.st_size),
+            "time": cls.format_time(stat.st_mtime)
         }
+
+    def format_size(size):
+
+        if size < 1024:
+
+            return f"{size} octets"
+
+        if size < 1024 * 1024:
+
+            return f"{size // 1024} Ko"
+
+        return f"{size / (1024 * 1024):.1f} Mo"
+
+    def format_time(timestamp):
+
+        return time.strftime(
+            "%d-%m-%Y %H:%M:%S",
+            time.localtime(timestamp)
+        )
 
     def save_safe(self):
 
