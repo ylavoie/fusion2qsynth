@@ -7,9 +7,7 @@ import time
 
 from fusion_lib import (
     find_fluidsynth_output,
-    note_name,
-    print_mix,
-    print_part
+    note_name
 )
 
 from fusion_project import FusionProject
@@ -537,10 +535,8 @@ def edit_mix(project,mix_id):
 
         return
 
-    print_mix(
-        project,
-        mix_id,
-        mix
+    project.print_mix(
+        mix_id
     )
 
     if "parts" not in mix:
@@ -571,7 +567,7 @@ def edit_mix(project,mix_id):
 
         part = mix["parts"][part_id]
 
-        print_part(project, part_id,part)
+        project.print_part(part_id,part)
 
         while True:
 

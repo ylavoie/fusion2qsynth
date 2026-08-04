@@ -6,8 +6,7 @@ from fusion_project import FusionProject
 
 from fusion_lib import (
     find_fusion_input,
-    note_name,
-    print_part
+    note_name
 )
 
 
@@ -73,7 +72,7 @@ def main():
 
                     part_id = info["part_id"]
                     part = info["part"]
-                    print_part(project, part_id, part)
+                    project.print_part(part_id, part)
 
                 else:
 

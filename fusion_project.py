@@ -5,9 +5,6 @@ import json
 import shutil
 import time
 
-import fusion_lib
-from fusion_lib import print_mix as print_mix_lib
-
 # Fichiers
 FUSION_FILE = "fusion.json"
 
@@ -448,7 +445,7 @@ class FusionProject:
 
     def iter_mixes(self):
 
-        for mix_id in fusion_lib.sort_mix_ids(
+        for mix_id in self.sort_mix_ids(
             self.data
         ):
 
@@ -497,36 +494,22 @@ class FusionProject:
 
         return result
 
-    #
-    # Validation
-    #
-    def validate(self):
+    @staticmethod
+    def sort_mix_ids(data):
 
-        errors = []
+        mix_ids = [
+            key
+            for key in data.keys()
+            if ":" in key
+        ]
 
-        errors.extend(
-            self.validate_instruments()
-        )
-
-        errors.extend(
-            self.validate_part_instruments()
-        )
-
-        errors.extend(
-            self.validate_midi_channels()
-        )
-
-        for mix_id in fusion_lib.sort_mix_ids(
-            self.data
-        ):
-
-            errors.extend(
-                self.validate_mix(
-                    mix_id
-                )
+        return sorted(
+            mix_ids,
+            key=lambda x: (
+                int(x.split(":")[0]),
+                int(x.split(":")[1])
             )
-
-        return errors
+        )
 
     def validate_instruments(self):
 
@@ -935,12 +918,142 @@ class FusionProject:
 
             return
 
+        print()
 
-        print_mix_lib(
-            self,
-            mix_id,
-            mix
+        print("=" * 40)
+
+        print(
+            mix.get(
+                "name",
+                mix_id
+            )
         )
+
+        print("=" * 40)
+
+        for part_id, part in self.iter_parts(mix):
+
+            self.print_part(
+                part_id,
+                part
+            )
+
+    def print_part(
+        self,
+        part_id,
+        part
+    ):
+
+        print()
+
+        print(
+            "PART",
+            part_id
+        )
+
+        print(
+            "----------------"
+        )
+
+
+        instrument = self.resolve_part_instrument(
+            part
+        )
+
+
+        if instrument:
+
+            print(
+                "Instrument :",
+                instrument.get(
+                    "name",
+                    "?"
+                )
+            )
+
+            print(
+                "Bank       :",
+                instrument.get(
+                    "sf2_bank",
+                    0
+                )
+            )
+
+            print(
+                "Program    :",
+                instrument.get(
+                    "sf2_program",
+                    0
+                )
+            )
+
+        else:
+
+            print(
+                "Instrument : Non configuré"
+            )
+
+
+        print(
+            "Canal MIDI :",
+            part.get(
+                "midi_channel",
+                "?"
+            )
+        )
+
+
+    # Mix
+    def iter_parts(
+        self,
+        mix
+    ):
+
+        for part_id in sorted(
+            mix.get(
+                "parts",
+                {}
+            ),
+            key=int
+        ):
+
+            yield (
+                part_id,
+                mix["parts"][part_id]
+            )
+
+
+
+    #
+    # Validation
+    #
+    def validate(self):
+
+        errors = []
+
+        errors.extend(
+            self.validate_instruments()
+        )
+
+        errors.extend(
+            self.validate_part_instruments()
+        )
+
+        errors.extend(
+            self.validate_midi_channels()
+        )
+
+        for mix_id in self.sort_mix_ids(
+            self.data
+        ):
+
+            errors.extend(
+                self.validate_mix(
+                    mix_id
+                )
+            )
+
+        return errors
 
     def mix_has_parts(
         self,
