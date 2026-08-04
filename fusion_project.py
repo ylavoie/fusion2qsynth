@@ -195,6 +195,8 @@ class FusionProject:
 
             return False
 
+        self._rotate_backups()
+
         if os.path.exists(self.filename):
 
             shutil.copy2(
@@ -239,6 +241,46 @@ class FusionProject:
             if os.path.exists(temp_file):
 
                 os.remove(temp_file)
+
+    def _rotate_backups(self):
+
+        if _BACKUP_COUNT < 1:
+
+            return
+
+        backup = self.filename + ".bak"
+
+        for index in range(
+            _BACKUP_COUNT - 1,
+            0,
+            -1
+        ):
+
+            src = (
+                backup
+                if index == 1
+                else backup + str(index - 1)
+            )
+
+            dst = (
+                backup + str(index)
+            )
+
+            if os.path.exists(src):
+
+                os.replace(
+                    src,
+                    dst
+                )
+
+        if os.path.exists(
+            self.filename
+        ):
+
+            os.replace(
+                self.filename,
+                backup
+            )
 
     def reload(self):
 
