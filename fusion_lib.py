@@ -118,7 +118,21 @@ def note_name(note):
         str(octave)
     )
 
-#def note_range()
+def note_range(note_min=None, note_max=None):
+
+    if note_min is None and note_max is None:
+        return ""
+
+    if note_min is None:
+        return note_name(note_max)
+
+    if note_max is None:
+        return note_name(note_min)
+
+    if note_min > note_max:
+        note_min, note_max = note_max, note_min
+
+    return f"{note_name(note_min)}-{note_name(note_max)}"
 
 # System
 def system_status(project):
