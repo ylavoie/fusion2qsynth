@@ -8,6 +8,9 @@ import fusion_lib
 from fusion_lib import print_mix as print_mix_lib
 from fusion_constants import FUSION_FILE
 
+class ProjectRecoveryError(RuntimeError):
+    pass
+
 class FusionProject:
 
     def __init__(
@@ -45,9 +48,33 @@ class FusionProject:
 
         except json.JSONDecodeError:
 
+            backup = self.filename + ".bak"
+
+            if os.path.exists(backup):
+
+                raise ProjectRecoveryError(
+                    f"Fichier {self.filename} invalide. "
+                    f"Une sauvegarde {backup} est disponible."
+                )
+
             raise RuntimeError(
                 f"Fichier {self.filename} invalide."
             )
+
+    def restore_backup(self):
+
+        backup = self.filename + ".bak"
+
+        if not os.path.exists(backup):
+
+            return False
+
+        shutil.copy2(
+            backup,
+            self.filename
+        )
+
+        return True
 
     def save_safe(self):
 
