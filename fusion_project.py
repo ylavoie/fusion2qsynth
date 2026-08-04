@@ -5,6 +5,10 @@ import json
 import shutil
 import time
 
+from fusion_lib import (
+    note_name, note_range
+)
+
 # Fichiers
 FUSION_FILE = "fusion.json"
 
@@ -999,6 +1003,20 @@ class FusionProject:
             part.get(
                 "midi_channel",
                 "?"
+            )
+        )
+
+        print(
+            "Plage : ",
+            note_range(
+                part.get(
+                    "note_min",
+                    None
+                ),
+                part.get(
+                    "note_max",
+                    None
+                )
             )
         )
 
