@@ -4,6 +4,11 @@
       "name": "Grand Piano",
       "sf2_bank": 0,
       "sf2_program": 0
+    },
+    "Pop Bass": {
+      "name": "Pop Bass",
+      "sf2_bank": 0,
+      "sf2_program": 37
     }
   },
   "2:5": {
@@ -375,16 +380,14 @@
         "name": "Pan Flute"
       },
       "3": {
-        "midi_channel": 3,
+        "midi_channel": 2,
         "bank": 0,
         "program": 0,
         "note_min": 26,
         "note_max": 57,
         "velocity_min": 13,
         "velocity_max": 72,
-        "sf2_bank": 0,
-        "sf2_program": 37,
-        "name": "Pop Bass"
+        "instrument": "Pop Bass"
       },
       "4": {
         "midi_channel": 4,

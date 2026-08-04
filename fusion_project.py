@@ -193,6 +193,10 @@ class FusionProject:
             self.validate_part_instruments()
         )
 
+        errors.extend(
+            self.validate_midi_channels()
+        )
+
         for mix_id in fusion_lib.sort_mix_ids(
             self.data
         ):
@@ -283,6 +287,58 @@ class FusionProject:
 
         return errors
 
+    def validate_midi_channels(self):
+
+        errors = []
+
+        for mix_id, mix in self.iter_mixes():
+
+            channels = {}
+
+            for part_id, part in mix.get("parts", {}).items():
+
+                channel = part.get(
+                    "midi_channel"
+                )
+
+                if channel is None:
+
+                    continue
+
+                channels.setdefault(
+                    channel,
+                    []
+                ).append(
+                    part_id
+                )
+
+            for channel, parts in channels.items():
+
+                if len(parts) > 1:
+
+                    errors.append(
+                        {
+                            "type":
+                                "midi_channel_conflict",
+
+                            "mix_id":
+                                mix_id,
+
+                            "channel":
+                                channel,
+
+                            "parts":
+                                parts,
+
+                            "message":
+                                f"Mix {mix_id} : "
+                                f"canal MIDI {channel} utilisé par "
+                                f"PART {', '.join(parts)}"
+                        }
+                    )
+
+        return errors
+
     def validate_mix(
         self,
         mix_id
@@ -319,7 +375,6 @@ class FusionProject:
 
             return errors
 
-
         if "parts" not in mix:
 
             errors.append(
@@ -327,10 +382,6 @@ class FusionProject:
             )
 
             return errors
-
-
-        channels = []
-
 
         for part_id, part in mix["parts"].items():
 
@@ -341,30 +392,6 @@ class FusionProject:
                     part
                 )
             )
-
-
-            ch = part.get(
-                "midi_channel"
-            )
-
-            if ch is not None:
-
-                channels.append(ch)
-
-
-        duplicates = sorted({
-            ch
-            for ch in channels
-            if channels.count(ch) > 1
-        })
-
-
-        if duplicates:
-
-            errors.append(
-                f"{mix_id} : canaux MIDI partagés {duplicates}."
-            )
-
 
         return errors
 

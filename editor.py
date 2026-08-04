@@ -395,50 +395,6 @@ def play_part_preview(project, part):
         instrument
     )
 
-def check_parts(mix):
-
-    channels = []
-
-    for part_id, part in mix["parts"].items():
-
-        channels.append(
-            part["midi_channel"]
-        )
-
-    duplicates = []
-
-    for ch in channels:
-
-        if channels.count(ch) > 1:
-
-            if ch not in duplicates:
-
-                duplicates.append(ch)
-
-    if duplicates:
-
-        print()
-        print(
-            "⚠ Attention :"
-        )
-
-        print(
-            "Canaux MIDI utilisés plusieurs fois :",
-            duplicates
-        )
-
-        print(
-            "Une seule instance FluidSynth ne pourra pas reproduire"
-        )
-
-        print(
-            "toutes les couches Fusion."
-        )
-
-        print()
-
-    return not duplicates
-
 def repair_instrument_errors(
     project,
     errors
@@ -447,6 +403,10 @@ def repair_instrument_errors(
     repaired = False
 
     for error in errors:
+
+        if not isinstance(error, dict):
+
+            continue
 
         if error.get("type") != "missing_instrument":
 
@@ -572,7 +532,6 @@ def edit_mix(project,mix_id):
 
         return
 
-    check_parts(mix)
     print_mix(
         project,
         mix_id,
@@ -699,7 +658,6 @@ def edit_mix(project,mix_id):
                             break
 
                 break
-
 
 def test_mix_parts(project, mix):
 
@@ -1159,6 +1117,15 @@ def print_validation_errors(errors):
 
     for error in errors:
 
+        if isinstance(error, str):
+
+            print(
+                "-",
+                error
+            )
+
+            continue
+
         if error.get("type") == "missing_instrument":
 
             print()
@@ -1190,6 +1157,33 @@ def print_validation_errors(errors):
                 error["instrument"]
             )
 
+        elif error.get("type") == "midi_channel_conflict":
+
+            print()
+
+            print(
+                "⚠ Information : canal MIDI partagé"
+            )
+
+            print(
+                "Mix        :",
+                error["mix_id"]
+            )
+
+            print(
+                "Canal MIDI :",
+                error["channel"]
+            )
+
+            print(
+                "PARTS      :",
+                ", ".join(
+                    error["parts"]
+                )
+            )
+            print(
+                "Note : ce partage peut être volontaire."
+            )
         else:
 
             print(
@@ -1200,40 +1194,57 @@ def print_validation_errors(errors):
                 )
             )
 
+def validate_and_repair(project):
+
+    while True:
+
+        errors = project.validate()
+
+        if not errors:
+
+            return
+
+        print_validation_errors(
+            errors
+        )
+
+        repairable = any(
+            isinstance(error, dict)
+            and
+            error.get("type") == "missing_instrument"
+            for error in errors
+        )
+
+        if not repairable:
+
+            print()
+
+            print(
+                "Aucune réparation automatique disponible."
+            )
+
+            return
+
+        choix = input(
+            "Réparer maintenant ? (o/n) : "
+        )
+
+        if choix.lower() != "o":
+
+            return
+
+        repair_instrument_errors(
+            project,
+            errors
+        )
+
 def main():
 
     project = FusionProject()
 
-    errors = project.validate()
-
-    if errors:
-
-        print()
-
-        print(
-            "Erreurs de validation :"
-        )
-
-        for error in errors:
-
-            print_validation_errors(
-                errors
-            )
-
-        print()
-
-        repair = input(
-            "Réparer maintenant ? (o/n) : "
-        )
-
-        if repair.lower() == "o":
-
-            repair_instrument_errors(
-                project,
-                errors
-            )
-
-            errors = project.validate()
+    validate_and_repair(
+        project
+    )
 
     while True:
 
