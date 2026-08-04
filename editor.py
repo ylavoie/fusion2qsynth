@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import json
-import os
 import mido
 import time
 
@@ -11,8 +9,7 @@ from fusion_lib import (
 )
 
 from fusion_project import FusionProject
-
-SF2_FILE = "sf2_library.json"
+from sf2_library import list_presets
 
 MIDI_OUT_NAME = "FLUID Synth"
 
@@ -129,38 +126,6 @@ def test_instrument(part, instrument):
                 velocity=0
             )
         )
-
-def load_instruments():
-
-    if not os.path.exists(SF2_FILE):
-
-        print(
-            "Bibliothèque SF2 absente"
-        )
-
-        return []
-
-    with open(
-        SF2_FILE,
-        encoding="utf-8"
-    ) as f:
-
-        data = json.load(f)
-
-    instruments = data.get(
-        "presets",
-        []
-    )
-
-    instruments.sort(
-        key=lambda x:
-            (
-                x["sf2_bank"],
-                x["sf2_program"]
-            )
-    )
-
-    return instruments
 
 def choose_instrument(
         project,
