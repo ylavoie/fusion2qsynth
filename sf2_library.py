@@ -3,8 +3,10 @@
 import subprocess
 import json
 import re
+import os
 
 SF2DUMP = "sf2dump"
+SF2_FILE = "sf2_library.json"
 
 def dump_sf2(filename):
 
@@ -89,9 +91,48 @@ def build_library(sf2_file):
 
     }
 
+def load_library():
+
+    if not os.path.exists(SF2_FILE):
+
+        print(
+            "Bibliothèque SF2 absente"
+        )
+
+        return []
+
+    with open(
+        SF2_FILE,
+        encoding="utf-8"
+    ) as f:
+
+        data = json.load(f)
+
+    return data
+
+def list_presets():
+
+    data = load_library()
+
+    instruments = data.get(
+        "presets",
+        []
+    )
+
+    instruments.sort(
+        key=lambda x:
+            (
+                x["sf2_bank"],
+                x["sf2_program"]
+            )
+    )
+
+    return instruments
+
+
 def save_library(
     library,
-    filename="sf2_library.json"
+    filename=SF2_FILE
 ):
 
     with open(

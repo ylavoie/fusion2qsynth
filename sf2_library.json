@@ -2,946 +2,1135 @@
   "soundfont": "/usr/share/sounds/sf2/FluidR3_GM.sf2",
   "presets": [
     {
+      "id": "gun_shot",
       "name": "Gun Shot",
       "sf2_bank": 0,
       "sf2_program": 127
     },
     {
+      "id": "alto_sax",
       "name": "Alto Sax",
       "sf2_bank": 0,
       "sf2_program": 65
     },
     {
+      "id": "funk_guitar",
       "name": "Funk Guitar",
       "sf2_bank": 8,
       "sf2_program": 28
     },
     {
+      "id": "harmonica",
       "name": "Harmonica",
       "sf2_bank": 0,
       "sf2_program": 22
     },
     {
+      "id": "slap_bass",
       "name": "Slap Bass",
       "sf2_bank": 0,
       "sf2_program": 36
     },
     {
+      "id": "sitar",
       "name": "Sitar",
       "sf2_bank": 0,
       "sf2_program": 104
     },
     {
+      "id": "tinker_bell",
       "name": "Tinker Bell",
       "sf2_bank": 0,
       "sf2_program": 112
     },
     {
+      "id": "helicopter",
       "name": "Helicopter",
       "sf2_bank": 0,
       "sf2_program": 125
     },
     {
+      "id": "pop_bass",
       "name": "Pop Bass",
       "sf2_bank": 0,
       "sf2_program": 37
     },
     {
+      "id": "mandolin",
       "name": "Mandolin",
       "sf2_bank": 16,
       "sf2_program": 25
     },
     {
+      "id": "burst_noise",
       "name": "Burst Noise",
       "sf2_bank": 9,
       "sf2_program": 125
     },
     {
+      "id": "808_tom",
       "name": "808 Tom",
       "sf2_bank": 8,
       "sf2_program": 118
     },
     {
+      "id": "melo_tom_2",
       "name": "Melo Tom 2",
       "sf2_bank": 8,
       "sf2_program": 117
     },
     {
+      "id": "concert_bass_drum",
       "name": "Concert Bass Drum",
       "sf2_bank": 8,
       "sf2_program": 116
     },
     {
+      "id": "castanets",
       "name": "Castanets",
       "sf2_bank": 8,
       "sf2_program": 115
     },
     {
+      "id": "taisho_koto",
       "name": "Taisho Koto",
       "sf2_bank": 8,
       "sf2_program": 107
     },
     {
+      "id": "sine_wave",
       "name": "Sine Wave",
       "sf2_bank": 8,
       "sf2_program": 80
     },
     {
+      "id": "synth_brass_4",
       "name": "Synth Brass 4",
       "sf2_bank": 8,
       "sf2_program": 63
     },
     {
+      "id": "synth_brass_3",
       "name": "Synth Brass 3",
       "sf2_bank": 8,
       "sf2_program": 62
     },
     {
+      "id": "brass_2",
       "name": "Brass 2",
       "sf2_bank": 8,
       "sf2_program": 61
     },
     {
+      "id": "synth_strings_3",
       "name": "Synth Strings 3",
       "sf2_bank": 8,
       "sf2_program": 50
     },
     {
+      "id": "orchestral_pad",
       "name": "Orchestral Pad",
       "sf2_bank": 8,
       "sf2_program": 48
     },
     {
+      "id": "slow_violin",
       "name": "Slow Violin",
       "sf2_bank": 8,
       "sf2_program": 40
     },
     {
+      "id": "synth_bass_4",
       "name": "Synth Bass 4",
       "sf2_bank": 8,
       "sf2_program": 39
     },
     {
+      "id": "synth_bass_3",
       "name": "Synth Bass 3",
       "sf2_bank": 8,
       "sf2_program": 38
     },
     {
+      "id": "guitar_feedback",
       "name": "Guitar Feedback",
       "sf2_bank": 8,
       "sf2_program": 31
     },
     {
+      "id": "feedback_guitar",
       "name": "Feedback Guitar",
       "sf2_bank": 8,
       "sf2_program": 30
     },
     {
+      "id": "hawaiian_guitar",
       "name": "Hawaiian Guitar",
       "sf2_bank": 8,
       "sf2_program": 26
     },
     {
+      "id": "12_string_guitar",
       "name": "12 String Guitar",
       "sf2_bank": 8,
       "sf2_program": 25
     },
     {
+      "id": "ukulele",
       "name": "Ukulele",
       "sf2_bank": 8,
       "sf2_program": 24
     },
     {
+      "id": "italian_accordion",
       "name": "Italian Accordion",
       "sf2_bank": 8,
       "sf2_program": 21
     },
     {
+      "id": "church_organ_2",
       "name": "Church Organ 2",
       "sf2_bank": 8,
       "sf2_program": 19
     },
     {
+      "id": "detuned_organ_2",
       "name": "Detuned Organ 2",
       "sf2_bank": 8,
       "sf2_program": 17
     },
     {
+      "id": "detuned_organ_1",
       "name": "Detuned Organ 1",
       "sf2_bank": 8,
       "sf2_program": 16
     },
     {
+      "id": "church_bell",
       "name": "Church Bell",
       "sf2_bank": 8,
       "sf2_program": 14
     },
     {
+      "id": "coupled_harpsichord",
       "name": "Coupled Harpsichord",
       "sf2_bank": 8,
       "sf2_program": 6
     },
     {
+      "id": "detuned_ep_2",
       "name": "Detuned EP 2",
       "sf2_bank": 8,
       "sf2_program": 5
     },
     {
+      "id": "detuned_ep_1",
       "name": "Detuned EP 1",
       "sf2_bank": 8,
       "sf2_program": 4
     },
     {
+      "id": "baritone_sax",
       "name": "Baritone Sax",
       "sf2_bank": 0,
       "sf2_program": 67
     },
     {
+      "id": "tenor_sax",
       "name": "Tenor Sax",
       "sf2_bank": 0,
       "sf2_program": 66
     },
     {
+      "id": "soprano_sax",
       "name": "Soprano Sax",
       "sf2_bank": 0,
       "sf2_program": 64
     },
     {
+      "id": "shenai",
       "name": "Shenai",
       "sf2_bank": 0,
       "sf2_program": 111
     },
     {
+      "id": "pan_flute",
       "name": "Pan Flute",
       "sf2_bank": 0,
       "sf2_program": 75
     },
     {
+      "id": "flute",
       "name": "Flute",
       "sf2_bank": 0,
       "sf2_program": 73
     },
     {
+      "id": "piccolo",
       "name": "Piccolo",
       "sf2_bank": 0,
       "sf2_program": 72
     },
     {
+      "id": "bassoon",
       "name": "Bassoon",
       "sf2_bank": 0,
       "sf2_program": 70
     },
     {
+      "id": "accordian",
       "name": "Accordian",
       "sf2_bank": 0,
       "sf2_program": 21
     },
     {
+      "id": "pizzicato_section",
       "name": "Pizzicato Section",
       "sf2_bank": 0,
       "sf2_program": 45
     },
     {
+      "id": "cello",
       "name": "Cello",
       "sf2_bank": 0,
       "sf2_program": 42
     },
     {
+      "id": "viola",
       "name": "Viola",
       "sf2_bank": 0,
       "sf2_program": 41
     },
     {
+      "id": "violin",
       "name": "Violin",
       "sf2_bank": 0,
       "sf2_program": 40
     },
     {
+      "id": "brass_section",
       "name": "Brass Section",
       "sf2_bank": 0,
       "sf2_program": 61
     },
     {
+      "id": "shakuhachi",
       "name": "Shakuhachi",
       "sf2_bank": 0,
       "sf2_program": 77
     },
     {
+      "id": "reed_organ",
       "name": "Reed Organ",
       "sf2_bank": 0,
       "sf2_program": 20
     },
     {
+      "id": "bagpipe",
       "name": "BagPipe",
       "sf2_bank": 0,
       "sf2_program": 109
     },
     {
+      "id": "slow_strings",
       "name": "Slow Strings",
       "sf2_bank": 0,
       "sf2_program": 49
     },
     {
+      "id": "strings",
       "name": "Strings",
       "sf2_bank": 0,
       "sf2_program": 48
     },
     {
+      "id": "tremolo",
       "name": "Tremolo",
       "sf2_bank": 0,
       "sf2_program": 44
     },
     {
+      "id": "shamisen",
       "name": "Shamisen",
       "sf2_bank": 0,
       "sf2_program": 106
     },
     {
+      "id": "koto",
       "name": "Koto",
       "sf2_bank": 0,
       "sf2_program": 107
     },
     {
+      "id": "synth_brass_2",
       "name": "Synth Brass 2",
       "sf2_bank": 0,
       "sf2_program": 63
     },
     {
+      "id": "synth_brass_1",
       "name": "Synth Brass 1",
       "sf2_bank": 0,
       "sf2_program": 62
     },
     {
+      "id": "metal_pad",
       "name": "Metal Pad",
       "sf2_bank": 0,
       "sf2_program": 93
     },
     {
+      "id": "power_3",
       "name": "Power 3",
       "sf2_bank": 128,
       "sf2_program": 19
     },
     {
+      "id": "power_2",
       "name": "Power 2",
       "sf2_bank": 128,
       "sf2_program": 18
     },
     {
+      "id": "power_1",
       "name": "Power 1",
       "sf2_bank": 128,
       "sf2_program": 17
     },
     {
+      "id": "brush_2",
       "name": "Brush 2",
       "sf2_bank": 128,
       "sf2_program": 42
     },
     {
+      "id": "brush_1",
       "name": "Brush 1",
       "sf2_bank": 128,
       "sf2_program": 41
     },
     {
+      "id": "jazz_4",
       "name": "Jazz 4",
       "sf2_bank": 128,
       "sf2_program": 36
     },
     {
+      "id": "jazz_3",
       "name": "Jazz 3",
       "sf2_bank": 128,
       "sf2_program": 35
     },
     {
+      "id": "jazz_2",
       "name": "Jazz 2",
       "sf2_bank": 128,
       "sf2_program": 34
     },
     {
+      "id": "jazz_1",
       "name": "Jazz 1",
       "sf2_bank": 128,
       "sf2_program": 33
     },
     {
+      "id": "distortion_guitar",
       "name": "Distortion Guitar",
       "sf2_bank": 0,
       "sf2_program": 30
     },
     {
+      "id": "overdrive_guitar",
       "name": "Overdrive Guitar",
       "sf2_bank": 0,
       "sf2_program": 29
     },
     {
+      "id": "synth_bass_1",
       "name": "Synth Bass 1",
       "sf2_bank": 0,
       "sf2_program": 38
     },
     {
+      "id": "harpsichord",
       "name": "Harpsichord",
       "sf2_bank": 0,
       "sf2_program": 6
     },
     {
+      "id": "legend_ep_2",
       "name": "Legend EP 2",
       "sf2_bank": 0,
       "sf2_program": 5
     },
     {
+      "id": "polysynth",
       "name": "Polysynth",
       "sf2_bank": 0,
       "sf2_program": 90
     },
     {
+      "id": "clean_guitar",
       "name": "Clean Guitar",
       "sf2_bank": 0,
       "sf2_program": 27
     },
     {
+      "id": "muted_trumpet",
       "name": "Muted Trumpet",
       "sf2_bank": 0,
       "sf2_program": 59
     },
     {
+      "id": "trumpet",
       "name": "Trumpet",
       "sf2_bank": 0,
       "sf2_program": 56
     },
     {
+      "id": "jazz",
       "name": "Jazz",
       "sf2_bank": 128,
       "sf2_program": 32
     },
     {
+      "id": "room_7",
       "name": "Room 7",
       "sf2_bank": 128,
       "sf2_program": 15
     },
     {
+      "id": "room_6",
       "name": "Room 6",
       "sf2_bank": 128,
       "sf2_program": 14
     },
     {
+      "id": "room",
       "name": "Room",
       "sf2_bank": 128,
       "sf2_program": 8
     },
     {
+      "id": "room_4",
       "name": "Room 4",
       "sf2_bank": 128,
       "sf2_program": 12
     },
     {
+      "id": "room_3",
       "name": "Room 3",
       "sf2_bank": 128,
       "sf2_program": 11
     },
     {
+      "id": "room_2",
       "name": "Room 2",
       "sf2_bank": 128,
       "sf2_program": 10
     },
     {
+      "id": "room_1",
       "name": "Room 1",
       "sf2_bank": 128,
       "sf2_program": 9
     },
     {
+      "id": "room_5",
       "name": "Room 5",
       "sf2_bank": 128,
       "sf2_program": 13
     },
     {
+      "id": "standard_7",
       "name": "Standard 7",
       "sf2_bank": 128,
       "sf2_program": 7
     },
     {
+      "id": "standard_6",
       "name": "Standard 6",
       "sf2_bank": 128,
       "sf2_program": 6
     },
     {
+      "id": "standard_5",
       "name": "Standard 5",
       "sf2_bank": 128,
       "sf2_program": 5
     },
     {
+      "id": "standard_4",
       "name": "Standard 4",
       "sf2_bank": 128,
       "sf2_program": 4
     },
     {
+      "id": "standard_3",
       "name": "Standard 3",
       "sf2_bank": 128,
       "sf2_program": 3
     },
     {
+      "id": "standard_2",
       "name": "Standard 2",
       "sf2_bank": 128,
       "sf2_program": 2
     },
     {
+      "id": "standard_1",
       "name": "Standard 1",
       "sf2_bank": 128,
       "sf2_program": 1
     },
     {
+      "id": "rhodes_ep",
       "name": "Rhodes EP",
       "sf2_bank": 0,
       "sf2_program": 4
     },
     {
+      "id": "ohh_voices",
       "name": "Ohh Voices",
       "sf2_bank": 0,
       "sf2_program": 53
     },
     {
+      "id": "xylophone",
       "name": "Xylophone",
       "sf2_bank": 0,
       "sf2_program": 13
     },
     {
+      "id": "chiffer_lead",
       "name": "Chiffer Lead",
       "sf2_bank": 0,
       "sf2_program": 83
     },
     {
+      "id": "calliope_lead",
       "name": "Calliope Lead",
       "sf2_bank": 0,
       "sf2_program": 82
     },
     {
+      "id": "picked_bass",
       "name": "Picked Bass",
       "sf2_bank": 0,
       "sf2_program": 34
     },
     {
+      "id": "fingered_bass",
       "name": "Fingered Bass",
       "sf2_bank": 0,
       "sf2_program": 33
     },
     {
+      "id": "steel_string_guitar",
       "name": "Steel String Guitar",
       "sf2_bank": 0,
       "sf2_program": 25
     },
     {
+      "id": "atmosphere",
       "name": "Atmosphere",
       "sf2_bank": 0,
       "sf2_program": 99
     },
     {
+      "id": "nylon_string_guitar",
       "name": "Nylon String Guitar",
       "sf2_bank": 0,
       "sf2_program": 24
     },
     {
+      "id": "dulcimer",
       "name": "Dulcimer",
       "sf2_bank": 0,
       "sf2_program": 15
     },
     {
+      "id": "rock_organ",
       "name": "Rock Organ",
       "sf2_bank": 0,
       "sf2_program": 18
     },
     {
+      "id": "percussive_organ",
       "name": "Percussive Organ",
       "sf2_bank": 0,
       "sf2_program": 17
     },
     {
+      "id": "trombone",
       "name": "Trombone",
       "sf2_bank": 0,
       "sf2_program": 57
     },
     {
+      "id": "french_horns",
       "name": "French Horns",
       "sf2_bank": 0,
       "sf2_program": 60
     },
     {
+      "id": "church_organ",
       "name": "Church Organ",
       "sf2_bank": 0,
       "sf2_program": 19
     },
     {
+      "id": "orchestra_kit",
       "name": "Orchestra Kit",
       "sf2_bank": 128,
       "sf2_program": 48
     },
     {
+      "id": "brush",
       "name": "Brush",
       "sf2_bank": 128,
       "sf2_program": 40
     },
     {
+      "id": "tr_808",
       "name": "TR-808",
       "sf2_bank": 128,
       "sf2_program": 25
     },
     {
+      "id": "electronic",
       "name": "Electronic",
       "sf2_bank": 128,
       "sf2_program": 24
     },
     {
+      "id": "power",
       "name": "Power",
       "sf2_bank": 128,
       "sf2_program": 16
     },
     {
+      "id": "standard",
       "name": "Standard",
       "sf2_bank": 128,
       "sf2_program": 0
     },
     {
+      "id": "timpani",
       "name": "Timpani",
       "sf2_bank": 0,
       "sf2_program": 47
     },
     {
+      "id": "solo_vox",
       "name": "Solo Vox",
       "sf2_bank": 0,
       "sf2_program": 85
     },
     {
+      "id": "drawbarorgan",
       "name": "DrawbarOrgan",
       "sf2_bank": 0,
       "sf2_program": 16
     },
     {
+      "id": "star_theme",
       "name": "Star Theme",
       "sf2_bank": 0,
       "sf2_program": 103
     },
     {
+      "id": "honky_tonk",
       "name": "Honky Tonk",
       "sf2_bank": 0,
       "sf2_program": 3
     },
     {
+      "id": "bright_yamaha_grand",
       "name": "Bright Yamaha Grand",
       "sf2_bank": 0,
       "sf2_program": 1
     },
     {
+      "id": "yamaha_grand_piano",
       "name": "Yamaha Grand Piano",
       "sf2_bank": 0,
       "sf2_program": 0
     },
     {
+      "id": "agogo",
       "name": "Agogo",
       "sf2_bank": 0,
       "sf2_program": 113
     },
     {
+      "id": "woodblock",
       "name": "Woodblock",
       "sf2_bank": 0,
       "sf2_program": 115
     },
     {
+      "id": "applause",
       "name": "Applause",
       "sf2_bank": 0,
       "sf2_program": 126
     },
     {
+      "id": "vibraphone",
       "name": "Vibraphone",
       "sf2_bank": 0,
       "sf2_program": 11
     },
     {
+      "id": "reverse_cymbal",
       "name": "Reverse Cymbal",
       "sf2_bank": 0,
       "sf2_program": 119
     },
     {
+      "id": "jazz_guitar",
       "name": "Jazz Guitar",
       "sf2_bank": 0,
       "sf2_program": 26
     },
     {
+      "id": "contrabass",
       "name": "Contrabass",
       "sf2_bank": 0,
       "sf2_program": 43
     },
     {
+      "id": "warm_pad",
       "name": "Warm Pad",
       "sf2_bank": 0,
       "sf2_program": 89
     },
     {
+      "id": "synth_strings_2",
       "name": "Synth Strings 2",
       "sf2_bank": 0,
       "sf2_program": 51
     },
     {
+      "id": "synth_strings_1",
       "name": "Synth Strings 1",
       "sf2_bank": 0,
       "sf2_program": 50
     },
     {
+      "id": "fiddle",
       "name": "Fiddle",
       "sf2_bank": 0,
       "sf2_program": 110
     },
     {
+      "id": "ahh_choir",
       "name": "Ahh Choir",
       "sf2_bank": 0,
       "sf2_program": 52
     },
     {
+      "id": "sea_shore",
       "name": "Sea Shore",
       "sf2_bank": 0,
       "sf2_program": 122
     },
     {
+      "id": "electric_piano",
       "name": "Electric Piano",
       "sf2_bank": 0,
       "sf2_program": 2
     },
     {
+      "id": "music_box",
       "name": "Music Box",
       "sf2_bank": 0,
       "sf2_program": 10
     },
     {
+      "id": "acoustic_bass",
       "name": "Acoustic Bass",
       "sf2_bank": 0,
       "sf2_program": 32
     },
     {
+      "id": "clarinet",
       "name": "Clarinet",
       "sf2_bank": 0,
       "sf2_program": 71
     },
     {
+      "id": "bird_tweet",
       "name": "Bird Tweet",
       "sf2_bank": 0,
       "sf2_program": 123
     },
     {
+      "id": "clavinet",
       "name": "Clavinet",
       "sf2_bank": 0,
       "sf2_program": 7
     },
     {
+      "id": "taiko_drum",
       "name": "Taiko Drum",
       "sf2_bank": 0,
       "sf2_program": 116
     },
     {
+      "id": "echo_drops",
       "name": "Echo Drops",
       "sf2_bank": 0,
       "sf2_program": 102
     },
     {
+      "id": "crystal",
       "name": "Crystal",
       "sf2_bank": 0,
       "sf2_program": 98
     },
     {
+      "id": "marimba",
       "name": "Marimba",
       "sf2_bank": 0,
       "sf2_program": 12
     },
     {
+      "id": "celesta",
       "name": "Celesta",
       "sf2_bank": 0,
       "sf2_program": 8
     },
     {
+      "id": "recorder",
       "name": "Recorder",
       "sf2_bank": 0,
       "sf2_program": 74
     },
     {
+      "id": "guitar_harmonics",
       "name": "Guitar Harmonics",
       "sf2_bank": 0,
       "sf2_program": 31
     },
     {
+      "id": "palm_muted_guitar",
       "name": "Palm Muted Guitar",
       "sf2_bank": 0,
       "sf2_program": 28
     },
     {
+      "id": "whistle",
       "name": "Whistle",
       "sf2_bank": 0,
       "sf2_program": 78
     },
     {
+      "id": "bandoneon",
       "name": "Bandoneon",
       "sf2_bank": 0,
       "sf2_program": 23
     },
     {
+      "id": "fretless_bass",
       "name": "Fretless Bass",
       "sf2_bank": 0,
       "sf2_program": 35
     },
     {
+      "id": "fret_noise",
       "name": "Fret Noise",
       "sf2_bank": 0,
       "sf2_program": 120
     },
     {
+      "id": "ocarina",
       "name": "Ocarina",
       "sf2_bank": 0,
       "sf2_program": 79
     },
     {
+      "id": "steel_drums",
       "name": "Steel Drums",
       "sf2_bank": 0,
       "sf2_program": 114
     },
     {
+      "id": "goblin",
       "name": "Goblin",
       "sf2_bank": 0,
       "sf2_program": 101
     },
     {
+      "id": "synth_bass_2",
       "name": "Synth Bass 2",
       "sf2_bank": 0,
       "sf2_program": 39
     },
     {
+      "id": "melodic_tom",
       "name": "Melodic Tom",
       "sf2_bank": 0,
       "sf2_program": 117
     },
     {
+      "id": "synth_drum",
       "name": "Synth Drum",
       "sf2_bank": 0,
       "sf2_program": 118
     },
     {
+      "id": "english_horn",
       "name": "English Horn",
       "sf2_bank": 0,
       "sf2_program": 69
     },
     {
+      "id": "oboe",
       "name": "Oboe",
       "sf2_bank": 0,
       "sf2_program": 68
     },
     {
+      "id": "tuba",
       "name": "Tuba",
       "sf2_bank": 0,
       "sf2_program": 58
     },
     {
+      "id": "synth_voice",
       "name": "Synth Voice",
       "sf2_bank": 0,
       "sf2_program": 54
     },
     {
+      "id": "brightness",
       "name": "Brightness",
       "sf2_bank": 0,
       "sf2_program": 100
     },
     {
+      "id": "space_voice",
       "name": "Space Voice",
       "sf2_bank": 0,
       "sf2_program": 91
     },
     {
+      "id": "glockenspiel",
       "name": "Glockenspiel",
       "sf2_bank": 0,
       "sf2_program": 9
     },
     {
+      "id": "banjo",
       "name": "Banjo",
       "sf2_bank": 0,
       "sf2_program": 105
     },
     {
+      "id": "ice_rain",
       "name": "Ice Rain",
       "sf2_bank": 0,
       "sf2_program": 96
     },
     {
+      "id": "bottle_chiff",
       "name": "Bottle Chiff",
       "sf2_bank": 0,
       "sf2_program": 76
     },
     {
+      "id": "sweep_pad",
       "name": "Sweep Pad",
       "sf2_bank": 0,
       "sf2_program": 95
     },
     {
+      "id": "soundtrack",
       "name": "Soundtrack",
       "sf2_bank": 0,
       "sf2_program": 97
     },
     {
+      "id": "tubular_bells",
       "name": "Tubular Bells",
       "sf2_bank": 0,
       "sf2_program": 14
     },
     {
+      "id": "halo_pad",
       "name": "Halo Pad",
       "sf2_bank": 0,
       "sf2_program": 94
     },
     {
+      "id": "fantasia",
       "name": "Fantasia",
       "sf2_bank": 0,
       "sf2_program": 88
     },
     {
+      "id": "kalimba",
       "name": "Kalimba",
       "sf2_bank": 0,
       "sf2_program": 108
     },
     {
+      "id": "breath_noise",
       "name": "Breath Noise",
       "sf2_bank": 0,
       "sf2_program": 121
     },
     {
+      "id": "telephone",
       "name": "Telephone",
       "sf2_bank": 0,
       "sf2_program": 124
     },
     {
+      "id": "bowed_glass",
       "name": "Bowed Glass",
       "sf2_bank": 0,
       "sf2_program": 92
     },
     {
+      "id": "charang",
       "name": "Charang",
       "sf2_bank": 0,
       "sf2_program": 84
     },
     {
+      "id": "orchestra_hit",
       "name": "Orchestra Hit",
       "sf2_bank": 0,
       "sf2_program": 55
     },
     {
+      "id": "fifth_sawtooth_wave",
       "name": "Fifth Sawtooth Wave",
       "sf2_bank": 0,
       "sf2_program": 86
     },
     {
+      "id": "bass_lead",
       "name": "Bass & Lead",
       "sf2_bank": 0,
       "sf2_program": 87
     },
     {
+      "id": "square_lead",
       "name": "Square Lead",
       "sf2_bank": 0,
       "sf2_program": 80
     },
     {
+      "id": "saw_wave",
       "name": "Saw Wave",
       "sf2_bank": 0,
       "sf2_program": 81
     },
     {
+      "id": "harp",
       "name": "Harp",
       "sf2_bank": 0,
       "sf2_program": 46

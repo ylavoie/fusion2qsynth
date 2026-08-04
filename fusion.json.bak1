@@ -19,6 +19,11 @@
       "name": "Oxide",
       "sf2_bank": 0,
       "sf2_program": 94
+    },
+    "sdfasd": {
+      "name": "Yamaha Grand Piano",
+      "sf2_bank": 0,
+      "sf2_program": 0
     }
   },
   "2:5": {

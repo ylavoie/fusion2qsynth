@@ -127,6 +127,58 @@ def test_instrument(part, instrument):
             )
         )
 
+def choose_sf2_preset():
+
+    presets = list_presets()
+
+    if not presets:
+
+        print(
+            "Aucun preset SoundFont disponible."
+        )
+
+        return None
+
+    print()
+
+    print(
+        "Presets SoundFont disponibles :"
+    )
+
+    print()
+
+    for index, preset in enumerate(
+        presets,
+        start=1
+    ):
+
+        print(
+            f"{index} - "
+            f"{preset['name']} "
+            f"(Bank {preset['sf2_bank']} "
+            f"Program {preset['sf2_program']})"
+        )
+
+    print()
+
+    choice = input(
+        "Choix : "
+    )
+
+    try:
+
+        index = int(choice) - 1
+
+        return presets[index]
+
+    except (ValueError, IndexError):
+
+        print(
+            "Choix invalide."
+        )
+
+        return None
+
 def choose_instrument(
         project,
         part
@@ -878,35 +930,84 @@ def list_instruments(project):
 
 def add_instrument(project):
 
-    instrument_id = input(
-        "Identifiant : "
+    print()
+
+    print(
+        "Source instrument :"
     )
 
-    name = input(
-        "Nom : "
+    print(
+        "1 - Bibliothèque SoundFont"
     )
 
-    bank = int(
-        input(
-            "SF2 Bank : "
+    print(
+        "2 - Saisie manuelle"
+    )
+
+    source = input(
+        "Choix : "
+    )
+
+    if source == "1":
+
+        preset = choose_sf2_preset()
+
+        if preset is None:
+
+            return
+
+        instrument_id = preset["id"]
+
+        name = preset["name"]
+
+        bank = preset["sf2_bank"]
+
+        program = preset["sf2_program"]
+
+    elif source == "2":
+
+        instrument_id = input(
+            "Identifiant : "
         )
-    )
 
-    program = int(
-        input(
-            "SF2 Program : "
+        name = input(
+            "Nom : "
         )
-    )
 
+        bank = int(
+            input(
+                "SF2 Bank : "
+            )
+        )
 
-    project.add_instrument(
+        program = int(
+            input(
+                "SF2 Program : "
+            )
+        )
+
+    else:
+
+        print(
+            "Choix invalide."
+        )
+
+        return
+
+    if not project.add_instrument(
         instrument_id,
         {
             "name": name,
             "sf2_bank": bank,
             "sf2_program": program
         }
-    )
+    ):
+
+        print(
+            "Identifiant déjà utilisé."
+        )
+
+        return
 
     if not project.save_safe():
 
