@@ -6,7 +6,7 @@ import shutil
 
 import fusion_lib
 from fusion_lib import print_mix as print_mix_lib
-from fusion_constants import FUSION_FILE
+from fusion_constants import FUSION_FILE, RECOVERY_LOG
 
 class ProjectRecoveryError(RuntimeError):
     pass
@@ -93,8 +93,15 @@ class FusionProject:
         project.data = {}
         project.file_time = 0
 
+        project.log_recovery(
+            "RECOVERY_REQUEST"
+        )
+
         if not project.restore_backup():
 
+            project.log_recovery(
+                "RESTORE_FAILED"
+            )
             return None
 
         try:
@@ -103,14 +110,26 @@ class FusionProject:
 
         except ProjectRecoveryError:
 
+            project.log_recovery(
+                "RESTORE_FAILED"
+            )
             return None
 
+        project.log_recovery(
+            "RESTORE_COPY_SUCCESS"
+        )
         errors = project.validate()
 
         if errors:
 
+            project.log_recovery(
+                "RESTORE_FAILED"
+            )
             return None
 
+        project.log_recovery(
+            "RESTORE_VALIDATED"
+        )
         return project
 
     def save_safe(self):
@@ -206,6 +225,24 @@ class FusionProject:
                 self.filename,
                 self.filename + ".bak"
             )
+
+    def log_recovery(self, message):
+
+        try:
+
+            with open(
+                RECOVERY_LOG,
+                "a",
+                encoding="utf-8"
+            ) as f:
+
+                f.write(
+                    message + "\n"
+                )
+
+        except Exception:
+
+            pass
 
     #
     # Accès Mix

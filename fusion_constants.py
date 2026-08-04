@@ -17,6 +17,8 @@ LAST_MIX_FILE = "last_mix.json"
 
 LOG_FILE = "fusion.log"
 
+RECOVERY_LOG = "fusion_recovery.log"
+
 
 # MIDI
 
