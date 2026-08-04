@@ -20,17 +20,15 @@ TEST_DURATION = 2
 
 def get_test_note(part):
 
-    if (
-        "note_min" in part
-        and
-        "note_max" in part
-    ):
+    note_min = part.get("note_min")
+    note_max = part.get("note_max")
 
-        return (
-            part["note_min"]
-            +
-            part["note_max"]
-        ) // 2
+    if note_min is not None and note_max is not None:
+        return (note_min + note_max) // 2
+    elif note_min is not None:
+        return note_min
+    elif note_max is not None:
+        return note_max
 
     return 60
 
