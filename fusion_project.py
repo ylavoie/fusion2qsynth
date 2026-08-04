@@ -7,7 +7,17 @@ import time
 
 import fusion_lib
 from fusion_lib import print_mix as print_mix_lib
-from fusion_constants import FUSION_FILE, RECOVERY_LOG
+
+# Fichiers
+FUSION_FILE = "fusion.json"
+
+# Sauvegarde
+_BACKUP_COUNT = 3
+_TMP_SUFFIX = ".tmp"
+
+# Journal
+_RECOVERY_LOG = "fusion_recovery.log"
+
 
 class ProjectRecoveryError(RuntimeError):
     pass
@@ -272,7 +282,7 @@ class FusionProject:
         try:
 
             with open(
-                RECOVERY_LOG,
+                _RECOVERY_LOG,
                 "a",
                 encoding="utf-8"
             ) as f:

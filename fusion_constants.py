@@ -11,13 +11,9 @@ VERSION = "1.3.0"
 
 # Fichiers
 
-FUSION_FILE = "fusion.json"
-
-LAST_MIX_FILE = "last_mix.json"
-
 LOG_FILE = "fusion.log"
 
-RECOVERY_LOG = "fusion_recovery.log"
+LAST_MIX_FILE = "last_mix.json"
 
 
 # MIDI
