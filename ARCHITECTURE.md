@@ -68,6 +68,9 @@ Responsabilités :
 * gestion des Mix
 * gestion des PARTS
 * recherche dans le projet
+* affichage des Mix
+* affichage des PARTS
+* journalisation
 
 Tous les autres modules utilisent exclusivement son interface publique.
 
@@ -160,18 +163,16 @@ Responsabilités :
 * conversion numéro → nom
 * helpers de notes
 
-## Logs
+## Logging
 
-* journalisation
-
-## Affichage
-
-* affichage des Mix
-* affichage des PARTS
+* Logging système
 
 ## Helpers
 
 Fonctions génériques indépendantes du projet.
+
+Le logging système reste actuellement fourni par fusion_lib.
+Il pourra être déplacé ultérieurement si une couche dédiée de journalisation est introduite.
 
 ---
 

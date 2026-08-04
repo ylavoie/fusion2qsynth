@@ -55,18 +55,36 @@ fusion.json
 
 # 3. Modules
 
+README.md
+=========
+
+Ajouter :
+
+## Architecture
+
+Le projet utilise FusionProject comme modèle central.
+
+FusionProject gère :
+
+* le chargement du projet ;
+* la sauvegarde et récupération ;
+* la validation ;
+* les mixes ;
+* les parts ;
+* les opérations métier.
+
 ## fusion_lib.py
 
-Bibliothèque commune du projet.
+Bibliothèque technique.
 
 Contient :
 
-* lecture et écriture JSON ;
-* sauvegarde automatique ;
 * recherche des ports MIDI ;
-* validation des Mix ;
-* affichage des Mix et PARTS ;
 * fonctions MIDI utilitaires.
+* logging ;
+* fonctions utilitaires.
+
+La gestion du projet Fusion est assurée par FusionProject.
 
 ---
 
