@@ -37,7 +37,21 @@ def show_status(project):
 
 def main():
 
-    project = FusionProject()
+    try:
+
+        project = FusionProject()
+
+    except RuntimeError as e:
+
+        print()
+        print("==========================")
+        print("Erreur projet")
+        print("==========================")
+        print(e)
+        print()
+        print("Le programme va se terminer.")
+
+        exit(1)
 
     while True:
 

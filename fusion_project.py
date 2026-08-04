@@ -34,13 +34,20 @@ class FusionProject:
 
             return
 
-        with open(
-            self.filename,
-            "r",
-            encoding="utf-8"
-        ) as f:
+        try:
 
-            self.data = json.load(f)
+            with open(
+                self.filename,
+                encoding="utf-8"
+            ) as f:
+
+                self.data = json.load(f)
+
+        except json.JSONDecodeError:
+
+            raise RuntimeError(
+                f"Fichier {self.filename} invalide."
+            )
 
     def save_safe(self):
 
