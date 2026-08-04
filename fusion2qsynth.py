@@ -50,6 +50,29 @@ def main():
         print(e)
         print()
 
+        info = FusionProject.get_backup_info()
+
+        if info:
+
+            print()
+            print(
+                "Sauvegarde disponible :",
+                info["filename"]
+            )
+
+            print(
+                "Taille :",
+                info["size"],
+                "octets"
+            )
+            print()
+
+            print(
+                "Time :",
+                info["time"]
+            )
+            print()
+
         choix = input(
             "Restaurer la dernière sauvegarde ? (o/n) : "
         )

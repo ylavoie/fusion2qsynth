@@ -132,6 +132,27 @@ class FusionProject:
         )
         return project
 
+    @classmethod
+    def get_backup_info(cls):
+
+        backup = FUSION_FILE + ".bak"
+
+        if not os.path.exists(
+            backup
+        ):
+
+            return None
+
+        stat = os.stat(
+            backup
+        )
+
+        return {
+            "filename": backup,
+            "size": stat.st_size,
+            "time": stat.st_mtime
+        }
+
     def save_safe(self):
 
         errors = self.validate()
