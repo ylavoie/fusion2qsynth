@@ -391,10 +391,15 @@ La validation du contenu JSON est effectuée uniquement lors de la tentative de 
 
 La validation préventive de toutes les sauvegardes n'est pas incluse dans cette version.
 
-## Version 1.6.1
+## Version 1.6
 
-### Architecture interne
+### Architecture
 
-* Finalisation de la migration des opérations projet vers FusionProject.
+* Finalisation de la migration vers FusionProject.
 * Retrait des responsabilités métier de fusion_lib.
-* fusion_lib est maintenant limité aux utilitaires techniques MIDI/FluidSynth.
+* Nettoyage des dépendances internes.
+
+### Fonctionnalités
+
+* Ajout de note_range() pour l'affichage des plages MIDI des PARTs.
+* Amélioration de l'affichage des informations de PART.
