@@ -60,13 +60,25 @@ def choose_backup_restore():
         start=1
     ):
 
+        info = FusionProject.get_backup_info(backup["filename"])
+
         print(
             index,
             "-",
-            backup["filename"]
+            info["filename"]
         )
 
-    print()
+        print(
+            "   Taille :",
+            info["size"]
+        )
+
+        print(
+            "   Date   :",
+            info["time"]
+        )
+
+        print()
 
     print(
         "q - Annuler"

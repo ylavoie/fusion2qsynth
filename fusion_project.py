@@ -193,9 +193,7 @@ class FusionProject:
         return project
 
     @classmethod
-    def get_backup_info(cls):
-
-        backup = FUSION_FILE + ".bak"
+    def get_backup_info(cls,backup):
 
         if not os.path.exists(
             backup
