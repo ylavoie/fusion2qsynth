@@ -65,16 +65,41 @@ class FusionProject:
 
         backup = self.filename + ".bak"
 
-        if not os.path.exists(backup):
+        if not os.path.exists(
+            backup
+        ):
 
             return False
 
-        shutil.copy2(
-            backup,
-            self.filename
-        )
+        try:
 
-        return True
+            shutil.copy2(
+                backup,
+                self.filename
+            )
+
+            return True
+
+        except Exception:
+
+            return False
+
+    @classmethod
+    def restore(cls):
+
+        project = cls.__new__(cls)
+
+        project.filename = FUSION_FILE
+        project.data = {}
+        project.file_time = 0
+
+        if not project.restore_backup():
+
+            return None
+
+        project.load()
+
+        return project
 
     def save_safe(self):
 

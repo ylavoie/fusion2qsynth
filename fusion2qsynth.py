@@ -4,7 +4,7 @@ import editor
 import fusion_capture
 import fusion_controller
 import fusion_monitor
-from fusion_project import FusionProject
+from fusion_project import FusionProject, ProjectRecoveryError
 
 from fusion_lib import(
     system_status
@@ -40,6 +40,43 @@ def main():
     try:
 
         project = FusionProject()
+
+    except ProjectRecoveryError as e:
+
+        print()
+        print("==========================")
+        print("Projet récupérable")
+        print("==========================")
+        print(e)
+        print()
+
+        choix = input(
+            "Restaurer la dernière sauvegarde ? (o/n) : "
+        )
+
+        if choix.lower() == "o":
+
+            project = FusionProject.restore()
+
+            if project is None:
+
+                print(
+                    "Restauration impossible."
+                )
+
+                exit(1)
+
+            print(
+                "Projet restauré."
+            )
+
+        else:
+
+            print(
+                "Le programme va se terminer."
+            )
+
+            exit(1)
 
     except RuntimeError as e:
 
