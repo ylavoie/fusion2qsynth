@@ -438,46 +438,5 @@
         "velocity_max": 83
       }
     }
-  },
-  "0:4": {
-    "name": "Fusion Mix 0:4",
-    "parts": {
-      "1": {
-        "midi_channel": 1,
-        "bank": 0,
-        "program": 4,
-        "note_min": 24,
-        "note_max": 107,
-        "velocity_min": 7,
-        "velocity_max": 68
-      },
-      "2": {
-        "midi_channel": 2,
-        "bank": 0,
-        "program": 0,
-        "note_min": 24,
-        "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 64
-      },
-      "3": {
-        "midi_channel": 3,
-        "bank": 0,
-        "program": 0,
-        "note_min": 24,
-        "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 64
-      },
-      "4": {
-        "midi_channel": 4,
-        "bank": 0,
-        "program": 0,
-        "note_min": 24,
-        "note_max": 59,
-        "velocity_min": 14,
-        "velocity_max": 64
-      }
-    }
   }
 }

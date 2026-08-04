@@ -96,6 +96,55 @@ class FusionProject:
             return False
 
     @classmethod
+    def restore_from_backup(
+        cls,
+        backup
+    ):
+
+        if not os.path.exists(
+            backup
+        ):
+
+            return None
+
+        project = cls.__new__(
+            cls
+        )
+
+        project.filename = FUSION_FILE
+        project.data = {}
+        project.file_time = 0
+
+        try:
+
+            shutil.copy2(
+                backup,
+                project.filename
+            )
+
+            project.load()
+
+            errors = project.validate()
+
+            if errors:
+
+                return None
+
+            project.log_recovery(
+                "RESTORE_VALIDATED " + backup
+            )
+
+            return project
+
+        except Exception:
+
+            project.log_recovery(
+                "RESTORE_FAILED " + backup
+            )
+
+            return None
+
+    @classmethod
     def restore(cls):
 
         project = cls.__new__(cls)
@@ -163,6 +212,37 @@ class FusionProject:
             "size": cls.format_size(stat.st_size),
             "time": cls.format_time(stat.st_mtime)
         }
+
+    @classmethod
+    def list_backups(cls):
+
+        backups = []
+
+        backup_base = FUSION_FILE + ".bak"
+
+        for index in range(_BACKUP_COUNT):
+
+            filename = (
+                backup_base
+                if index == 0
+                else backup_base + str(index)
+            )
+
+            if not os.path.exists(filename):
+
+                continue
+
+            stat = os.stat(filename)
+
+            backups.append(
+                {
+                    "filename": filename,
+                    "size": stat.st_size,
+                    "time": stat.st_mtime
+                }
+            )
+
+        return backups
 
     def format_size(size):
 

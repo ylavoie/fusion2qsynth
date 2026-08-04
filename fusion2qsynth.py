@@ -35,6 +35,63 @@ def show_status(project):
         status["mix_count"]
     )
 
+def choose_backup_restore():
+
+    backups = FusionProject.list_backups()
+
+    if not backups:
+
+        print(
+            "Aucune sauvegarde disponible."
+        )
+
+        return None
+
+    print()
+
+    print(
+        "Sauvegardes disponibles :"
+    )
+
+    print()
+
+    for index, backup in enumerate(
+        backups,
+        start=1
+    ):
+
+        print(
+            index,
+            "-",
+            backup["filename"]
+        )
+
+    print()
+
+    print(
+        "q - Annuler"
+    )
+
+    choix = input("> ")
+
+    if choix.lower() == "q":
+
+        return None
+
+    try:
+
+        index = int(choix) - 1
+
+        return backups[index]
+
+    except (ValueError, IndexError):
+
+        print(
+            "Choix invalide."
+        )
+
+        return None
+
 def main():
 
     try:
@@ -50,56 +107,32 @@ def main():
         print(e)
         print()
 
-        info = FusionProject.get_backup_info()
+        backup = choose_backup_restore()
 
-        if info:
-
-            print()
-            print(
-                "Sauvegarde disponible :",
-                info["filename"]
-            )
+        if backup is None:
 
             print(
-                "Taille :",
-                info["size"],
-                "octets"
-            )
-            print()
-
-            print(
-                "Time :",
-                info["time"]
-            )
-            print()
-
-        choix = input(
-            "Restaurer la dernière sauvegarde ? (o/n) : "
-        )
-
-        if choix.lower() == "o":
-
-            project = FusionProject.restore()
-
-            if project is None:
-
-                print(
-                    "Restauration impossible."
-                )
-
-                exit(1)
-
-            print(
-                "Projet restauré."
-            )
-
-        else:
-
-            print(
-                "Le programme va se terminer."
+                "Aucune restauration effectuée."
             )
 
             exit(1)
+
+
+        project = FusionProject.restore_from_backup(
+            backup["filename"]
+        )
+
+        if project is None:
+
+            print(
+                "Restauration impossible."
+            )
+
+            exit(1)
+
+        print(
+            "Restauration réussie."
+        )
 
     except RuntimeError as e:
 
