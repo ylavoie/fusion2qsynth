@@ -175,20 +175,25 @@ def main():
 
                                     mix["parts"][str(i)] = part
 
-                                project.save()
+                                if project.save_safe():
 
-                                print()
-                                print(
-                                    "Capture terminée"
-                                )
+                                    print()
+                                    print(
+                                        "Capture terminée"
+                                    )
 
-                                print(
-                                    len(parts_seen),
-                                    "PART(s) sauvegardée(s)"
-                                )
+                                    print(
+                                        len(parts_seen),
+                                        "PART(s) sauvegardée(s)"
+                                    )
 
-                                print()
+                                    print()
 
+                                else:
+
+                                    print(
+                                        "Le Mix n'a pas été sauvegardé."
+                                    )
                 #
                 # Poll MIDI
                 #

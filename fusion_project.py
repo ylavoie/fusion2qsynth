@@ -42,22 +42,62 @@ class FusionProject:
 
             self.data = json.load(f)
 
-    def save(self):
+    def save_safe(self):
 
-        self.backup()
+        errors = self.validate()
 
-        with open(
-            self.filename,
-            "w",
-            encoding="utf-8"
-        ) as f:
+        if errors:
 
-            json.dump(
-                self.data,
-                f,
-                indent=2,
-                ensure_ascii=False
+            print(
+                "Sauvegarde refusée : erreurs de validation."
             )
+
+            return False
+
+        if os.path.exists(self.filename):
+
+            shutil.copy2(
+                self.filename,
+                self.filename + ".bak"
+            )
+
+        temp_file = self.filename + ".tmp"
+
+        try:
+
+            with open(
+                temp_file,
+                "w",
+                encoding="utf-8"
+            ) as f:
+
+                json.dump(
+                    self.data,
+                    f,
+                    indent=2,
+                    ensure_ascii=False
+                )
+
+            os.replace(
+                temp_file,
+                self.filename
+            )
+
+            return True
+
+        except Exception as e:
+
+            print(
+                f"Sauvegarde impossible : {e}"
+            )
+
+            return False
+
+        finally:
+
+            if os.path.exists(temp_file):
+
+                os.remove(temp_file)
 
     def reload(self):
 

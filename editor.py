@@ -470,7 +470,12 @@ def repair_instrument_errors(
 
     if repaired:
 
-        project.save()
+        if not project.save_safe():
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+            repaired = False
 
     return repaired
 
@@ -649,7 +654,17 @@ def edit_mix(project,mix_id):
                                 instrument["id"]
                             )
 
-                            project.save()
+                            if not project.save_safe():
+
+                                print(
+                                    "⚠ Sauvegarde non effectuée."
+                                )
+
+                                input(
+                                    "Entrée pour continuer..."
+                                )
+
+                                break
 
                             break
 
@@ -934,7 +949,11 @@ def add_instrument(project):
         }
     )
 
-    project.save()
+    if not project.save_safe():
+
+        print(
+            "⚠ Sauvegarde non effectuée."
+        )
 
 def delete_instrument(project):
 
@@ -1020,11 +1039,17 @@ def delete_instrument(project):
         instrument_id
     ):
 
-        project.save()
+        if project.save_safe():
 
-        print(
-            "Instrument supprimé."
-        )
+            print(
+                "Instrument supprimé."
+            )
+
+        else:
+
+            print(
+                "Suppression non sauvegardée."
+            )
 
     else:
 
@@ -1093,11 +1118,17 @@ def edit_part_instrument(
         instrument_id
     ):
 
-        project.save()
+        if project.save_safe():
 
-        print(
-            "Instrument affecté."
-        )
+            print(
+                "Instrument affecté."
+            )
+
+        else:
+
+            print(
+                "Instrument non-affecté."
+            )
 
 def print_validation_errors(errors):
 

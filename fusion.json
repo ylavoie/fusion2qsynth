@@ -9,6 +9,16 @@
       "name": "Pop Bass",
       "sf2_bank": 0,
       "sf2_program": 37
+    },
+    "Pan Flute": {
+      "name": "Pan Flute",
+      "sf2_bank": 0,
+      "sf2_program": 75
+    },
+    "Oxide": {
+      "name": "Oxide",
+      "sf2_bank": 0,
+      "sf2_program": 94
     }
   },
   "2:5": {
@@ -375,12 +385,10 @@
         "note_max": 57,
         "velocity_min": 13,
         "velocity_max": 72,
-        "sf2_bank": 0,
-        "sf2_program": 75,
-        "name": "Pan Flute"
+        "instrument": "Pan Flute"
       },
       "3": {
-        "midi_channel": 2,
+        "midi_channel": 3,
         "bank": 0,
         "program": 0,
         "note_min": 26,
@@ -400,6 +408,34 @@
         "sf2_bank": 0,
         "sf2_program": 55,
         "name": "Orchestra Hit"
+      }
+    }
+  },
+  "0:2": {
+    "name": "Fusion Mix 0:2",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 0,
+        "program": 2,
+        "note_min": 62,
+        "note_max": 79,
+        "velocity_min": 13,
+        "velocity_max": 68
+      }
+    }
+  },
+  "0:3": {
+    "name": "Fusion Mix 0:3",
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 0,
+        "program": 3,
+        "note_min": 28,
+        "note_max": 100,
+        "velocity_min": 9,
+        "velocity_max": 83
       }
     }
   }
