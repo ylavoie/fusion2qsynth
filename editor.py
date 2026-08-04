@@ -1082,10 +1082,19 @@ def main():
 
         for error in errors:
 
-            print(
-                "-",
-                error
-            )
+            if isinstance(error, dict):
+
+                print(
+                    "-",
+                    error["message"]
+                )
+
+            else:
+
+                print(
+                    "-",
+                    error
+                )
 
         print()
 

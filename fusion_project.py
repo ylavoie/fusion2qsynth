@@ -270,8 +270,15 @@ class FusionProject:
                 if instrument_id not in instruments:
 
                     errors.append(
-                        f"Mix {mix_id} PART {part_id} : "
-                        f"instrument {instrument_id} absent"
+                        {
+                            "type": "missing_instrument",
+                            "mix_id": mix_id,
+                            "part_id": part_id,
+                            "instrument": instrument_id,
+                            "message":
+                                f"Mix {mix_id} PART {part_id} : "
+                                f"instrument {instrument_id} absent"
+                        }
                     )
 
         return errors
@@ -959,7 +966,7 @@ class FusionProject:
 
         return usages
 
-    def migrate_part_to_library(part, instrument_id):
+    def migrate_part_to_library(self, part, instrument_id):
 
         part["instrument"] = instrument_id
 
