@@ -97,7 +97,19 @@ class FusionProject:
 
             return None
 
-        project.load()
+        try:
+
+            project.load()
+
+        except ProjectRecoveryError:
+
+            return None
+
+        errors = project.validate()
+
+        if errors:
+
+            return None
 
         return project
 
