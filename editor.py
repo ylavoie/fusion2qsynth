@@ -1141,6 +1141,65 @@ def edit_part_instrument(
             "Instrument affecté."
         )
 
+def print_validation_errors(errors):
+
+    print()
+
+    print(
+        "===================="
+    )
+
+    print(
+        "Erreurs de validation"
+    )
+
+    print(
+        "===================="
+    )
+
+    for error in errors:
+
+        if error.get("type") == "missing_instrument":
+
+            print()
+
+            print(
+                "⚠ Instrument absent"
+            )
+
+            print(
+                "Mix        :",
+                error["mix_id"]
+            )
+
+            print(
+                "PART       :",
+                error["part_id"]
+            )
+
+            print(
+                "Canal MIDI :",
+                error.get(
+                    "channel",
+                    "?"
+                )
+            )
+
+            print(
+                "Instrument :",
+                error["instrument"]
+            )
+
+        else:
+
+            print(
+                "-",
+                error.get(
+                    "message",
+                    error
+                )
+            )
+
 def main():
 
     project = FusionProject()
@@ -1157,19 +1216,9 @@ def main():
 
         for error in errors:
 
-            if isinstance(error, dict):
-
-                print(
-                    "-",
-                    error["message"]
-                )
-
-            else:
-
-                print(
-                    "-",
-                    error
-                )
+            print_validation_errors(
+                errors
+            )
 
         print()
 
