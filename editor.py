@@ -634,80 +634,213 @@ def edit_mix(project,mix_id):
                         "sf2_program": 0
                     }
 
-                instrument = choose_instrument(project, part)
+                print()
 
-                if instrument is None:
+                print(
+                    "1 - Modifier instrument"
+                )
 
-                    # L'utilisateur a annulé.
-                    # On ne modifie rien.
-                    break
+                print(
+                    "2 - Modifier paramètres PART"
+                )
 
-                if instrument:
+                print(
+                    "q - Annuler"
+                )
 
-                    while True:
+                choix = input("> ")
 
-                        print()
+                if choix == "1":
 
-                        print(
-                            "1 - Tester"
-                        )
+                    instrument = choose_instrument(project, part)
 
-                        print(
-                            "2 - Comparer A/B"
-                        )
+                    if instrument is None:
 
-                        print(
-                            "3 - Garder"
-                        )
+                        # L'utilisateur a annulé.
+                        # On ne modifie rien.
+                        break
 
-                        print(
-                            "q - Annuler"
-                        )
+                    if instrument:
 
-                        choix = input("> ")
+                        while True:
 
-                        if choix == "1":
+                            print()
 
-                            play_preview(
-                                part,
-                                instrument
+                            print(
+                                "1 - Tester"
                             )
 
-                        elif choix == "2":
-
-                            compare_instrument(
-                                part,
-                                old_instrument,
-                                instrument
+                            print(
+                                "2 - Comparer A/B"
                             )
 
-                        elif choix == "3":
-
-                            project.set_part_instrument(
-                                mix_id,
-                                part_id,
-                                instrument["id"]
+                            print(
+                                "3 - Garder"
                             )
 
-                            if not project.save_safe():
+                            print(
+                                "q - Annuler"
+                            )
 
-                                print(
-                                    "⚠ Sauvegarde non effectuée."
+                            choix = input("> ")
+
+                            if choix == "1":
+
+                                play_preview(
+                                    part,
+                                    instrument
                                 )
 
-                                input(
-                                    "Entrée pour continuer..."
+                            elif choix == "2":
+
+                                compare_instrument(
+                                    part,
+                                    old_instrument,
+                                    instrument
                                 )
+
+                            elif choix == "3":
+
+                                project.set_part_instrument(
+                                    mix_id,
+                                    part_id,
+                                    instrument["id"]
+                                )
+
+                                if not project.save_safe():
+
+                                    print(
+                                        "⚠ Sauvegarde non effectuée."
+                                    )
+
+                                    input(
+                                        "Entrée pour continuer..."
+                                    )
+
+                                    break
 
                                 break
 
-                            break
+                            elif choix.lower()=="q":
 
-                        elif choix.lower()=="q":
+                                break
 
-                            break
+                    break
 
-                break
+                if choix == "2":
+
+                    edit_part_parameters(
+                        project,
+                        mix_id,
+                        part_id,
+                        part
+                    )
+
+                    break
+
+def edit_part_parameters(
+    project,
+    mix_id,
+    part_id,
+    part
+):
+
+    updates = {}
+
+    print()
+
+    print(
+        "Canal MIDI actuel :",
+        part.get(
+            "midi_channel",
+            "?"
+        )
+    )
+
+    value = input(
+        "Nouveau canal MIDI (Entrée = conserver) : "
+    )
+
+    if value:
+
+        updates["midi_channel"] = int(value)
+
+
+    print()
+
+    print(
+        "Note min actuelle :",
+        part.get(
+            "note_min",
+            "?"
+        )
+    )
+
+    value = input(
+        "Nouvelle note min (Entrée = conserver) : "
+    )
+
+    if value:
+
+        updates["note_min"] = int(value)
+
+
+    print()
+
+    print(
+        "Note max actuelle :",
+        part.get(
+            "note_max",
+            "?"
+        )
+    )
+
+    value = input(
+        "Nouvelle note max (Entrée = conserver) : "
+    )
+
+    if value:
+
+        updates["note_max"] = int(value)
+
+
+    if not updates:
+
+        print(
+            "Aucune modification."
+        )
+
+        return
+
+
+    if project.update_part(
+        mix_id,
+        part_id,
+        updates
+    ):
+        mix = project.get_mix(
+            mix_id
+        )
+
+        part = mix["parts"][part_id]
+
+        if project.save_safe():
+
+            print(
+                "PART modifiée."
+            )
+
+        else:
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
+    else:
+
+        print(
+            "Modification refusée."
+        )
 
 def test_mix_parts(project, mix):
 
