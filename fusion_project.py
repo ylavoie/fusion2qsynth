@@ -1131,6 +1131,10 @@ class FusionProject:
             self.validate_midi_channels()
         )
 
+        errors.extend(
+            self.validate_part_library()
+        )
+
         for mix_id in self.sort_mix_ids(
             self.data
         ):
@@ -1524,6 +1528,9 @@ class FusionProject:
         ):
             part.pop(key, None)
 
+        return True
+
+    def validate_part_library(self):
 
         errors = []
 
