@@ -543,7 +543,8 @@ class FusionProject:
 
             if "sf2_bank" in instrument:
 
-                if not 0 <= instrument["sf2_bank"] <= 127:
+                # SF2 bank may include percussion banks (>=128)
+                if not 0 <= instrument["sf2_bank"] <= 16383:
 
                     errors.append(
                         f"{prefix} : sf2_bank invalide"

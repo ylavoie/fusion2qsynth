@@ -139,45 +139,69 @@ def choose_sf2_preset():
 
         return None
 
-    print()
+    while True:
 
-    print(
-        "Presets SoundFont disponibles :"
-    )
+        print()
 
-    print()
+        search = input(
+            "Recherche (Entrée = tous, q = annuler) : "
+        ).strip().lower()
 
-    for index, preset in enumerate(
-        presets,
-        start=1
-    ):
+        if search == "q":
 
-        print(
-            f"{index} - "
-            f"{preset['name']} "
-            f"(Bank {preset['sf2_bank']} "
-            f"Program {preset['sf2_program']})"
-        )
+            return None
 
-    print()
+        filtered = [
+            preset
+            for preset in presets
+            if search in preset["name"].lower()
+        ]
 
-    choice = input(
-        "Choix : "
-    )
+        if not filtered:
 
-    try:
+            print(
+                "Aucun preset trouvé."
+            )
 
-        index = int(choice) - 1
+            continue
 
-        return presets[index]
-
-    except (ValueError, IndexError):
+        print()
 
         print(
-            "Choix invalide."
+            "Presets SoundFont disponibles :"
         )
 
-        return None
+        print()
+
+        for index, preset in enumerate(
+            filtered,
+            start=1
+        ):
+
+            print(
+                f"{index} - "
+                f"{preset['name']} "
+                f"(Bank {preset['sf2_bank']} "
+                f"Program {preset['sf2_program']})"
+            )
+
+        print()
+
+        choice = input(
+            "Choix : "
+        )
+
+        try:
+
+            index = int(choice) - 1
+
+            return filtered[index]
+
+        except (ValueError, IndexError):
+
+            print(
+                "Choix invalide."
+            )
 
 def choose_instrument(
         project,
@@ -1116,6 +1140,60 @@ def delete_instrument(project):
         print(
             "Suppression impossible."
         )
+
+def edit_instrument(project):
+
+    instruments = project.list_instruments()
+
+    if not instruments:
+        print("Aucun instrument.")
+        return
+
+    # choisir instrument
+
+    for instrument_id, instrument in instruments:
+
+        print(
+            instrument_id,
+            "-",
+            instrument.get(
+                "name",
+                "?"
+            )
+        )
+
+    instrument_id = input(
+        "Instrument à éditer : "
+    )
+
+    instrument = project.get_instrument(
+        instrument_id
+    )
+
+    name = input(
+        f"Nom [{instrument['name']}] : "
+    )
+
+    bank = input(
+        f"Bank [{instrument['sf2_bank']}] : "
+    )
+
+    program = input(
+        f"Program [{instrument['sf2_program']}] : "
+    )
+
+    updated = {
+        "name": name or instrument["name"],
+        "sf2_bank": int(bank) if bank else instrument["sf2_bank"],
+        "sf2_program": int(program) if program else instrument["sf2_program"],
+    }
+
+    project.update_instrument(
+        instrument_id,
+        updated
+    )
+
+    project.save_safe()
 
 def edit_part_instrument(
     project,
