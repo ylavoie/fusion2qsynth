@@ -560,6 +560,55 @@ def edit_mix(project,mix_id):
 
                 return
 
+    def rename_mix_menu(
+        mix_id,
+        mix
+    ):
+
+        print()
+
+        print(
+            "Nom actuel :",
+            mix.get(
+                "name",
+                mix_id
+            )
+        )
+
+        name = input(
+            "Nouveau nom (Entrée = conserver) : "
+        )
+
+        if not name:
+
+            return
+
+        ok, errors = project.rename_mix(
+            mix_id,
+            name
+        )
+
+        if ok:
+
+            if project.save_safe():
+
+                print(
+                    "Mix renommé."
+                )
+
+        else:
+
+            print(
+                "Modification refusée :"
+            )
+
+            for error in errors:
+
+                print(
+                    "-",
+                    error
+                )
+
     mix = project.get_mix(
         mix_id
     )
@@ -584,11 +633,15 @@ def edit_mix(project,mix_id):
         print("====================")
 
         print(
-            "1 - Tester le Mix"
+            "1 - Renommer le Mix"
         )
 
         print(
-            "2 - Modifier les PARTS"
+            "2 - Tester le Mix"
+        )
+
+        print(
+            "3 - Modifier les PARTS"
         )
 
         print(
@@ -599,11 +652,18 @@ def edit_mix(project,mix_id):
 
         if choix == "1":
 
-            test_mix_menu(
+            rename_mix_menu(
+                mix_id,
                 mix
             )
 
         elif choix == "2":
+
+            test_mix_menu(
+                mix
+            )
+
+        elif choix == "3":
 
             edit_parts(
                 project,

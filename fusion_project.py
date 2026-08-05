@@ -428,6 +428,54 @@ class FusionProject:
             mix_id
         )
 
+    def rename_mix(
+        self,
+        mix_id,
+        name
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return (
+                False,
+                []
+            )
+
+        old_name = mix.get(
+            "name"
+        )
+
+        mix["name"] = name
+
+        errors = self.validate()
+
+        if errors:
+
+            if old_name is None:
+
+                mix.pop(
+                    "name",
+                    None
+                )
+
+            else:
+
+                mix["name"] = old_name
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
     def get_parts(
         self,
         mix_id
