@@ -1118,20 +1118,54 @@ def test_mix_all(project, mix):
                 part["midi_channel"] - 1
             )
 
+            bank = instrument.get(
+                "sf2_bank",
+                0
+            )
+
+            if not 0 <= bank <= 127:
+
+                print(
+                    "PART",
+                    part_id,
+                    "bank SF2",
+                    bank,
+                    "non testable directement en MIDI"
+                )
+
+                continue
+
             out.send(
                 mido.Message(
                     "control_change",
                     channel=ch,
                     control=0,
-                    value=instrument["sf2_bank"]
+                    value=bank
                 )
             )
+
+            program = instrument.get(
+                "sf2_bank",
+                0
+            )
+
+            if not 0 <= program <= 127:
+
+                print(
+                    "PART",
+                    part_id,
+                    "program SF2",
+                    program,
+                    "non testable directement en MIDI"
+                )
+
+                continue
 
             out.send(
                 mido.Message(
                     "program_change",
                     channel=ch,
-                    program=instrument["sf2_program"]
+                    program=program
                 )
             )
 

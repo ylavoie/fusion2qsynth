@@ -1181,6 +1181,48 @@ class FusionProject:
 
         return self.data[mix_id]
 
+    def replace_mix_parts(
+        self,
+        mix_id,
+        parts
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return (
+                False,
+                []
+            )
+
+        old_parts = dict(
+            mix.get(
+                "parts",
+                {}
+            )
+        )
+
+        mix["parts"] = parts
+
+        errors = self.validate()
+
+        if errors:
+
+            mix["parts"] = old_parts
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
     def prepare_capture(
         self,
         mix_id

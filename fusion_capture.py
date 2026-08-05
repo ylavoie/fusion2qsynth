@@ -142,38 +142,36 @@ def main():
 
                                         continue
 
-                                mix = project.ensure_mix(
-                                    current_mix
-                                )
+                                    parts = {}
 
-                                mix["parts"] = {}
+                                    for i, part in enumerate(
+                                        parts_seen.values(),
+                                        start=1
+                                    ):
 
-                                for i, part in enumerate(
-                                    parts_seen.values(),
-                                    start=1
-                                ):
+                                        parts[str(i)] = part
 
-                                    channel = part["midi_channel"] - 1
+                                    success, errors = project.replace_mix_parts(
+                                        current_mix,
+                                        parts
+                                    )
 
-                                    if channel in notes_seen:
+                                    if not success:
 
-                                        part["note_min"] = min(
-                                            notes_seen[channel]["notes"]
+                                        print()
+
+                                        print(
+                                            "Remplacement du Mix refusé :"
                                         )
 
-                                        part["note_max"] = max(
-                                            notes_seen[channel]["notes"]
-                                        )
+                                        for error in errors:
 
-                                        part["velocity_min"] = min(
-                                            notes_seen[channel]["velocity"]
-                                        )
+                                            print(
+                                                "-",
+                                                error
+                                            )
 
-                                        part["velocity_max"] = max(
-                                            notes_seen[channel]["velocity"]
-                                        )
-
-                                    mix["parts"][str(i)] = part
+                                        continue
 
                                 if project.save_safe():
 
