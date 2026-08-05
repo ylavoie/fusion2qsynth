@@ -560,8 +560,6 @@ def edit_mix(project,mix_id):
 
                 return
 
-    project = FusionProject()
-
     mix = project.get_mix(
         mix_id
     )
@@ -574,22 +572,54 @@ def edit_mix(project,mix_id):
 
         return
 
-    project.print_mix(
-        mix_id
-    )
+    while True:
 
-    if "parts" not in mix:
-
-        print(
-            "Aucune PART détectée"
+        project.print_mix(
+            mix_id
         )
 
-        return
+        print()
+        print("====================")
+        print("Edition Mix")
+        print("====================")
 
-    test_mix_menu(
-        mix
-    )
+        print(
+            "1 - Tester le Mix"
+        )
 
+        print(
+            "2 - Modifier les PARTS"
+        )
+
+        print(
+            "q - Retour"
+        )
+
+        choix = input("> ")
+
+        if choix == "1":
+
+            test_mix_menu(
+                mix
+            )
+
+        elif choix == "2":
+
+            edit_parts(
+                project,
+                mix_id,
+                mix
+            )
+
+        elif choix.lower() == "q":
+
+            return
+
+def edit_parts(
+    project,
+    mix_id,
+    mix
+):
     while True:
 
         part_id = input(
@@ -1780,11 +1810,11 @@ def main():
 
         elif choix == "2":
 
-            mix = input(
+            mix_id = input(
                 "Numéro du Mix (ex: 2:4) : "
             )
 
-            edit_mix(project,mix)
+            edit_mix(project,mix_id)
 
         elif choix == "3":
 
