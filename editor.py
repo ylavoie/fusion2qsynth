@@ -738,6 +738,63 @@ def edit_mix(project,mix_id):
 
                     break
 
+def read_int(
+    prompt,
+    minimum=None,
+    maximum=None
+):
+
+    while True:
+
+        value = input(
+            prompt
+        )
+
+        if not value:
+
+            return None
+
+        try:
+
+            value = int(value)
+
+        except ValueError:
+
+            print(
+                "Valeur numérique requise."
+            )
+
+            continue
+
+
+        if (
+            minimum is not None
+            and
+            value < minimum
+        ):
+
+            print(
+                f"Valeur minimale : {minimum}"
+            )
+
+            continue
+
+
+        if (
+            maximum is not None
+            and
+            value > maximum
+        ):
+
+            print(
+                f"Valeur maximale : {maximum}"
+            )
+
+            continue
+
+
+        return value
+
 def validate_part_updates(
     part,
     updates
@@ -748,22 +805,6 @@ def validate_part_updates(
     test.update(
         updates
     )
-
-    if not (
-        1 <= test.get(
-            "midi_channel",
-            1
-        ) <= 16
-    ):
-
-        print()
-
-        print(
-            "Canal MIDI invalide (1-16)."
-        )
-
-        return False
-
 
     if not (
         0 <= test.get(
@@ -830,8 +871,10 @@ def edit_part_parameters(
         )
     )
 
-    value = input(
-        "Nouveau canal MIDI (Entrée = conserver) : "
+    value = read_int(
+        "Nouveau canal MIDI (Entrée = conserver) : ",
+        1,
+        16
     )
 
     if value:
@@ -849,8 +892,10 @@ def edit_part_parameters(
         )
     )
 
-    value = input(
-        "Nouvelle note min (Entrée = conserver) : "
+    value = read_int(
+        "Nouvelle note min (Entrée = conserver) : ",
+        0,
+        127
     )
 
     if value:
@@ -868,8 +913,10 @@ def edit_part_parameters(
         )
     )
 
-    value = input(
-        "Nouvelle note max (Entrée = conserver) : "
+    value = read_int(
+        "Nouvelle note max (Entrée = conserver) : ",
+        0,
+        127
     )
 
     if value:
@@ -885,8 +932,10 @@ def edit_part_parameters(
             0
         )
     )
-    value = input(
-        "Nouvelle velocity min (Entrée = conserver) : "
+    value = read_int(
+        "Nouvelle velocity min (Entrée = conserver) : ",
+        0,
+        127
     )
 
     if value:
@@ -902,8 +951,10 @@ def edit_part_parameters(
             127
         )
     )
-    value = input(
-        "Nouvelle velocity max (Entrée = conserver) : "
+    value = read_int(
+        "Nouvelle velocity max (Entrée = conserver) : ",
+        0,
+        127
     )
 
     if not validate_part_updates(
@@ -929,12 +980,14 @@ def edit_part_parameters(
 
         return
 
-
-    if project.update_part(
+    success, messages = project.update_part(
         mix_id,
         part_id,
         updates
-    ):
+    )
+
+    if success:
+
         mix = project.get_mix(
             mix_id
         )
@@ -955,9 +1008,18 @@ def edit_part_parameters(
 
     else:
 
+        print()
+
         print(
-            "Modification refusée."
+            "Modification refusée :"
         )
+
+        for message in messages:
+
+            print(
+                "-",
+                message["message"]
+            )
 
 def test_mix_parts(project, mix):
 

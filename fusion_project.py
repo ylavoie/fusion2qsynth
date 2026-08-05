@@ -820,7 +820,10 @@ class FusionProject:
         )
 
         if not mix:
-            return False
+            return (
+                False,
+                []
+            )
 
         parts = mix.get(
             "parts",
@@ -832,13 +835,36 @@ class FusionProject:
         )
 
         if not part:
-            return False
+            return (
+                False,
+                []
+            )
+
+        old = dict(part)
 
         part.update(
             updates
         )
 
-        return True
+        errors = self.validate()
+
+        if errors:
+
+            part.clear()
+
+            part.update(
+                old
+            )
+
+            return(
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     #
     # Diagnostic
