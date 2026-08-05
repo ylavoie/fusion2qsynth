@@ -738,6 +738,79 @@ def edit_mix(project,mix_id):
 
                     break
 
+def validate_part_updates(
+    part,
+    updates
+):
+
+    test = dict(part)
+
+    test.update(
+        updates
+    )
+
+    if not (
+        1 <= test.get(
+            "midi_channel",
+            1
+        ) <= 16
+    ):
+
+        print()
+
+        print(
+            "Canal MIDI invalide (1-16)."
+        )
+
+        return False
+
+
+    if not (
+        0 <= test.get(
+            "note_min",
+            0
+        )
+        <=
+        test.get(
+            "note_max",
+            127
+        )
+        <= 127
+    ):
+
+        print()
+
+        print(
+            "Plage de notes invalide (0-127)."
+        )
+
+        return False
+
+
+    if not (
+        0 <= test.get(
+            "velocity_min",
+            0
+        )
+        <=
+        test.get(
+            "velocity_max",
+            127
+        )
+        <= 127
+    ):
+
+        print()
+
+        print(
+            "Plage de vélocité invalide (0-127)."
+        )
+
+        return False
+
+
+    return True
+
 def edit_part_parameters(
     project,
     mix_id,
@@ -832,6 +905,17 @@ def edit_part_parameters(
     value = input(
         "Nouvelle velocity max (Entrée = conserver) : "
     )
+
+    if not validate_part_updates(
+        part,
+        updates
+    ):
+
+        print(
+            "PART non modifiée."
+        )
+
+        return
 
     if value:
 
