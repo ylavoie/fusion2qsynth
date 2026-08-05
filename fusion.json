@@ -388,8 +388,8 @@
         "program": 0,
         "note_min": 62,
         "note_max": 101,
-        "velocity_min": 14,
-        "velocity_max": 63,
+        "velocity_min": 13,
+        "velocity_max": 72,
         "instrument": "grand_piano"
       },
       "2": {

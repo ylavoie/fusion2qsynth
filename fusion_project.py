@@ -1053,6 +1053,20 @@ class FusionProject:
             )
         )
 
+        print(
+            "Velocity :",
+            part.get(
+                "velocity_min",
+                0
+            ),
+            "-",
+            part.get(
+                "velocity_max",
+                127
+            )
+        )
+
+
     # Mix
     def iter_parts(
         self,

@@ -803,6 +803,39 @@ def edit_part_parameters(
 
         updates["note_max"] = int(value)
 
+    print()
+
+    print(
+        "Velocity min :",
+        part.get(
+            "velocity_min",
+            0
+        )
+    )
+    value = input(
+        "Nouvelle velocity min (Entrée = conserver) : "
+    )
+
+    if value:
+
+        updates["velocity_min"] = int(value)
+
+    print()
+
+    print(
+        "Velocity max :",
+        part.get(
+            "velocity_max",
+            127
+        )
+    )
+    value = input(
+        "Nouvelle velocity max (Entrée = conserver) : "
+    )
+
+    if value:
+
+        updates["velocity_max"] = int(value)
 
     if not updates:
 

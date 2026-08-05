@@ -420,9 +420,7 @@
         "note_max": 57,
         "velocity_min": 13,
         "velocity_max": 72,
-        "sf2_bank": 0,
-        "sf2_program": 55,
-        "name": "Orchestra Hit"
+        "instrument": "orchestra_kit"
       }
     }
   },
