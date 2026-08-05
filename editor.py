@@ -609,6 +609,58 @@ def edit_mix(project,mix_id):
                     error
                 )
 
+    def duplicate_mix_menu(
+        mix_id
+    ):
+
+        print()
+
+        print(
+            "Dupliquer le Mix :",
+            mix_id
+        )
+
+        new_mix_id = input(
+            "Nouvel ID Mix (ex: 0:2) : "
+        )
+
+        if not new_mix_id:
+
+            return
+
+        ok, errors = project.duplicate_mix(
+            mix_id,
+            new_mix_id
+        )
+
+        if ok:
+
+            if project.save_safe():
+
+                print(
+                    "Mix dupliqué :",
+                    new_mix_id
+                )
+
+            else:
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
+
+        else:
+
+            print(
+                "Duplication refusée :"
+            )
+
+            for error in errors:
+
+                print(
+                    "-",
+                    error
+                )
+
     mix = project.get_mix(
         mix_id
     )
@@ -637,11 +689,15 @@ def edit_mix(project,mix_id):
         )
 
         print(
-            "2 - Tester le Mix"
+            "2 - Dupliquer le Mix"
         )
 
         print(
-            "3 - Modifier les PARTS"
+            "3 - Tester le Mix"
+        )
+
+        print(
+            "4 - Modifier les PARTS"
         )
 
         print(
@@ -659,11 +715,17 @@ def edit_mix(project,mix_id):
 
         elif choix == "2":
 
+            duplicate_mix_menu(
+                mix_id
+            )
+
+        elif choix == "3":
+
             test_mix_menu(
                 mix
             )
 
-        elif choix == "3":
+        elif choix == "4":
 
             edit_parts(
                 project,

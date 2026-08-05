@@ -476,6 +476,65 @@ class FusionProject:
             []
         )
 
+    def duplicate_mix(
+        self,
+        source_mix_id,
+        new_mix_id
+    ):
+
+        source = self.get_mix(
+            source_mix_id
+        )
+
+        if not source:
+
+            return (
+                False,
+                [
+                    f"Mix source inconnu : {source_mix_id}"
+                ]
+            )
+
+        if new_mix_id in self.data:
+
+            return (
+                False,
+                [
+                    f"Mix déjà existant : {new_mix_id}"
+                ]
+            )
+
+        import copy
+
+        new_mix = copy.deepcopy(
+            source
+        )
+
+        new_mix["name"] = (
+            f"{source.get('name', source_mix_id)} copie"
+        )
+
+        self.data[new_mix_id] = new_mix
+
+        errors = self.validate()
+
+        if errors:
+
+            self.data.pop(
+                new_mix_id,
+                None
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
     def get_parts(
         self,
         mix_id
