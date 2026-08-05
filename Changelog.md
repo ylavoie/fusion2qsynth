@@ -403,3 +403,30 @@ La validation préventive de toutes les sauvegardes n'est pas incluse dans cette
 
 * Ajout de note_range() pour l'affichage des plages MIDI des PARTs.
 * Amélioration de l'affichage des informations de PART.
+
+## v1.7.3
+
+### Gestion améliorée des instruments
+
+Ajout de la gestion des instruments SoundFont depuis la bibliothèque SF2.
+
+Nouveautés :
+
+* ajout d'un instrument directement depuis `sf2_library.json` ;
+* recherche de presets SoundFont par nom dans l'éditeur ;
+* conservation de la saisie manuelle d'un instrument ;
+* ajout de la modification des instruments existants ;
+* utilisation de l'identifiant généré par la bibliothèque SF2 pour les nouveaux instruments.
+
+Améliorations :
+
+* le menu de gestion des instruments permet maintenant le cycle complet :
+
+  * ajout ;
+  * affichage ;
+  * modification ;
+  * suppression.
+
+Corrections :
+
+* prise en compte des presets SoundFont de type kit percussion utilisant des banques supérieures à 127.
