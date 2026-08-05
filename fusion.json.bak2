@@ -24,6 +24,11 @@
       "name": "Trumpet",
       "sf2_bank": 0,
       "sf2_program": 56
+    },
+    "flute": {
+      "name": "Flute",
+      "sf2_bank": 0,
+      "sf2_program": 73
     }
   },
   "2:5": {

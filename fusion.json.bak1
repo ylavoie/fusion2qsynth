@@ -29,6 +29,11 @@
       "name": "Flute",
       "sf2_bank": 0,
       "sf2_program": 73
+    },
+    "orchestra_kit": {
+      "name": "Orchestra Kit",
+      "sf2_bank": 128,
+      "sf2_program": 48
     }
   },
   "2:5": {

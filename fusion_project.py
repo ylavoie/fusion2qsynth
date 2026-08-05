@@ -808,6 +808,38 @@ class FusionProject:
             "sf2_program" in part
         )
 
+    def update_part(
+        self,
+        mix_id,
+        part_id,
+        updates
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+            return False
+
+        parts = mix.get(
+            "parts",
+            {}
+        )
+
+        part = parts.get(
+            str(part_id)
+        )
+
+        if not part:
+            return False
+
+        part.update(
+            updates
+        )
+
+        return True
+
     #
     # Diagnostic
     #
@@ -1021,7 +1053,6 @@ class FusionProject:
             )
         )
 
-
     # Mix
     def iter_parts(
         self,
@@ -1040,8 +1071,6 @@ class FusionProject:
                 part_id,
                 mix["parts"][part_id]
             )
-
-
 
     #
     # Validation
