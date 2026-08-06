@@ -1015,6 +1015,50 @@ def edit_part_parameters(
 
     print()
 
+    print("====================")
+    print("Paramètres PART", part_id)
+    print("====================")
+
+    print(
+        "Canal MIDI :",
+        part.get(
+            "midi_channel",
+            "?"
+        )
+    )
+
+    print(
+        "Plage      :",
+        note_name(
+            part.get(
+                "note_min",
+                0
+            )
+        ),
+        "-",
+        note_name(
+            part.get(
+                "note_max",
+                127
+            )
+        )
+    )
+
+    print(
+        "Velocity   :",
+        part.get(
+            "velocity_min",
+            0
+        ),
+        "-",
+        part.get(
+            "velocity_max",
+            127
+        )
+    )
+
+    print()
+
     print(
         "Canal MIDI actuel :",
         part.get(
