@@ -959,6 +959,22 @@ def validate_part_updates(
     )
 
     if not (
+        1 <= test.get(
+            "midi_channel",
+            1
+        )
+        <= 16
+    ):
+
+        print()
+
+        print(
+            "Canal MIDI invalide (1-16)."
+        )
+
+        return False
+
+    if not (
         0 <= test.get(
             "note_min",
             0
