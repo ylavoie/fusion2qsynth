@@ -511,8 +511,8 @@ class FusionProject:
             source
         )
 
-        new_mix["name"] = (
-            f"{source.get('name', source_mix_id)} copie"
+        new_mix["name"] = self._make_copy_name(
+            source.get('name', source_mix_id)
         )
 
         self.data[new_mix_id] = new_mix
@@ -535,6 +535,39 @@ class FusionProject:
             True,
             []
         )
+
+    def _make_copy_name(
+        self,
+        name
+    ):
+
+        if "(copie)" not in name:
+
+            candidate = (
+                f"{name} (copie)"
+            )
+
+            if not any(
+                mix.get("name") == candidate
+                for mix in self.data.values()
+            ):
+                return candidate
+
+        index = 2
+
+        while True:
+
+            candidate = (
+                f"{name} (copie {index})"
+            )
+
+            if not any(
+                mix.get("name") == candidate
+                for mix in self.data.values()
+            ):
+                return candidate
+
+            index += 1
 
     def delete_empty_mixes(
         self
