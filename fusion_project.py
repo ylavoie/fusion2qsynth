@@ -4,6 +4,7 @@ import os
 import json
 import shutil
 import time
+import copy
 
 from fusion_lib import (
     note_name, note_range
@@ -524,6 +525,85 @@ class FusionProject:
                 new_mix_id,
                 None
             )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def delete_empty_mixes(
+        self
+    ):
+
+        import copy
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        removed = []
+
+        for mix_id, mix in list(
+            self.iter_mixes()
+        ):
+
+            if not mix.get(
+                "parts",
+                {}
+            ):
+
+                removed.append(
+                    mix_id
+                )
+
+                del self.data[mix_id]
+
+        errors = self.validate()
+
+        if errors:
+
+            self.data = backup
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            removed
+        )
+
+    def delete_mix(
+        self,
+        mix_id
+    ):
+
+        if mix_id not in self.data:
+
+            return (
+                False,
+                [
+                    "Mix inconnu"
+                ]
+            )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        del self.data[mix_id]
+
+        errors = self.validate()
+
+        if errors:
+
+            self.data = backup
 
             return (
                 False,

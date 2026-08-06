@@ -1938,6 +1938,170 @@ def validate_and_repair(project):
 
 def main():
 
+    def delete_empty_mixes_menu():
+
+        empty_mixes = []
+
+        for mix_id, mix in project.iter_mixes():
+
+            if not mix.get(
+                "parts",
+                {}
+            ):
+
+                empty_mixes.append(
+                    mix_id
+                )
+
+        if not empty_mixes:
+
+            print()
+            print(
+                "Aucun MIX vide."
+            )
+
+            return
+
+        print()
+
+        print(
+            "MIX vides détectés :"
+        )
+
+        for mix_id in empty_mixes:
+
+            print(
+                "-",
+                mix_id
+            )
+
+        rep = input(
+            "Supprimer ? (o/n) : "
+        )
+
+        if rep.lower() != "o":
+
+            return
+
+        ok, removed = project.delete_empty_mixes()
+
+        if ok:
+
+            if not removed:
+
+                print()
+
+                print(
+                    "Aucun MIX vide."
+                )
+
+                return
+
+            if project.save_safe():
+
+                print()
+
+                print(
+                    "MIX supprimés :"
+                )
+
+                for mix_id in removed:
+
+                    print(
+                        "-",
+                        mix_id
+                    )
+
+                print()
+
+                print(
+                    len(removed),
+                    "MIX supprimé(s)."
+                )
+
+                print(
+                    "Sauvegarde effectuée."
+                )
+
+        else:
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
+    def delete_mix_menu():
+
+        mix_id = input(
+            "Mix à supprimer : "
+        )
+
+        mix = project.get_mix(
+            mix_id
+        )
+
+        if mix is None:
+
+            print(
+                "Mix inconnu."
+            )
+
+            return
+
+        print()
+
+        print(
+            "Suppression du MIX :"
+        )
+
+        print(
+            "ID :",
+            mix_id
+        )
+
+        print(
+            "Nom :",
+            mix.get(
+                "name",
+                ""
+            )
+        )
+
+        print(
+            "PARTS :",
+            len(
+                mix.get(
+                    "parts",
+                    {}
+                )
+            )
+        )
+
+        rep = input(
+            "Confirmer suppression ? (o/n) : "
+        )
+
+        if rep.lower() != "o":
+
+            return
+
+        ok, errors = project.delete_mix(
+            mix_id
+        )
+
+        if not ok:
+
+            print(
+                "Suppression refusée."
+            )
+
+            return
+
+        if project.save_safe():
+
+            print(
+                "MIX supprimé."
+            )
+
     project = FusionProject()
 
     validate_and_repair(
@@ -1952,7 +2116,9 @@ def main():
         print("===================")
         print("1 - Liste des Mix")
         print("2 - Editer un Mix")
-        print("3 - Gestion Instruments")
+        print("3 - Supprimer un MIX")
+        print("4 - Supprimer les MIX vides")
+        print("5 - Gestion Instruments")
         print("q - Quitter")
 
         choix = input("> ")
@@ -1970,6 +2136,14 @@ def main():
             edit_mix(project,mix_id)
 
         elif choix == "3":
+
+            delete_mix_menu()
+
+        elif choix == "4":
+
+            delete_empty_mixes_menu()
+
+        elif choix == "5":
 
             instruments_menu(project)
 
