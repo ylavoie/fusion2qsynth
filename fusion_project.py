@@ -571,6 +571,32 @@ class FusionProject:
             self.data
         )
 
+    def get_mix_summary(
+        self
+    ):
+
+        result = []
+
+        for mix_id, mix in self.iter_mixes():
+
+            result.append(
+                {
+                    "id": mix_id,
+                    "name": mix.get(
+                        "name",
+                        mix_id
+                    ),
+                    "parts": len(
+                        mix.get(
+                            "parts",
+                            {}
+                        )
+                    )
+                }
+            )
+
+        return result
+
     def summary(self):
 
         result = {}

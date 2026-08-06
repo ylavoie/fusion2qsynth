@@ -1380,16 +1380,47 @@ def list_mixes(project):
 
     print()
 
+    print(
+        f"{'ID':<10}{'Nom':<30}{'PARTS':>5}"
+    )
+
+    print(
+        "-" * 45
+    )
+
     for mix_id, mix in project.iter_mixes():
 
         print(
-            mix_id,
-            "-",
-            mix.get(
-                "name",
-                ""
-            )
+            f"{mix_id:<10}"
+            f"{mix.get('name', ''):<30}"
+            f"{len(mix.get('parts', {})):>5}"
         )
+
+def get_mix_summary(
+    self
+):
+
+    result = []
+
+    for mix_id, mix in self.iter_mixes():
+
+        result.append(
+            {
+                "id": mix_id,
+                "name": mix.get(
+                    "name",
+                    mix_id
+                ),
+                "parts": len(
+                    mix.get(
+                        "parts",
+                        {}
+                    )
+                )
+            }
+        )
+
+    return result
 
 def instruments_menu(project):
 
