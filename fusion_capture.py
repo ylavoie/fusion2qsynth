@@ -143,14 +143,13 @@ def main():
 
                                         continue
 
-                                    parts = {}
+                                parts = {}
 
-                                    for i, part in enumerate(
-                                        parts_seen.values(),
-                                        start=1
-                                    ):
-
-                                        parts[str(i)] = part
+                                for i, part in enumerate(
+                                    parts_seen.values(),
+                                    start=1
+                                ):
+                                    parts[str(i)] = part
 
                                     success, errors = project.replace_mix_parts(
                                         current_mix,
