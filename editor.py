@@ -1109,17 +1109,6 @@ def edit_part_parameters(
         127
     )
 
-    if not validate_part_updates(
-        part,
-        updates
-    ):
-
-        print(
-            "PART non modifiée."
-        )
-
-        return
-
     if value:
 
         updates["velocity_max"] = int(value)
@@ -1131,6 +1120,18 @@ def edit_part_parameters(
         )
 
         return
+
+    if not validate_part_updates(
+        part,
+        updates
+    ):
+
+        print(
+            "PART non modifiée."
+        )
+
+        return
+
 
     success, messages = project.update_part(
         mix_id,
