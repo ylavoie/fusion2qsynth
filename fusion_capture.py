@@ -70,11 +70,7 @@ def main():
                     )
 
                     print(
-                        "\rPARTS détectées :",
-                        len(parts_seen),
-                        " | Temps restant :",
-                        remaining,
-                        "s",
+                        f"\rCapture : {remaining}s | PARTS : {len(parts_seen)}\r",
                         end="",
                         flush=True
                     )
@@ -83,7 +79,7 @@ def main():
 
                         capture_active = False
 
-                        print()
+                        print("\r" + " " * 45)
                         print("====================")
                         print("Fin de capture")
                         print("====================")
@@ -115,15 +111,20 @@ def main():
                                     len(parts_seen)
                                 )
 
+                                print(
+                                    "CH   BANK   PROGRAM"
+                                )
+
+                                print(
+                                    "-------------------"
+                                )
+
                                 for ch, part in parts_seen.items():
 
                                     print(
-                                        "CH",
-                                        part["midi_channel"],
-                                        "Bank",
-                                        part["bank"],
-                                        "Program",
-                                        part["program"]
+                                        f"{part['midi_channel']:<5}"
+                                        f"{part['bank']:<7}"
+                                        f"{part['program']}"
                                     )
 
                                 if project.mix_has_parts(
@@ -302,6 +303,8 @@ def main():
                                     programs.get( ch, 0 )
 
                             }
+
+                            # print()
 
                             print(
                                 "PART",
