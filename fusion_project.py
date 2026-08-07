@@ -1685,40 +1685,6 @@ class FusionProject:
 
         return True
 
-    def clear_part_instrument(
-        self,
-        mix_id,
-        part_id
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            return False
-
-
-        part = mix.get(
-            "parts",
-            {}
-        ).get(
-            str(part_id)
-        )
-
-        if not part:
-
-            return False
-
-
-        if "instrument" in part:
-
-            del part["instrument"]
-
-
-        return True
-
     def list_instruments(self):
 
         return sorted(

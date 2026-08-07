@@ -207,17 +207,6 @@ def choose_instrument(
         project,
         part
 ):
-
-    instruments = project.list_instruments()
-
-    if not instruments:
-
-        print(
-            "Aucun instrument disponible."
-        )
-
-        return None
-
     print()
 
     print(
@@ -232,17 +221,44 @@ def choose_instrument(
         "===================="
     )
 
+    current = project.resolve_part_instrument(part)
+
+    if current:
+
+        print()
+
+        print(
+            "Instrument actuel :",
+            current.get("name", "?")
+        )
+    else:
+
+        print("Instrument non-configuré")
+
+    print()
+    print("Choisir un instrument")
+    print()
+
+    instruments = sorted(
+        project.list_instruments(),
+        key=lambda item: item[1].get("name", "").lower()
+    )
+
+    current_id = part.get(
+        "instrument"
+    )
+
     for index, (instrument_id, instrument) in enumerate(
         instruments,
         start=1
     ):
+        marker = "* " if instrument_id == current_id else "  "
 
         print(
-            f"{index} - "
-            f"{instrument_id} : "
-            f"{instrument.get('name', '?')} "
-            f"(Bank {instrument.get('sf2_bank', 0)}, "
-            f"Program {instrument.get('sf2_program', 0)})"
+            f"{marker}{index:2} - "
+            f"{instrument.get('name', '?'):<25}"
+            f"({instrument.get('sf2_bank', '?')}:"
+            f"{instrument.get('sf2_program', '?')})"
         )
 
     print(
@@ -1784,79 +1800,6 @@ def edit_instrument(project):
     )
 
     project.save_safe()
-
-def edit_part_instrument(
-    project,
-    mix_id,
-    part_id
-):
-
-    instruments = project.list_instruments()
-
-    if not instruments:
-
-        print(
-            "Aucun instrument disponible."
-        )
-
-        return
-
-
-    print()
-
-    for index, (instrument_id, instrument) in enumerate(
-        instruments,
-        start=1
-    ):
-
-        print(
-            index,
-            "-",
-            instrument_id,
-            instrument.get(
-                "name",
-                "?"
-            )
-        )
-
-
-    choice = input(
-        "Choix instrument : "
-    )
-
-
-    try:
-
-        index = int(choice) - 1
-
-        instrument_id = instruments[index][0]
-
-    except:
-
-        print(
-            "Choix invalide."
-        )
-
-        return
-
-
-    if project.set_part_instrument(
-        mix_id,
-        part_id,
-        instrument_id
-    ):
-
-        if project.save_safe():
-
-            print(
-                "Instrument affecté."
-            )
-
-        else:
-
-            print(
-                "Instrument non-affecté."
-            )
 
 def print_validation_errors(errors):
 
