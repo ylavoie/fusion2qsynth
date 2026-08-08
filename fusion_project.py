@@ -1292,7 +1292,7 @@ class FusionProject:
         )
 
         print(
-            "Plage : ",
+            "Plage      :",
             note_range(
                 part.get(
                     "note_min",
@@ -1306,7 +1306,7 @@ class FusionProject:
         )
 
         print(
-            "Velocity :",
+            "Velocity   :",
             part.get(
                 "velocity_min",
                 0

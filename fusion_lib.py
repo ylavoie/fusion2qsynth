@@ -118,6 +118,66 @@ def note_name(note):
         str(octave)
     )
 
+def note_number(
+    value
+):
+
+    value = value.strip().upper()
+
+    try:
+
+        note = int(value)
+
+        if 0 <= note <= 127:
+
+            return note
+
+        return None
+
+    except ValueError:
+
+        pass
+
+    if len(value) < 2:
+
+        return None
+
+    if len(value) >= 3 and value[1] == "#":
+
+        name = value[:2]
+        octave_text = value[2:]
+
+    else:
+
+        name = value[:1]
+        octave_text = value[1:]
+
+    if name not in NOTE_NAMES:
+
+        return None
+
+    try:
+
+        octave = int(
+            octave_text
+        )
+
+    except ValueError:
+
+        return None
+
+    note = (
+        (octave + 1) * 12
+        +
+        NOTE_NAMES.index(name)
+    )
+
+    if not 0 <= note <= 127:
+
+        return None
+
+    return note
+
 def note_range(note_min=None, note_max=None):
 
     if note_min is None and note_max is None:
@@ -132,7 +192,7 @@ def note_range(note_min=None, note_max=None):
     if note_min > note_max:
         note_min, note_max = note_max, note_min
 
-    return f"{note_name(note_min)}-{note_name(note_max)}"
+    return f"{note_name(note_min)} - {note_name(note_max)}"
 
 # System
 def system_status(project):

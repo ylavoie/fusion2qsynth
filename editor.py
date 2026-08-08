@@ -5,7 +5,8 @@ import time
 
 from fusion_lib import (
     find_fluidsynth_output,
-    note_name
+    note_name,
+    note_number
 )
 
 from fusion_project import FusionProject
@@ -839,6 +840,54 @@ def read_int(
 
         return value
 
+def read_note(
+    prompt,
+    minimum=0,
+    maximum=127
+):
+
+    while True:
+
+        value = input(
+            prompt
+        ).strip()
+
+        if not value:
+
+            return None
+
+        note = note_number(
+            value
+        )
+
+        if note is None:
+
+            print(
+                "Note invalide."
+            )
+
+            continue
+
+        if note < minimum:
+
+            print(
+                "Note minimale :",
+                note_name(minimum)
+            )
+
+            continue
+
+        if note > maximum:
+
+            print(
+                "Note maximale :",
+                note_name(maximum)
+            )
+
+            continue
+
+        return note
+
 def validate_part_updates(
     part,
     updates
@@ -990,42 +1039,50 @@ def edit_part_parameters(
 
     print(
         "Note min actuelle :",
-        part.get(
-            "note_min",
-            "?"
+        note_name(
+            part.get(
+                "note_min",
+                0
+            )
         )
     )
 
-    value = read_int(
-        "Nouvelle note min (Entrée = conserver) : ",
-        0,
-        127
+    value = read_note(
+        "Nouvelle note min (Entrée = conserver) : "
     )
 
-    if value:
+    if value is not None:
 
-        updates["note_min"] = int(value)
+        updates["note_min"] = value
 
+    effective_note_min = updates.get(
+        "note_min",
+        part.get(
+            "note_min",
+            0
+        )
+    )
 
     print()
 
     print(
         "Note max actuelle :",
-        part.get(
-            "note_max",
-            "?"
+        note_name(
+            part.get(
+                "note_max",
+                0
+            )
         )
     )
 
-    value = read_int(
+    value = read_note(
         "Nouvelle note max (Entrée = conserver) : ",
-        0,
-        127
+        minimum=effective_note_min
     )
 
-    if value:
+    if value is not None:
 
-        updates["note_max"] = int(value)
+        updates["note_max"] = value
 
     print()
 
