@@ -684,32 +684,6 @@ class FusionProject:
             self.data
         )
 
-    def get_mix_summary(
-        self
-    ):
-
-        result = []
-
-        for mix_id, mix in self.iter_mixes():
-
-            result.append(
-                {
-                    "id": mix_id,
-                    "name": mix.get(
-                        "name",
-                        mix_id
-                    ),
-                    "parts": len(
-                        mix.get(
-                            "parts",
-                            {}
-                        )
-                    )
-                }
-            )
-
-        return result
-
     def summary(self):
 
         result = {}
@@ -1498,18 +1472,6 @@ class FusionProject:
             return False
 
         return True
-
-    def get_mix_by_program(
-        self,
-        bank,
-        program
-    ):
-
-        mix_id = f"{bank}:{program}"
-
-        return self.get_mix(
-            mix_id
-        )
 
     def find_part_by_channel(
         self,

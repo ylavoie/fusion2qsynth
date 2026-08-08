@@ -1349,32 +1349,6 @@ def list_mixes(project):
             f"{len(mix.get('parts', {})):>5}"
         )
 
-def get_mix_summary(
-    self
-):
-
-    result = []
-
-    for mix_id, mix in self.iter_mixes():
-
-        result.append(
-            {
-                "id": mix_id,
-                "name": mix.get(
-                    "name",
-                    mix_id
-                ),
-                "parts": len(
-                    mix.get(
-                        "parts",
-                        {}
-                    )
-                )
-            }
-        )
-
-    return result
-
 def instruments_menu(project):
 
     while True:
