@@ -29,7 +29,7 @@ state = ControllerState()
 
 LAST_MIX_FILE = "last_mix.json"
 
-DEBUG = True
+DEBUG = False
 
 def save_last_mix(mix_id):
 
@@ -383,198 +383,251 @@ def main():
                     "Attente des changements de Mix..."
                 )
 
-                last_reload = time.time()
-
-                for msg in inp:
+                while True:
 
                     if project.reload_if_changed():
 
-                        state.pending_reload = True
+                        if not state.pending_reload:
 
-                        if state.active_notes:
+                            state.pending_reload = True
+                            state.reload_wait_announced = False
 
-                            print(
-                                "Reload en attente : notes actives"
-                            )
-
-                    if msg.type == "note_on":
-
-                        key = (
-                            msg.channel,
-                            msg.note
-                        )
-
-                        if msg.velocity > 0:
-
-                            state.active_notes.add(
-                                key
-                            )
-
-                        else:
-
-                            state.active_notes.discard(
-                                key
-                            )
-
-                    elif msg.type == "note_off":
-
-                        state.active_notes.discard(
-                            (
-                                msg.channel,
-                                msg.note
-                            )
-                        )
-
-                    if (state.pending_reload
+                    #
+                    # Reload immédiat si repos
+                    #
+                    if (
+                        state.pending_reload
                         and
-                        not state.active_notes):
+                        not state.active_notes
+                    ):
+
+                        print()
+                        print(
+                            "Projet modifié : reload immédiat."
+                        )
 
                         reload_current_mix(
                             out,
                             project
                         )
+
                         state.pending_reload = False
+                        state.reload_wait_announced = False
 
-                    if DEBUG:
+                    #
+                    # MIDI
+                    #
+                    for msg in inp.iter_pending():
 
-                        part = state.current_parts.get(
-                            msg.channel + 1
-                        )
-                        name = "?"
+                        if msg.type == "note_on":
 
-                        if part:
-
-                            instrument = project.resolve_part_instrument(
-                                part
+                            key = (
+                                msg.channel,
+                                msg.note
                             )
 
-                            if instrument:
+                            if msg.velocity > 0:
 
-                                name = instrument.get(
-                                    "name",
-                                    "?"
+                                state.active_notes.add(
+                                    key
                                 )
 
-                        if msg.type == "note_on" and msg.velocity > 0:
+                            else:
 
-                            print(
-                                "NOTE ON",
-                                "CH",
-                                msg.channel + 1, name,
-                                "Note",
-                                note_name(msg.note),
-                                "Vel",
-                                msg.velocity
+                                state.active_notes.discard(
+                                    key
+                                )
+
+                        elif msg.type == "note_off":
+
+                            state.active_notes.discard(
+                                (
+                                    msg.channel,
+                                    msg.note
+                                )
                             )
 
-                        elif (
-                            msg.type == "note_off"
-                            or
-                            (
-                                msg.type == "note_on"
+                            if (
+                                state.pending_reload
                                 and
-                                msg.velocity == 0
-                            )
+                                not state.active_notes
+                            ):
+
+                                if state.reload_wait_announced:
+
+                                    print()
+                                    print(
+                                        "Notes relâchées : reload différé."
+                                    )
+
+                                else:
+
+                                    print()
+                                    print(
+                                        "Projet modifié : reload immédiat."
+                                    )
+
+                                reload_current_mix(
+                                    out,
+                                    project
+                                )
+
+                                state.pending_reload = False
+                                state.reload_wait_announced = False
+
+                        if (
+                            state.pending_reload
+                            and
+                            state.active_notes
+                            and
+                            not state.reload_wait_announced
                         ):
-                            print(
-                                "NOTE OFF",
-                                "CH",
-                                msg.channel + 1, name,
-                                "Note",
-                                note_name(msg.note)
-                            )
-
-                    if time.time() - last_reload > 5:
-
-                        project.reload()
-
-                        last_reload = time.time()
-
-                    if msg.type in [
-                        "note_on",
-                        "note_off"
-                    ]:
-
-                        if not DEBUG:
 
                             print(
-                                "NOTE",
-                                msg.channel + 1,
-                                msg.type,
-                                note_name(msg.note),
-                                msg.velocity
+                                "Projet modifié : reload en attente "
+                                "(notes actives)."
                             )
 
-                        out.send(msg)
+                            state.reload_wait_announced = True
 
-                        continue
+                        if DEBUG:
 
-                    if msg.type in [
-                        "pitchwheel",
-                        "aftertouch",
-                        "polytouch"
-                    ]:
+                            part = state.current_parts.get(
+                                msg.channel + 1
+                            )
+                            name = "?"
 
-                        forward_message(out, msg)
+                            if part:
 
-                        continue
+                                instrument = project.resolve_part_instrument(
+                                    part
+                                )
 
-                    if msg.type == "control_change":
+                                if instrument:
 
-                        if msg.control == 0:
+                                    name = instrument.get(
+                                        "name",
+                                        "?"
+                                    )
 
-                            bank = msg.value
+                            if msg.type == "note_on" and msg.velocity > 0:
 
-                    elif msg.type == "program_change":
+                                print(
+                                    "NOTE ON",
+                                    "CH",
+                                    msg.channel + 1, name,
+                                    "Note",
+                                    note_name(msg.note),
+                                    "Vel",
+                                    msg.velocity
+                                )
 
-                        mix_id = (
-                            f"{bank}:{msg.program}"
-                        )
+                            elif (
+                                msg.type == "note_off"
+                                or
+                                (
+                                    msg.type == "note_on"
+                                    and
+                                    msg.velocity == 0
+                                )
+                            ):
+                                print(
+                                    "NOTE OFF",
+                                    "CH",
+                                    msg.channel + 1, name,
+                                    "Note",
+                                    note_name(msg.note)
+                                )
 
-                        log_event(
-                            f"MIX détecté {mix_id}"
-                        )
+                        if msg.type in [
+                            "note_on",
+                            "note_off"
+                        ]:
 
-                        print()
-                        print(
-                            "===================="
-                        )
+                            if not DEBUG:
 
-                        print(
-                            "Mix Fusion détecté"
-                        )
+                                print(
+                                    "NOTE",
+                                    msg.channel + 1,
+                                    msg.type,
+                                    note_name(msg.note),
+                                    msg.velocity
+                                )
 
-                        print(
-                            "Bank:",
-                            bank
-                        )
-
-                        print(
-                            "Program:",
-                            msg.program
-                        )
-
-                        print(
-                            "ID:",
-                            mix_id
-                        )
-
-                        print(
-                            "===================="
-                        )
-
-                        if mix_id == state.current_mix:
+                            out.send(msg)
 
                             continue
 
-                        load_mix(
-                            mix_id,
-                            out,
-                            project
-                        )
-                        log_event(
-                            f"MIX chargé {mix_id}"
-                        )
+                        if msg.type in [
+                            "pitchwheel",
+                            "aftertouch",
+                            "polytouch"
+                        ]:
+
+                            forward_message(out, msg)
+
+                            continue
+
+                        if msg.type == "control_change":
+
+                            if msg.control == 0:
+
+                                bank = msg.value
+
+                        elif msg.type == "program_change":
+
+                            mix_id = (
+                                f"{bank}:{msg.program}"
+                            )
+
+                            log_event(
+                                f"MIX détecté {mix_id}"
+                            )
+
+                            print()
+                            print(
+                                "===================="
+                            )
+
+                            print(
+                                "Mix Fusion détecté"
+                            )
+
+                            print(
+                                "Bank:",
+                                bank
+                            )
+
+                            print(
+                                "Program:",
+                                msg.program
+                            )
+
+                            print(
+                                "ID:",
+                                mix_id
+                            )
+
+                            print(
+                                "===================="
+                            )
+
+                            if mix_id == state.current_mix:
+
+                                continue
+
+                            load_mix(
+                                mix_id,
+                                out,
+                                project
+                            )
+                            log_event(
+                                f"MIX chargé {mix_id}"
+                            )
+
+                time_sleep(
+                    0.01
+                )
 
     except KeyboardInterrupt:
         print()

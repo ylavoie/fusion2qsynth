@@ -62,7 +62,6 @@ class FusionProject:
                     self.filename
                 )
 
-
         except json.JSONDecodeError:
 
             backup = self.filename + ".bak"
@@ -382,13 +381,22 @@ class FusionProject:
             self.filename
         )
 
-        if new_time != self.file_time:
+        if new_time == self.file_time:
+
+            return False
+
+        try:
 
             self.load()
 
-            return True
+        except (
+            ProjectRecoveryError,
+            RuntimeError
+        ):
 
-        return False
+            return False
+
+        return True
 
     def backup(self):
 
