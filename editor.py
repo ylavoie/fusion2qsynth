@@ -1594,23 +1594,65 @@ def add_instrument(project):
 
         instrument_id = input(
             "Identifiant : "
-        )
+        ).strip()
+
+        if not instrument_id:
+
+            print(
+                "Identifiant requis."
+            )
+
+            return
+
+        if project.get_instrument(
+            instrument_id
+        ):
+
+            print(
+                "Identifiant déjà utilisé."
+            )
+
+            return
 
         name = input(
             "Nom : "
+        ).strip()
+
+        if not name:
+
+            print(
+                "Nom requis."
+            )
+
+            return
+
+        bank = read_int(
+            "SF2 Bank : ",
+            0,
+            128
         )
 
-        bank = int(
-            input(
-                "SF2 Bank : "
+        if bank is None:
+
+            print(
+                "Ajout annulé."
             )
+
+            return
+
+        program = read_int(
+            "SF2 Program : ",
+            0,
+            127
         )
 
-        program = int(
-            input(
-                "SF2 Program : "
+        if program is None:
+
+            print(
+                "Ajout annulé."
             )
-        )
+
+            return
 
     else:
 
@@ -1630,12 +1672,19 @@ def add_instrument(project):
     ):
 
         print(
-            "Identifiant déjà utilisé."
+            "Instrument déjà présent."
         )
 
         return
 
-    if not project.save_safe():
+    if project.save_safe():
+
+        print(
+            "Instrument ajouté :",
+            name
+        )
+
+    else:
 
         print(
             "⚠ Sauvegarde non effectuée."
