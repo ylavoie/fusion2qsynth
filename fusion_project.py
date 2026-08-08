@@ -1625,37 +1625,6 @@ class FusionProject:
 
         return None
 
-    def get_part_instrument(
-        self,
-        mix_id,
-        part_id
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            return None
-
-
-        part = mix.get(
-            "parts",
-            {}
-        ).get(
-            str(part_id)
-        )
-
-        if not part:
-
-            return None
-
-
-        return part.get(
-            "instrument"
-        )
-
     def set_part_instrument(
         self,
         mix_id,
@@ -1772,17 +1741,3 @@ class FusionProject:
                     )
 
         return usages
-
-    def migrate_part_to_library(self, part, instrument_id):
-
-        part["instrument"] = instrument_id
-
-        for key in (
-            "name",
-            "sf2_bank",
-            "sf2_program"
-        ):
-            part.pop(key, None)
-
-        return True
-

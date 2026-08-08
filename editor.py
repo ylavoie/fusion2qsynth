@@ -1370,7 +1370,7 @@ def test_mix_all(project, mix):
             )
 
             program = instrument.get(
-                "sf2_bank",
+                "sf2_program",
                 0
             )
 
@@ -1800,12 +1800,6 @@ def delete_instrument(
         )
 
 def edit_instrument(project):
-
-    instruments = project.list_instruments()
-
-    if not instruments:
-        print("Aucun instrument.")
-        return
 
     # choisir instrument
 
