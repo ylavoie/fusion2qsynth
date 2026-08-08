@@ -814,7 +814,10 @@ class FusionProject:
 
         for mix_id, mix in self.iter_mixes():
 
-            for part_id, part in mix.get("parts", {}).items():
+            for part_id, part in mix.get(
+                "parts",
+                {}
+            ).items():
 
                 instrument_id = part.get(
                     "instrument"
@@ -831,6 +834,10 @@ class FusionProject:
                             "type": "missing_instrument",
                             "mix_id": mix_id,
                             "part_id": part_id,
+                            "channel": part.get(
+                                "midi_channel",
+                                "?"
+                            ),
                             "instrument": instrument_id,
                             "message":
                                 f"Mix {mix_id} PART {part_id} : "
@@ -1037,7 +1044,6 @@ class FusionProject:
                 errors.append(
                     f"{prefix} : plage de vélocité invalide."
                 )
-
 
         return errors
 
@@ -1375,10 +1381,6 @@ class FusionProject:
 
         errors.extend(
             self.validate_midi_channels()
-        )
-
-        errors.extend(
-            self.validate_part_library()
         )
 
         for mix_id in self.sort_mix_ids(
@@ -1784,40 +1786,3 @@ class FusionProject:
 
         return True
 
-    def validate_part_library(self):
-
-        errors = []
-
-        instruments = dict(
-            self.list_instruments()
-        )
-
-        for mix_id, mix in self.iter_mixes():
-
-            parts = mix.get(
-                "parts",
-                {}
-            )
-
-            for part_id, part in parts.items():
-
-                instrument_id = part.get(
-                    "instrument"
-                )
-
-                if not instrument_id:
-
-                    continue
-
-                if instrument_id not in instruments:
-
-                    errors.append(
-                        {
-                            "mix_id": mix_id,
-                            "part_id": part_id,
-                            "instrument": instrument_id,
-                            "error": "Instrument introuvable"
-                        }
-                    )
-
-        return errors

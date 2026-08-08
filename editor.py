@@ -484,14 +484,6 @@ def repair_instrument_errors(
 
         print()
 
-        choix = input(
-            "Remplacer cet instrument ? (o/n) : "
-        )
-
-        if choix.lower() != "o":
-
-            continue
-
         mix = project.get_mix(
             error["mix_id"]
         )
