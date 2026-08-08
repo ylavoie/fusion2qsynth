@@ -45,88 +45,6 @@ def get_test_velocity(part):
 
     return 80
 
-def test_instrument(part, instrument):
-
-    port_name = find_fluidsynth_output()
-
-    if not port_name:
-
-        print(
-            "FluidSynth introuvable"
-        )
-
-        return
-
-    channel = (
-        part["midi_channel"] - 1
-    )
-
-    note = get_test_note(
-        part
-    )
-
-    velocity = get_test_velocity(
-        part
-    )
-
-    with mido.open_output(port_name) as out:
-
-        # Bank Select MSB
-        out.send(
-            mido.Message(
-                "control_change",
-                channel=channel,
-                control=0,
-                value=instrument["sf2_bank"]
-            )
-        )
-
-        # Program Change
-        out.send(
-            mido.Message(
-                "program_change",
-                channel=channel,
-                program=instrument["sf2_program"]
-            )
-        )
-
-        print()
-
-        print(
-            "Test",
-            instrument["name"]
-        )
-
-        print(
-            "CH",
-            part["midi_channel"],
-            "Note",
-            note_name(note),
-            "Velocity",
-            velocity
-        )
-
-        # Note test C4
-        out.send(
-            mido.Message(
-                "note_on",
-                channel=channel,
-                note=note,
-                velocity=velocity
-            )
-        )
-
-        time.sleep(TEST_DURATION)
-
-        out.send(
-            mido.Message(
-                "note_off",
-                channel=channel,
-                note=note,
-                velocity=0
-            )
-        )
-
 def choose_sf2_preset():
 
     presets = list_presets()
@@ -296,44 +214,6 @@ def choose_instrument(
     result["id"] = instrument_id
 
     return result
-
-def preview_instrument(part,instrument):
-
-    print()
-
-    print(
-        "Test arpège :",
-        instrument["name"]
-    )
-
-    root = get_test_note(part)
-
-    notes = [
-        root,
-        root + 4,
-        root + 7,
-        root + 12
-    ]
-
-    print(
-        "Notes :",
-        [
-            note_name(n)
-            for n in notes
-        ]
-    )
-
-    print(
-        "Bank",
-        instrument["sf2_bank"],
-        "Program",
-        instrument["sf2_program"]
-    )
-
-    test_instrument(
-        part,
-        instrument
-    )
 
 def compare_instrument(
     part,
