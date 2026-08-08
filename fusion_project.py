@@ -1120,7 +1120,7 @@ class FusionProject:
         results = []
 
 
-        for mix_id, mix in self.data.items():
+        for mix_id, mix in self.iter_mixes():
 
             mix_result = {
                 "mix": mix_id,
