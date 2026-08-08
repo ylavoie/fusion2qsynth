@@ -430,3 +430,75 @@ Améliorations :
 Corrections :
 
 * prise en compte des presets SoundFont de type kit percussion utilisant des banques supérieures à 127.
+
+## Version 1.8
+
+### Édition des PARTs
+
+* Amélioration de l’édition des paramètres d’une PART.
+* Ajout de la modification du canal MIDI avec validation de la plage 1 à 16.
+* Ajout de la modification des plages de notes et de vélocité.
+* Ajout de la validation des modifications avant leur application.
+* Protection contre les plages de notes ou de vélocité invalides.
+* Ajout de la saisie des notes sous forme musicale (`C3`, `C#3`, `A#4`, etc.).
+* Conservation de la saisie numérique MIDI pour les notes.
+* Ajout du contrôle des bornes lors de la saisie des plages de notes.
+* Harmonisation de l’affichage des plages de notes en notation musicale.
+* Amélioration et uniformisation de l’affichage des paramètres des PARTs.
+
+### Gestion des instruments
+
+* Amélioration de la bibliothèque d’instruments SoundFont.
+* Ajout d’une sélection d’instrument commune et triée alphabétiquement.
+* Affichage de l’instrument actuellement affecté à une PART.
+* Ajout d’un marqueur permettant d’identifier l’instrument courant dans la liste.
+* Amélioration de l’affectation d’un instrument à une PART.
+* Amélioration de la liste des instruments avec affichage de l’identifiant, de la banque, du programme et du nombre d’utilisations.
+* Sécurisation de l’ajout manuel d’un instrument.
+* Amélioration de l’ajout d’un instrument depuis la bibliothèque SoundFont.
+* Sécurisation de la modification des instruments.
+* Amélioration de la sélection lors de la modification et de la suppression d’un instrument.
+* Protection contre la suppression d’un instrument utilisé par une ou plusieurs PARTs.
+* Affichage des MIX et PARTs utilisant un instrument avant le refus de sa suppression.
+* Détection centralisée dans `FusionProject` des références vers des instruments absents.
+* Ajout de la réparation interactive des PARTs faisant référence à un instrument absent.
+* Simplification de la représentation des instruments dans les PARTs en privilégiant les références à la bibliothèque.
+
+### Gestion des MIX
+
+* Amélioration de la gestion et de l’édition des MIX.
+* Ajout du renommage d’un MIX.
+* Ajout de la duplication d’un MIX.
+* Ajout du test d’un MIX depuis l’éditeur.
+* Ajout de la suppression ciblée d’un MIX.
+* Ajout de la suppression des MIX vides.
+* Amélioration de la modification des PARTs d’un MIX.
+* Validation des modifications avant leur application.
+* Conservation des données précédentes lorsqu’une modification est refusée par la validation.
+
+### Validation et robustesse
+
+* Renforcement de la validation des canaux MIDI.
+* Renforcement de la validation des plages de notes et de vélocité.
+* Centralisation de la validation des références d’instruments dans `FusionProject`.
+* Amélioration du traitement et de la réparation des instruments manquants.
+* Correction d’une utilisation incorrecte de `sf2_bank` à la place de `sf2_program` lors du test d’un instrument.
+* Maintien de la validation métier comme protection finale après les contrôles effectués dans l’éditeur.
+
+### Interface et ergonomie
+
+* Amélioration de la présentation des menus d’édition.
+* Uniformisation des listes et sélecteurs d’instruments.
+* Tri alphabétique des instruments lors de leur sélection.
+* Amélioration des messages de confirmation, d’annulation et d’erreur.
+* Affichage plus lisible des plages de notes et de vélocité.
+* Réduction des saisies techniques d’identifiants au profit de sélections numérotées.
+
+### Nettoyage interne
+
+* Suppression de méthodes devenues inutilisées dans `FusionProject`.
+* Suppression d’anciennes fonctions de sélection et de gestion des instruments devenues redondantes.
+* Suppression du code mort de prévisualisation des instruments.
+* Suppression de fonctions MIX devenues inutilisées.
+* Audit des accès aux MIX, PARTs et instruments afin de conserver la logique métier dans `FusionProject`.
+* Simplification et harmonisation de la logique de sélection, de validation et de prévisualisation.
