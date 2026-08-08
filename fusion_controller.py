@@ -127,12 +127,7 @@ def load_mix(mix_id, out, project):
 
     state.current_mix = mix_id
     state.current_parts = {}
-    state.active_notes.clear()
     state.pending_reload = False
-
-    save_last_mix(
-        mix_id
-    )
 
     print()
     print("======================")
@@ -205,6 +200,12 @@ def load_mix(mix_id, out, project):
     print(
         "Canaux actifs :"
     )
+
+    if loaded_parts > 0:
+
+        save_last_mix(
+            mix_id
+        )
 
     for ch, part in state.current_parts.items():
 
