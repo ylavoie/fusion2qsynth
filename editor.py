@@ -1762,36 +1762,81 @@ def edit_instrument(project):
 
     instrument_id = input(
         "Instrument à éditer : "
-    )
+    ).strip()
+
+    if not instrument_id:
+
+        print(
+            "Aucun instrument sélectionné."
+        )
+
+        return
 
     instrument = project.get_instrument(
         instrument_id
     )
 
+    if instrument is None:
+
+        print(
+            "Instrument inconnu."
+        )
+
+        return
+
     name = input(
         f"Nom [{instrument['name']}] : "
     )
 
-    bank = input(
-        f"Bank [{instrument['sf2_bank']}] : "
+    bank = read_int(
+        f"Bank [{instrument['sf2_bank']}] : ",
+        0,
+        128
     )
 
-    program = input(
-        f"Program [{instrument['sf2_program']}] : "
+    program = read_int(
+        f"Program [{instrument['sf2_program']}] : ",
+        0,
+        127
     )
 
     updated = {
-        "name": name or instrument["name"],
-        "sf2_bank": int(bank) if bank else instrument["sf2_bank"],
-        "sf2_program": int(program) if program else instrument["sf2_program"],
+        "name":
+            name or instrument["name"],
+
+        "sf2_bank":
+            instrument["sf2_bank"]
+            if bank is None
+            else bank,
+
+        "sf2_program":
+            instrument["sf2_program"]
+            if program is None
+            else program
     }
 
-    project.update_instrument(
+    if not project.update_instrument(
         instrument_id,
         updated
-    )
+    ):
 
-    project.save_safe()
+        print(
+            "Modification refusée."
+        )
+
+        return
+
+    if project.save_safe():
+
+        print(
+            "Instrument modifié."
+        )
+
+    else:
+
+        print(
+            "⚠ Sauvegarde non effectuée."
+        )
 
 def print_validation_errors(errors):
 
