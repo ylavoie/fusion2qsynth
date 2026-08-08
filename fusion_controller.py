@@ -5,7 +5,7 @@ import os
 import json
 import mido
 
-from fusion_constants import LAST_MIX_FILE
+from fusion_constants import LAST_MIX_FILE, FUSION_DEFAULT_CHANNEL
 from fusion_project import FusionProject
 
 from fusion_lib import (
@@ -15,6 +15,8 @@ from fusion_lib import (
     note_name,
     log_event
 )
+
+fusion_default_channel = FUSION_DEFAULT_CHANNEL - 1
 
 class ControllerState:
 
@@ -571,7 +573,7 @@ def main():
                         if msg.type == "control_change":
 
                             if (
-                                msg.channel == 0
+                                msg.channel == fusion_default_channel
                                 and
                                 msg.control == 0
                             ):
@@ -580,7 +582,7 @@ def main():
 
                         elif msg.type == "program_change":
 
-                            if msg.channel != 0:
+                            if msg.channel != fusion_default_channel:
 
                                 continue
 

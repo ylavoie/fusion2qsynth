@@ -22,6 +22,9 @@ FUSION_INPUT_NAME = "CH345"
 
 FLUIDSYNTH_OUTPUT_NAME = "FLUID Synth"
 
+# Global Fusion 8HD MIDI Channel
+FUSION_DEFAULT_CHANNEL = 1
+
 
 # MIDI limites
 
