@@ -1718,42 +1718,23 @@ def add_instrument(project):
             "⚠ Sauvegarde non effectuée."
         )
 
-def delete_instrument(project):
+def delete_instrument(
+    project
+):
 
-    instruments = project.list_instruments()
+    selected = choose_instrument(
+        project
+    )
 
-    if not instruments:
-
-        print(
-            "Aucun instrument."
-        )
+    if selected is None:
 
         return
 
-
-    print()
-
-    for instrument_id, instrument in instruments:
-
-        print(
-            instrument_id,
-            "-",
-            instrument.get(
-                "name",
-                "?"
-            )
-        )
-
-
-    instrument_id = input(
-        "Instrument à supprimer : "
-    )
-
+    instrument_id = selected["id"]
 
     instrument = project.get_instrument(
         instrument_id
     )
-
 
     if not instrument:
 
@@ -1763,11 +1744,9 @@ def delete_instrument(project):
 
         return
 
-
     confirm = input(
         f"Supprimer {instrument.get('name', instrument_id)} ? (o/n) : "
     )
-
 
     if confirm.lower() != "o":
 
