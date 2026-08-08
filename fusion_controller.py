@@ -29,7 +29,7 @@ state = ControllerState()
 
 LAST_MIX_FILE = "last_mix.json"
 
-DEBUG = False
+DEBUG = True
 
 def save_last_mix(mix_id):
 
@@ -125,6 +125,8 @@ def load_mix(mix_id, out, project):
 
     state.current_mix = mix_id
     state.current_parts = {}
+    state.active_notes.clear()
+    state.pending_reload = False
 
     save_last_mix(
         mix_id
@@ -149,6 +151,8 @@ def load_mix(mix_id, out, project):
     print("======================")
 
     panic(out)
+
+    state.active_notes.clear()
 
     time.sleep(0.1)
 
@@ -184,7 +188,7 @@ def load_mix(mix_id, out, project):
 
         log_event(
             f"PART {part_id} CH {part['midi_channel']} "
-            f"SF2 {part.get('name','Non configuré')}"
+            f"SF2 {instrument.get('name', 'Non configuré')}"
         )
 
     print()
@@ -202,14 +206,20 @@ def load_mix(mix_id, out, project):
 
     for ch, part in state.current_parts.items():
 
+        instrument = project.resolve_part_instrument(
+            part
+        )
+
         print(
             " CH",
             ch,
             "→",
-            part.get(
+            instrument.get(
                 "name",
                 "Non configuré"
             )
+            if instrument
+            else "Non configuré"
         )
 
     print()
@@ -349,13 +359,6 @@ def main():
         synth_port
     )
 
-    if last_mix:
-
-        print(
-            "Dernier Mix :",
-            last_mix
-        )
-
     bank = 0
 
     try:
@@ -366,6 +369,14 @@ def main():
             with mido.open_output(
                 synth_port
             ) as out:
+
+                if last_mix:
+
+                    load_mix(
+                        last_mix,
+                        out,
+                        project
+                    )
 
                 print()
                 print(
@@ -380,19 +391,49 @@ def main():
 
                         state.pending_reload = True
 
-                        if state.pending_reload and len(state.active_notes) == 0:
-
-                            reload_current_mix(
-                                out,
-                                project
-                            )
-                            state.pending_reload = False
-
-                        else:
+                        if state.active_notes:
 
                             print(
                                 "Reload en attente : notes actives"
                             )
+
+                    if msg.type == "note_on":
+
+                        key = (
+                            msg.channel,
+                            msg.note
+                        )
+
+                        if msg.velocity > 0:
+
+                            state.active_notes.add(
+                                key
+                            )
+
+                        else:
+
+                            state.active_notes.discard(
+                                key
+                            )
+
+                    elif msg.type == "note_off":
+
+                        state.active_notes.discard(
+                            (
+                                msg.channel,
+                                msg.note
+                            )
+                        )
+
+                    if (state.pending_reload
+                        and
+                        not state.active_notes):
+
+                        reload_current_mix(
+                            out,
+                            project
+                        )
+                        state.pending_reload = False
 
                     if DEBUG:
 
@@ -403,19 +444,18 @@ def main():
 
                         if part:
 
-                            name = part.get(
-                                "name",
-                                "?"
+                            instrument = project.resolve_part_instrument(
+                                part
                             )
+
+                            if instrument:
+
+                                name = instrument.get(
+                                    "name",
+                                    "?"
+                                )
 
                         if msg.type == "note_on" and msg.velocity > 0:
-
-                            state.active_notes.add(
-                                (
-                                    msg.channel,
-                                    msg.note
-                                )
-                            )
 
                             print(
                                 "NOTE ON",
@@ -427,15 +467,15 @@ def main():
                                 msg.velocity
                             )
 
-                        elif msg.type == "note_off":
-
-                            state.active_notes.discard(
-                                (
-                                    msg.channel,
-                                    msg.note
-                                )
+                        elif (
+                            msg.type == "note_off"
+                            or
+                            (
+                                msg.type == "note_on"
+                                and
+                                msg.velocity == 0
                             )
-
+                        ):
                             print(
                                 "NOTE OFF",
                                 "CH",
@@ -455,21 +495,21 @@ def main():
                         "note_off"
                     ]:
 
-                        print(
-                            "NOTE",
-                            msg.channel + 1,
-                            msg.type,
-                            note_name(msg.note),
-                            msg.velocity
-                        )
+                        if not DEBUG:
+
+                            print(
+                                "NOTE",
+                                msg.channel + 1,
+                                msg.type,
+                                note_name(msg.note),
+                                msg.velocity
+                            )
 
                         out.send(msg)
 
                         continue
 
                     if msg.type in [
-                        "note_on",
-                        "note_off",
                         "pitchwheel",
                         "aftertouch",
                         "polytouch"

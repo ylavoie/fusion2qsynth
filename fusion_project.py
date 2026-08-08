@@ -58,6 +58,10 @@ class FusionProject:
             ) as f:
 
                 self.data = json.load(f)
+                self.file_time = os.path.getmtime(
+                    self.filename
+                )
+
 
         except json.JSONDecodeError:
 
@@ -379,8 +383,6 @@ class FusionProject:
         )
 
         if new_time != self.file_time:
-
-            self.file_time = new_time
 
             self.load()
 
@@ -1026,12 +1028,22 @@ class FusionProject:
         part
     ):
 
+        if "midi_channel" not in part:
+
+            return False
+
+        instrument = self.resolve_part_instrument(
+            part
+        )
+
+        if not instrument:
+
+            return False
+
         return (
-            "midi_channel" in part
+            "sf2_bank" in instrument
             and
-            "sf2_bank" in part
-            and
-            "sf2_program" in part
+            "sf2_program" in instrument
         )
 
     def update_part(
