@@ -1532,26 +1532,54 @@ def instruments_menu(project):
 
             break
 
-def list_instruments(project):
+def list_instruments(
+    project
+):
 
-    instruments = project.list_instruments()
+    instruments = sorted(
+        project.list_instruments(),
+        key=lambda item:
+            item[1].get(
+                "name",
+                ""
+            ).lower()
+    )
 
     print()
 
     if not instruments:
 
-        print("Aucun instrument.")
+        print(
+            "Aucun instrument."
+        )
 
         return
 
+    print(
+        "Instruments :",
+        len(instruments)
+    )
+
+    print()
+
+    print(
+        f"{'Nom':<25}"
+        f"{'Identifiant':<20}"
+        f"{'Bank':>6}"
+        f"{'Program':>10}"
+    )
+
+    print(
+        "-" * 61
+    )
 
     for instrument_id, instrument in instruments:
 
         print(
-            f"{instrument_id} : "
-            f"{instrument.get('name','?')} "
-            f"(Bank {instrument.get('sf2_bank')} "
-            f"Program {instrument.get('sf2_program')})"
+            f"{instrument.get('name', '?'):<25}"
+            f"{instrument_id:<20}"
+            f"{instrument.get('sf2_bank', '?'):>6}"
+            f"{instrument.get('sf2_program', '?'):>10}"
         )
 
 def add_instrument(project):
