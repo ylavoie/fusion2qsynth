@@ -58,6 +58,15 @@ def choose_sf2_preset():
 
         return None
 
+    presets = sorted(
+        presets,
+        key=lambda preset:
+            preset.get(
+                "name",
+                ""
+            ).lower()
+    )
+
     while True:
 
         print()
