@@ -570,11 +570,19 @@ def main():
 
                         if msg.type == "control_change":
 
-                            if msg.control == 0:
+                            if (
+                                msg.channel == 0
+                                and
+                                msg.control == 0
+                            ):
 
                                 bank = msg.value
 
                         elif msg.type == "program_change":
+
+                            if msg.channel != 0:
+
+                                continue
 
                             mix_id = (
                                 f"{bank}:{msg.program}"
