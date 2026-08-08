@@ -34,6 +34,66 @@
       "name": "Orchestra Kit",
       "sf2_bank": 128,
       "sf2_program": 48
+    },
+    "electric_piano": {
+      "name": "Electric Piano",
+      "sf2_bank": 0,
+      "sf2_program": 2
+    },
+    "fretless_bass": {
+      "name": "Fretless Bass",
+      "sf2_bank": 0,
+      "sf2_program": 35
+    },
+    "ahh_choir": {
+      "name": "Ahh Choir",
+      "sf2_bank": 0,
+      "sf2_program": 52
+    },
+    "square_lead": {
+      "name": "Square Lead",
+      "sf2_bank": 0,
+      "sf2_program": 80
+    },
+    "warm_pad": {
+      "name": "Warm Pad",
+      "sf2_bank": 0,
+      "sf2_program": 89
+    },
+    "12_string_guitar": {
+      "name": "12 String Guitar",
+      "sf2_bank": 8,
+      "sf2_program": 25
+    },
+    "drawbarorgan": {
+      "name": "DrawbarOrgan",
+      "sf2_bank": 0,
+      "sf2_program": 16
+    },
+    "standard": {
+      "name": "Standard",
+      "sf2_bank": 128,
+      "sf2_program": 0
+    },
+    "pizzicato_section": {
+      "name": "Pizzicato Section",
+      "sf2_bank": 0,
+      "sf2_program": 45
+    },
+    "bagpipe": {
+      "name": "BagPipe",
+      "sf2_bank": 0,
+      "sf2_program": 109
+    },
+    "bassoon": {
+      "name": "Bassoon",
+      "sf2_bank": 0,
+      "sf2_program": 70
+    },
+    "contrabass": {
+      "name": "Contrabass",
+      "sf2_bank": 0,
+      "sf2_program": 43
     }
   },
   "2:5": {
@@ -336,7 +396,102 @@
   },
   "3:1": {
     "name": "Fusion Mix 3:1",
-    "parts": {}
+    "parts": {
+      "1": {
+        "midi_channel": 1,
+        "bank": 3,
+        "program": 1,
+        "instrument": "grand_piano"
+      },
+      "2": {
+        "midi_channel": 2,
+        "bank": 0,
+        "program": 0,
+        "instrument": "electric_piano"
+      },
+      "3": {
+        "midi_channel": 3,
+        "bank": 0,
+        "program": 0,
+        "instrument": "fretless_bass"
+      },
+      "4": {
+        "midi_channel": 4,
+        "bank": 0,
+        "program": 0,
+        "instrument": "ahh_choir"
+      },
+      "5": {
+        "midi_channel": 5,
+        "bank": 0,
+        "program": 0,
+        "instrument": "square_lead"
+      },
+      "6": {
+        "midi_channel": 6,
+        "bank": 0,
+        "program": 0,
+        "instrument": "orchestra_kit"
+      },
+      "7": {
+        "midi_channel": 7,
+        "bank": 0,
+        "program": 0,
+        "instrument": "12_string_guitar"
+      },
+      "8": {
+        "midi_channel": 8,
+        "bank": 0,
+        "program": 0,
+        "instrument": "drawbarorgan"
+      },
+      "9": {
+        "midi_channel": 9,
+        "bank": 0,
+        "program": 0,
+        "instrument": "flute"
+      },
+      "10": {
+        "midi_channel": 10,
+        "bank": 0,
+        "program": 0,
+        "instrument": "standard"
+      },
+      "11": {
+        "midi_channel": 11,
+        "bank": 0,
+        "program": 0,
+        "instrument": "trumpet"
+      },
+      "12": {
+        "midi_channel": 12,
+        "bank": 0,
+        "program": 0
+      },
+      "13": {
+        "midi_channel": 13,
+        "bank": 0,
+        "program": 0,
+        "instrument": "pizzicato_section"
+      },
+      "14": {
+        "midi_channel": 14,
+        "bank": 0,
+        "program": 0,
+        "instrument": "bagpipe"
+      },
+      "15": {
+        "midi_channel": 15,
+        "bank": 0,
+        "program": 0,
+        "instrument": "bassoon"
+      },
+      "16": {
+        "midi_channel": 16,
+        "bank": 0,
+        "program": 0
+      }
+    }
   },
   "0:0": {
     "name": "Fusion Mix 0:0",

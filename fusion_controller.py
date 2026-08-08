@@ -31,7 +31,7 @@ state = ControllerState()
 
 LAST_MIX_FILE = "last_mix.json"
 
-DEBUG = False
+DEBUG = True
 
 def save_last_mix(mix_id):
 
@@ -60,12 +60,15 @@ def send_program(out, channel, instrument):
         0
     )
 
+    bank_msb = bank // 128
+    bank_lsb = bank % 128
+
     out.send(
         mido.Message(
             "control_change",
             channel=channel,
             control=0,
-            value=min(max(bank,0),127)
+            value=bank_msb
         )
     )
 
@@ -74,7 +77,7 @@ def send_program(out, channel, instrument):
             "control_change",
             channel=channel,
             control=32,
-            value=0
+            value=bank_lsb
         )
     )
 
@@ -82,7 +85,13 @@ def send_program(out, channel, instrument):
         mido.Message(
             "program_change",
             channel=channel,
-            program=min(max(program,0),127)
+            program=min(
+                max(
+                    program,
+                    0
+                ),
+                127
+            )
         )
     )
 
@@ -421,6 +430,24 @@ def main():
                     # MIDI
                     #
                     for msg in inp.iter_pending():
+
+                        if msg.type in [
+                            "note_on",
+                            "note_off"
+                        ]:
+
+                            if msg.channel + 1 not in state.current_parts:
+
+                                if DEBUG:
+
+                                    print(
+                                        "NOTE ignorée",
+                                        "CH",
+                                        msg.channel + 1,
+                                        note_name(msg.note)
+                                    )
+
+                                continue
 
                         if msg.type == "note_on":
 
