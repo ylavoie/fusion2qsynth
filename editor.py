@@ -205,7 +205,7 @@ def choose_sf2_preset():
 
 def choose_instrument(
         project,
-        part
+        part=None
 ):
     print()
 
@@ -221,19 +221,27 @@ def choose_instrument(
         "===================="
     )
 
-    current = project.resolve_part_instrument(part)
+    current_id = None
 
-    if current:
+    if part is not None:
 
-        print()
+        current = project.resolve_part_instrument(part)
 
-        print(
-            "Instrument actuel :",
-            current.get("name", "?")
+        if current:
+
+            print()
+
+            print(
+                "Instrument actuel :",
+                current.get("name", "?")
+            )
+        else:
+
+            print("Instrument non-configuré")
+
+        current_id = part.get(
+            "instrument"
         )
-    else:
-
-        print("Instrument non-configuré")
 
     print()
     print("Choisir un instrument")
@@ -242,10 +250,6 @@ def choose_instrument(
     instruments = sorted(
         project.list_instruments(),
         key=lambda item: item[1].get("name", "").lower()
-    )
-
-    current_id = part.get(
-        "instrument"
     )
 
     for index, (instrument_id, instrument) in enumerate(
@@ -279,7 +283,7 @@ def choose_instrument(
 
         instrument_id, instrument = instruments[index]
 
-    except:
+    except (ValueError, IndexError):
 
         print(
             "Choix invalide"
@@ -1749,28 +1753,15 @@ def edit_instrument(project):
 
     # choisir instrument
 
-    for instrument_id, instrument in instruments:
+    selected = choose_instrument(
+        project
+    )
 
-        print(
-            instrument_id,
-            "-",
-            instrument.get(
-                "name",
-                "?"
-            )
-        )
-
-    instrument_id = input(
-        "Instrument à éditer : "
-    ).strip()
-
-    if not instrument_id:
-
-        print(
-            "Aucun instrument sélectionné."
-        )
+    if selected is None:
 
         return
+
+    instrument_id = selected["id"]
 
     instrument = project.get_instrument(
         instrument_id
