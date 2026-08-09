@@ -5,7 +5,12 @@ import os
 import json
 import mido
 
-from fusion_constants import LAST_MIX_FILE, FUSION_DEFAULT_CHANNEL
+from fusion_constants import (
+    LAST_MIX_FILE,
+    FUSION_DEFAULT_CHANNEL,
+    DEBUG
+)
+
 from fusion_project import FusionProject
 
 from fusion_lib import (
