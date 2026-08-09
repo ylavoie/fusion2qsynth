@@ -594,12 +594,25 @@ def main():
                             "polytouch"
                         ]:
 
-                            forward_message(out, msg)
+                            if (
+                                msg.channel + 1
+                                not in state.current_parts.keys()
+                            ):
+
+                                continue
+
+                            forward_message(
+                                out,
+                                msg
+                            )
 
                             continue
 
                         if msg.type == "control_change":
 
+                            #
+                            # Détection banque du MIX Fusion
+                            #
                             if (
                                 msg.channel == fusion_default_channel
                                 and
@@ -607,6 +620,51 @@ def main():
                             ):
 
                                 bank = msg.value
+
+                                continue
+
+                            #
+                            # Bank Select des PARTs :
+                            # ne pas écraser le mapping SoundFont
+                            #
+                            if msg.control in (
+                                0,
+                                32
+                            ):
+
+                                continue
+
+                            #
+                            # PART non active
+                            #
+                            if (
+                                msg.channel + 1
+                                not in state.current_parts.keys()
+                            ):
+
+                                if DEBUG:
+
+                                    print(
+                                        "CC ignoré",
+                                        "CH",
+                                        msg.channel + 1,
+                                        "CC",
+                                        msg.control,
+                                        "Value",
+                                        msg.value
+                                    )
+
+                                continue
+
+                            #
+                            # Autres contrôleurs MIDI
+                            #
+                            forward_message(
+                                out,
+                                msg
+                            )
+
+                            continue
 
                         elif msg.type == "program_change":
 

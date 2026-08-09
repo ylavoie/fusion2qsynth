@@ -94,6 +94,16 @@
       "name": "Contrabass",
       "sf2_bank": 0,
       "sf2_program": 43
+    },
+    "vibraphone": {
+      "name": "Vibraphone",
+      "sf2_bank": 0,
+      "sf2_program": 11
+    },
+    "acoustic_bass": {
+      "name": "Acoustic Bass",
+      "sf2_bank": 0,
+      "sf2_program": 32
     }
   },
   "2:5": {
@@ -209,28 +219,19 @@
         "midi_channel": 1,
         "bank": 3,
         "program": 0,
-        "note_min": 53,
-        "note_max": 108,
-        "velocity_min": 13,
-        "velocity_max": 75
+        "instrument": "vibraphone"
       },
       "2": {
         "midi_channel": 2,
         "bank": 0,
         "program": 0,
-        "note_min": 24,
-        "note_max": 52,
-        "velocity_min": 4,
-        "velocity_max": 69
+        "instrument": "acoustic_bass"
       },
       "3": {
         "midi_channel": 3,
         "bank": 0,
         "program": 0,
-        "note_min": 24,
-        "note_max": 52,
-        "velocity_min": 4,
-        "velocity_max": 69
+        "instrument": "standard"
       }
     }
   },
@@ -606,5 +607,9 @@
         "velocity_max": 83
       }
     }
+  },
+  "2:7": {
+    "name": "Fusion Mix 2:7",
+    "parts": {}
   }
 }
