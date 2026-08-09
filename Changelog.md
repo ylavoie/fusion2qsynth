@@ -502,3 +502,100 @@ Corrections :
 * Suppression de fonctions MIX devenues inutilisées.
 * Audit des accès aux MIX, PARTs et instruments afin de conserver la logique métier dans `FusionProject`.
 * Simplification et harmonisation de la logique de sélection, de validation et de prévisualisation.
+
+## Version 1.9 - Contrôleur Live et diagnostic MIDI
+
+Date : 2026-08-09
+
+### Amélioré
+
+#### Contrôleur Live
+
+* Fiabilisation du rechargement à chaud de `fusion.json`.
+* Ajout du reload immédiat lorsqu’aucune note n’est active.
+* Ajout du reload différé lorsqu’une modification survient pendant le jeu.
+* Le reload différé est exécuté automatiquement dès que la dernière note active est relâchée.
+* Ajout d’un suivi fiable des notes actives indépendamment du mode DEBUG.
+* Gestion de `note_on` avec vélocité 0 comme un `note_off`.
+* Protection contre les lectures transitoirement invalides de `fusion.json` pendant une sauvegarde externe.
+* Suppression du rechargement périodique forcé du projet.
+* Amélioration des messages indiquant les reloads immédiats et différés.
+* Refactorisation de la logique de reload afin de réduire les duplications.
+
+#### Détection des changements de Mix
+
+* Ajout d’un canal MIDI par défaut configurable pour le Fusion 8HD.
+* La détection des changements de Mix utilise maintenant le canal MIDI par défaut configuré dans le Fusion.
+* Les Bank Select et Program Change des autres canaux ne déclenchent plus de faux changements de Mix.
+* Validation du comportement avec plusieurs configurations de canal MIDI par défaut du Fusion.
+
+#### Chargement des Mix
+
+* Amélioration de la gestion du dernier Mix chargé.
+* Le dernier Mix n’est sauvegardé que lorsqu’au moins une PART a réellement été chargée dans FluidSynth.
+* Synchronisation de l’état interne des notes actives après un MIDI panic.
+* Les PARTs incomplètes restent ignorées sans empêcher le chargement des PARTs valides.
+* Correction du diagnostic afin d’exclure la bibliothèque `instruments` de la liste des Mix.
+
+#### Routage MIDI
+
+* Le routage MIDI est maintenant limité aux PARTs réellement actives dans FluidSynth.
+* Les notes provenant de PARTs non configurées sont ignorées.
+* Les Control Change provenant de PARTs non configurées sont ignorés.
+* Le Pitch Bend, l’Aftertouch et le Polyphonic Aftertouch sont transmis uniquement pour les PARTs actives.
+* Les Control Change musicaux des PARTs actives sont transmis à FluidSynth.
+* Les Bank Select reçus du Fusion sont interceptés afin de ne pas écraser le mapping SoundFont configuré.
+* Suppression de la fonction de routage MIDI devenue redondante après la spécialisation du traitement des messages.
+
+#### Banques SoundFont
+
+* Correction de la sélection des banques SoundFont supérieures à 127.
+* Ajout du découpage des banques MIDI sur MSB et LSB.
+* Validation des banques 0, 8 et 128.
+* Validation du chargement de presets de percussion et de banques étendues.
+
+#### Configuration
+
+* Déplacement du mode DEBUG dans `fusion_constants.py`.
+* Centralisation du canal MIDI par défaut du Fusion dans la configuration.
+
+### Monitor MIDI
+
+* Refonte du Monitor MIDI en outil de diagnostic indépendant de `fusion.json`.
+* Suppression de la dépendance au modèle des Mix et PARTs.
+* Affichage compact d’un événement MIDI par ligne.
+* Affichage des canaux MIDI de 1 à 16.
+* Affichage des noms de notes.
+* Ajout de l’affichage des messages :
+
+  * Note On ;
+  * Note Off ;
+  * Control Change ;
+  * Program Change ;
+  * Pitch Wheel ;
+  * Aftertouch ;
+  * Polyphonic Aftertouch ;
+  * SysEx ;
+  * Quarter Frame ;
+  * Song Position ;
+  * Song Select ;
+  * Tune Request ;
+  * MIDI Clock ;
+  * Start ;
+  * Continue ;
+  * Stop ;
+  * Active Sensing ;
+  * Reset.
+* Affichage des messages MIDI inconnus plutôt que leur suppression silencieuse.
+* Ajout des noms standards des principaux contrôleurs MIDI CC.
+* Affichage lisible des contrôleurs comme Modulation, Brightness, Resonance, Reverb, Chorus et contrôleurs généraux.
+
+### Bibliothèque SoundFont
+
+* Tri alphabétique des presets SoundFont lors de l’ajout d’un instrument.
+
+### Nettoyage interne
+
+* Suppression de code devenu redondant dans le Contrôleur Live.
+* Simplification des tests de canaux actifs.
+* Audit des fonctions du contrôleur et conservation uniquement des chemins réellement utilisés.
