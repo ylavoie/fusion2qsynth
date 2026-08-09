@@ -236,19 +236,6 @@ def load_mix(mix_id, out, project):
 
     print()
 
-def forward_message(out, msg):
-
-    if msg.type in [
-        "note_on",
-        "note_off",
-        "control_change",
-        "pitchwheel",
-        "aftertouch",
-        "polytouch"
-    ]:
-
-        out.send(msg)
-
 def reload_current_mix(out, project):
 
     if state.current_mix:
@@ -599,13 +586,12 @@ def main():
 
                             if (
                                 msg.channel + 1
-                                not in state.current_parts.keys()
+                                not in state.current_parts
                             ):
 
                                 continue
 
-                            forward_message(
-                                out,
+                            out.send(
                                 msg
                             )
 
@@ -642,7 +628,7 @@ def main():
                             #
                             if (
                                 msg.channel + 1
-                                not in state.current_parts.keys()
+                                not in state.current_parts
                             ):
 
                                 if DEBUG:
@@ -662,8 +648,7 @@ def main():
                             #
                             # Autres contrôleurs MIDI
                             #
-                            forward_message(
-                                out,
+                            out.send(
                                 msg
                             )
 
