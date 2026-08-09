@@ -259,6 +259,34 @@ def reload_current_mix(out, project):
             project
         )
 
+def execute_pending_reload(
+    out,
+    project,
+    deferred=False
+):
+
+    print()
+
+    if deferred:
+
+        print(
+            "Notes relâchées : reload différé."
+        )
+
+    else:
+
+        print(
+            "Projet modifié : reload immédiat."
+        )
+
+    reload_current_mix(
+        out,
+        project
+    )
+
+    state.pending_reload = False
+    state.reload_wait_announced = False
+
 def load_last_mix():
 
     if not os.path.exists(LAST_MIX_FILE):
@@ -413,18 +441,10 @@ def main():
                         not state.active_notes
                     ):
 
-                        print()
-                        print(
-                            "Projet modifié : reload immédiat."
-                        )
-
-                        reload_current_mix(
+                        execute_pending_reload(
                             out,
                             project
                         )
-
-                        state.pending_reload = False
-                        state.reload_wait_announced = False
 
                     #
                     # MIDI
@@ -482,28 +502,11 @@ def main():
                                 and
                                 not state.active_notes
                             ):
-
-                                if state.reload_wait_announced:
-
-                                    print()
-                                    print(
-                                        "Notes relâchées : reload différé."
+                                    execute_pending_reload(
+                                        out,
+                                        project,
+                                        deferred=state.reload_wait_announced
                                     )
-
-                                else:
-
-                                    print()
-                                    print(
-                                        "Projet modifié : reload immédiat."
-                                    )
-
-                                reload_current_mix(
-                                    out,
-                                    project
-                                )
-
-                                state.pending_reload = False
-                                state.reload_wait_announced = False
 
                         if (
                             state.pending_reload
