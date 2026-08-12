@@ -430,12 +430,37 @@ class FusionProject:
     #
     # Accès Mix
     #
+    def get_mixes(self):
+
+        #
+        # Format v2
+        #
+        mixes = self.data.get(
+            "mixes"
+        )
+
+        if isinstance(
+            mixes,
+            dict
+        ):
+
+            return mixes
+
+        #
+        # Format v1
+        #
+        return {
+            mix_id: mix
+            for mix_id, mix in self.data.items()
+            if mix_id != "instruments"
+        }
+
     def get_mix(
         self,
         mix_id
     ):
 
-        return self.data.get(
+        return self.get_mixes().get(
             mix_id
         )
 
@@ -506,7 +531,9 @@ class FusionProject:
                 ]
             )
 
-        if new_mix_id in self.data:
+        mixes = self.get_mixes()
+
+        if new_mix_id in mixes:
 
             return (
                 False,
@@ -525,13 +552,13 @@ class FusionProject:
             source.get('name', source_mix_id)
         )
 
-        self.data[new_mix_id] = new_mix
+        mixes[new_mix_id] = new_mix
 
         errors = self.validate()
 
         if errors:
 
-            self.data.pop(
+            mixes.pop(
                 new_mix_id,
                 None
             )
@@ -559,8 +586,7 @@ class FusionProject:
 
             if not any(
                 mix.get("name") == candidate
-                for mix in self.data.values()
-            ):
+                for mix in self.get_mixes().values()            ):
                 return candidate
 
         index = 2
@@ -573,7 +599,7 @@ class FusionProject:
 
             if not any(
                 mix.get("name") == candidate
-                for mix in self.data.values()
+                for mix in self.get_mixes().values()
             ):
                 return candidate
 
@@ -584,6 +610,8 @@ class FusionProject:
     ):
 
         import copy
+
+        mixes = self.get_mixes()
 
         backup = copy.deepcopy(
             self.data
@@ -604,7 +632,7 @@ class FusionProject:
                     mix_id
                 )
 
-                del self.data[mix_id]
+                del mixes[mix_id]
 
         errors = self.validate()
 
@@ -627,7 +655,9 @@ class FusionProject:
         mix_id
     ):
 
-        if mix_id not in self.data:
+        mixes = self.get_mixes()
+
+        if not mix_id in mixes:
 
             return (
                 False,
@@ -640,7 +670,7 @@ class FusionProject:
             self.data
         )
 
-        del self.data[mix_id]
+        del mixes[mix_id]
 
         errors = self.validate()
 
@@ -679,19 +709,21 @@ class FusionProject:
 
     def iter_mixes(self):
 
+        mixes = self.get_mixes()
+
         for mix_id in self.sort_mix_ids(
-            self.data
+            mixes
         ):
 
             yield (
                 mix_id,
-                self.data[mix_id]
+                mixes[mix_id]
             )
 
     def count_mixes(self):
 
         return len(
-            self.data
+            self.get_mixes()
         )
 
     def summary(self):
@@ -699,13 +731,13 @@ class FusionProject:
         result = {}
 
         result["mixes"] = len(
-            self.data
+            self.get_mixes()
         )
 
         parts = 0
         configured = 0
 
-        for mix in self.data.values():
+        for mix in self.get_mixes().values():
 
             for part in mix.get(
                 "parts",
