@@ -1137,6 +1137,76 @@ class FusionProject:
         )
 
     #
+    # Accès Program
+    #
+    def get_programs(self):
+
+        programs = self.data.get(
+            "programs"
+        )
+
+        if not isinstance(
+            programs,
+            dict
+        ):
+
+            programs = {}
+
+            self.data["programs"] = programs
+
+        return programs
+
+
+    def get_program(
+        self,
+        program_id
+    ):
+
+        return self.get_programs().get(
+            program_id
+        )
+
+
+    def ensure_program(
+        self,
+        program_id
+    ):
+
+        programs = self.get_programs()
+
+        if program_id not in programs:
+
+            programs[program_id] = {
+                "name":
+                    f"Fusion Program {program_id}",
+
+                "parts": {}
+            }
+
+        return programs[program_id]
+
+
+    def iter_programs(self):
+
+        programs = self.get_programs()
+
+        for program_id in self.sort_mix_ids(
+            programs
+        ):
+
+            yield (
+                program_id,
+                programs[program_id]
+            )
+
+
+    def count_programs(self):
+
+        return len(
+            self.get_programs()
+        )
+
+    #
     # Diagnostic
     #
     def get_diagnostic(self):

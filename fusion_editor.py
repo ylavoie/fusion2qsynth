@@ -1938,6 +1938,154 @@ def validate_and_repair(project):
             errors
         )
 
+def list_programs(project):
+
+    programs = list(
+        project.iter_programs()
+    )
+
+    print()
+
+    if not programs:
+
+        print(
+            "Aucun PROGRAM."
+        )
+
+        return
+
+    print(
+        "PROGRAMS :",
+        len(programs)
+    )
+
+    print()
+
+    print(
+        f"{'ID':<10}"
+        f"{'Nom':<28}"
+        f"{'CH':>4}"
+        f"{'Bank':>8}"
+        f"{'Program':>10}"
+        f"  Instrument"
+    )
+
+    print(
+        "-" * 78
+    )
+
+    for program_id, program in programs:
+
+        part = program.get(
+            "parts",
+            {}
+        ).get(
+            "1",
+            {}
+        )
+
+        instrument_name = (
+            "Non configuré"
+        )
+
+        instrument_id = part.get(
+            "instrument"
+        )
+
+        if instrument_id:
+
+            instrument = project.get_instrument(
+                instrument_id
+            )
+
+            if instrument:
+
+                instrument_name = instrument.get(
+                    "name",
+                    instrument_id
+                )
+
+        print(
+            f"{program_id:<10}"
+            f"{program.get('name', ''):<28}"
+            f"{part.get('midi_channel', '?'):>4}"
+            f"{part.get('bank', '?'):>8}"
+            f"{part.get('program', '?'):>10}"
+            f"  {instrument_name}"
+        )
+
+def edit_program(
+    project,
+    program_id
+):
+
+    program = project.get_program(
+        program_id
+    )
+
+    if not program:
+
+        print(
+            "PROGRAM inconnu."
+        )
+
+        return
+
+    part = program.get(
+        "parts",
+        {}
+    ).get(
+        "1"
+    )
+
+    if not part:
+
+        print(
+            "PART absente."
+        )
+
+        return
+
+    print()
+
+    print(
+        "PROGRAM :",
+        program_id,
+        "-",
+        program.get(
+            "name",
+            ""
+        )
+    )
+
+    project.print_part(
+        "1",
+        part
+    )
+
+    instrument = choose_instrument(
+        project,
+        part
+    )
+
+    if instrument is None:
+
+        return
+
+    part["instrument"] = instrument["id"]
+
+    if project.save_safe():
+
+        print(
+            "Instrument affecté."
+        )
+
+    else:
+
+        print(
+            "⚠ Sauvegarde non effectuée."
+        )
+
 def main():
 
     def delete_empty_mixes_menu():
@@ -2104,6 +2252,52 @@ def main():
                 "MIX supprimé."
             )
 
+    def programs_menu(project):
+
+        while True:
+
+            print()
+            print("===================")
+            print(" PROGRAMS ")
+            print("===================")
+
+            print(
+                "1 - Liste"
+            )
+
+            print(
+                "2 - Éditer"
+            )
+
+            print(
+                "q - Retour"
+            )
+
+            choice = input(
+                "> "
+            )
+
+            if choice == "1":
+
+                list_programs(
+                    project
+                )
+
+            elif choice == "2":
+
+                program_id = input(
+                    "PROGRAM à éditer : "
+                )
+
+                edit_program(
+                    project,
+                    program_id
+                )
+
+            elif choice.lower() == "q":
+
+                return
+
     project = FusionProject()
 
     validate_and_repair(
@@ -2121,6 +2315,7 @@ def main():
         print("3 - Supprimer un MIX")
         print("4 - Supprimer les MIX vides")
         print("5 - Gestion Instruments")
+        print("6 - Gestion PROGRAM")
         print("q - Quitter")
 
         choix = input("> ")
@@ -2148,6 +2343,10 @@ def main():
         elif choix == "5":
 
             instruments_menu(project)
+
+        elif choix == "6":
+
+            programs_menu(project)
 
         elif choix.lower() == "q":
 

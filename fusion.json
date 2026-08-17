@@ -110,9 +110,59 @@
       "name": "Metal Pad",
       "sf2_bank": 0,
       "sf2_program": 93
+    },
+    "harpsichord": {
+      "name": "Harpsichord",
+      "sf2_bank": 0,
+      "sf2_program": 6
     }
   },
-  "programs": {},
+  "programs": {
+    "0:12": {
+      "name": "Fusion Program 0:12",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 12,
+          "note_min": 21,
+          "note_max": 108,
+          "velocity_min": 8,
+          "velocity_max": 97
+        }
+      }
+    },
+    "0:11": {
+      "name": "Fusion Program 0:11",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 11,
+          "note_min": 21,
+          "note_max": 108,
+          "velocity_min": 7,
+          "velocity_max": 78,
+          "instrument": "acoustic_bass"
+        }
+      }
+    },
+    "0:10": {
+      "name": "Fusion Program 0:10",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 10,
+          "note_min": 21,
+          "note_max": 108,
+          "velocity_min": 12,
+          "velocity_max": 95,
+          "instrument": "harpsichord"
+        }
+      }
+    }
+  },
   "mixes": {
     "2:5": {
       "name": "Fusion Mix 2:5",

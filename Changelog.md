@@ -44,7 +44,7 @@ Fonctionnalités :
 
 ### Éditeur de Mix
 
-Ajout de `editor.py`.
+Ajout de `fusion_editor.py`.
 
 Fonctionnalités :
 

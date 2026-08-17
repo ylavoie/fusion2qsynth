@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import editor
+import fusion_editor
 import fusion_capture
 import fusion_controller
 import fusion_monitor
@@ -183,7 +183,7 @@ def main():
 
         elif choix == "2":
 
-            editor.main()
+            fusion_editor.main()
 
         elif choix == "3":
 

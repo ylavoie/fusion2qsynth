@@ -270,7 +270,7 @@ Capture
 
 → apprentissage
 
-Editor
+fusion_editor
 
 → modification
 

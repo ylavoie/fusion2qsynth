@@ -38,7 +38,7 @@ fusion.json
       |                |
       v                v
 
- editor.py     fusion_controller.py
+ fusion_editor.py     fusion_controller.py
       |                |
       +-------+--------+
               |
@@ -107,7 +107,7 @@ fusion.json
 
 ---
 
-## editor.py
+## fusion_editor.py
 
 Éditeur des associations Fusion → SF2.
 
@@ -362,7 +362,7 @@ fusion_lib.py
 sf2_lib.py
 
 fusion_capture.py
-editor.py
+fusion_editor.py
 fusion_controller.py
 fusion_monitor.py
 
