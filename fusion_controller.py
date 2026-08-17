@@ -27,10 +27,12 @@ class ControllerState:
 
     def __init__(self):
 
-        self.current_mix = None
+        self.current_mode = None
+        self.current_performance = None
         self.current_parts = {}
         self.active_notes = set()
         self.pending_reload = False
+        self.reload_wait_announced = False
 
 state = ControllerState()
 
@@ -139,7 +141,8 @@ def load_mix(mix_id, out, project):
 
         print()
 
-    state.current_mix = mix_id
+    state.current_mode = "mix"
+    state.current_performance = mix_id
     state.current_parts = {}
     state.pending_reload = False
 
@@ -241,12 +244,23 @@ def load_mix(mix_id, out, project):
 
     print()
 
-def reload_current_mix(out, project):
+def reload_current_performance(
+    out,
+    project
+):
 
-    if state.current_mix:
+    if state.current_mode == "program":
+
+        load_program(
+            state.current_performance,
+            out,
+            project
+        )
+
+    elif state.current_mode == "mix":
 
         load_mix(
-            state.current_mix,
+            state.current_performance,
             out,
             project
         )
@@ -271,7 +285,7 @@ def execute_pending_reload(
             "Projet modifié : reload immédiat."
         )
 
-    reload_current_mix(
+    reload_current_performance(
         out,
         project
     )
@@ -293,7 +307,178 @@ def load_last_mix():
             "mix"
         )
 
+def load_program(
+    program_id,
+    out,
+    project
+):
+
+    program = project.get_program(
+        program_id
+    )
+
+    if not program:
+
+        print()
+        print(
+            "Program inconnu:",
+            program_id
+        )
+
+        return
+
+    parts = program.get(
+        "parts",
+        {}
+    )
+
+    if not parts:
+
+        print()
+        print(
+            "Program sans PART:",
+            program_id
+        )
+
+        return
+
+    part_id, part = next(
+        iter(
+            parts.items()
+        )
+    )
+
+    if not project.is_qsynth_ready(
+        part
+    ):
+
+        print()
+        print(
+            "PROGRAM",
+            program_id,
+            "non configuré pour FluidSynth."
+        )
+
+        return
+
+    instrument = project.resolve_part_instrument(
+        part
+    )
+
+    if not instrument:
+
+        print()
+        print(
+            "Instrument non configuré."
+        )
+
+        return
+
+    state.current_mode = "program"
+    state.current_performance = program_id
+    state.current_parts = {}
+    state.pending_reload = False
+
+    print()
+    print("======================")
+    print(
+        "PROGRAM:",
+        program.get(
+            "name",
+            program_id
+        )
+    )
+    print(
+        "Fusion Program:",
+        program_id
+    )
+    print("======================")
+
+    panic(out)
+
+    state.active_notes.clear()
+
+    time.sleep(0.1)
+
+    midi_channel = (
+        part["midi_channel"] - 1
+    )
+
+    send_program(
+        out,
+        midi_channel,
+        instrument
+    )
+
+    state.current_parts[
+        part["midi_channel"]
+    ] = part
+
+    #save_last_performance(
+    #    "program",
+    #    program_id
+    #)
+
+    print()
+    print(
+        "Canal actif :"
+    )
+
+    print(
+        " CH",
+        part["midi_channel"],
+        "→",
+        instrument.get(
+            "name",
+            "Non configuré"
+        )
+    )
+
+    print()
+
 def main():
+
+    def choose_controller_mode():
+
+        while True:
+
+            print()
+            print("====================")
+            print("Contrôleur Live")
+            print("====================")
+            print()
+            print("1 - PROGRAM")
+            print("2 - MIX")
+            print("q - Retour")
+            print()
+
+            choice = input(
+                "> "
+            )
+
+            if choice == "1":
+
+                return "program"
+
+            if choice == "2":
+
+                return "mix"
+
+            if choice.lower() == "q":
+
+                return None
+
+            print(
+                "Choix invalide."
+            )
+
+    selected_mode = choose_controller_mode()
+
+    if selected_mode is None:
+
+        return
+
+    state.current_mode = selected_mode
 
     project = FusionProject()
 
@@ -321,48 +506,52 @@ def main():
 
         print()
 
-    last_mix = load_last_mix()
+    last_mix = None
 
-    diagnostic = project.get_diagnostic()
-    for mix in diagnostic:
+    if selected_mode == "mix":
+
+        last_mix = load_last_mix()
+
+        diagnostic = project.get_diagnostic()
+        for mix in diagnostic:
+
+            print()
+            print(
+                "Mix :",
+                mix["mix"],
+                "-",
+                mix["name"]
+            )
+
+
+            for part in mix["parts"]:
+
+                print(
+                    " PART",
+                    part["part"],
+                    "Fusion:",
+                    "OK"
+                    if part["fusion_valid"]
+                    else "ERREUR",
+                    "QSynth:",
+                    "OK"
+                    if part["qsynth_configured"]
+                    else "Non configuré"
+                )
+
+
+            if "shared_channels" in mix:
+
+                print(
+                    " ⚠ Canaux partagés :",
+                    mix["shared_channels"]
+                )
 
         print()
         print(
-            "Mix :",
-            mix["mix"],
-            "-",
-            mix["name"]
+            project.count_mixes(),
+            "Mix chargés"
         )
-
-
-        for part in mix["parts"]:
-
-            print(
-                " PART",
-                part["part"],
-                "Fusion:",
-                "OK"
-                if part["fusion_valid"]
-                else "ERREUR",
-                "QSynth:",
-                "OK"
-                if part["qsynth_configured"]
-                else "Non configuré"
-            )
-
-
-        if "shared_channels" in mix:
-
-            print(
-                " ⚠ Canaux partagés :",
-                mix["shared_channels"]
-            )
-
-    print()
-    print(
-        project.count_mixes(),
-        "Mix chargés"
-    )
     print()
 
     fusion_port = find_fusion_input()
@@ -402,7 +591,11 @@ def main():
                 synth_port
             ) as out:
 
-                if last_mix:
+                if (
+                    selected_mode == "mix"
+                    and
+                    last_mix
+                ):
 
                     load_mix(
                         last_mix,
@@ -411,9 +604,17 @@ def main():
                     )
 
                 print()
-                print(
-                    "Attente des changements de Mix..."
-                )
+                if selected_mode == "program":
+
+                    print(
+                        "Attente des changements de Program..."
+                    )
+
+                else:
+
+                    print(
+                        "Attente des changements de Mix..."
+                    )
 
                 while True:
 
@@ -665,12 +866,12 @@ def main():
 
                                 continue
 
-                            mix_id = (
+                            performance_id = (
                                 f"{bank}:{msg.program}"
                             )
 
                             log_event(
-                                f"MIX détecté {mix_id}"
+                                f"PERFORMANCE détectée {performance_id}"
                             )
 
                             print()
@@ -679,7 +880,7 @@ def main():
                             )
 
                             print(
-                                "Mix Fusion détecté"
+                                "Performance Fusion détecté"
                             )
 
                             print(
@@ -694,24 +895,39 @@ def main():
 
                             print(
                                 "ID:",
-                                mix_id
+                                performance_id
                             )
 
                             print(
                                 "===================="
                             )
 
-                            if mix_id == state.current_mix:
+                            if (
+                                state.current_mode == selected_mode
+                                and
+                                performance_id == state.current_performance
+                            ):
 
                                 continue
 
-                            load_mix(
-                                mix_id,
-                                out,
-                                project
-                            )
+                            if state.current_mode == "program":
+
+                                load_program(
+                                    performance_id,
+                                    out,
+                                    project
+                                )
+
+                            elif state.current_mode == "mix":
+
+                                load_mix(
+                                    performance_id,
+                                    out,
+                                    project
+                                )
+
                             log_event(
-                                f"MIX chargé {mix_id}"
+                                f"PERFORMANCE chargée {performance_id}"
                             )
 
                 time_sleep(
