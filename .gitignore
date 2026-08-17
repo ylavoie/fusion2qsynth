@@ -13,9 +13,14 @@ venv/
 # Fichiers temporaires
 *~
 *.tmp
+*.log
 
 # Sauvegardes locales
-fusion.json.bak
+fusion.json.bak*
 
 # Archives de release
 releases/*.tar.gz
+
+# Archives de MIDI
+Community/*
+FUSION_HD/*
