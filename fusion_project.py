@@ -1156,7 +1156,6 @@ class FusionProject:
 
         return programs
 
-
     def get_program(
         self,
         program_id
@@ -1165,7 +1164,6 @@ class FusionProject:
         return self.get_programs().get(
             program_id
         )
-
 
     def ensure_program(
         self,
@@ -1185,7 +1183,6 @@ class FusionProject:
 
         return programs[program_id]
 
-
     def iter_programs(self):
 
         programs = self.get_programs()
@@ -1199,11 +1196,79 @@ class FusionProject:
                 programs[program_id]
             )
 
-
     def count_programs(self):
 
         return len(
             self.get_programs()
+        )
+
+    #
+    # Accès Song
+    #
+    def get_songs(self):
+
+        songs = self.data.get(
+            "songs"
+        )
+
+        if not isinstance(
+            songs,
+            dict
+        ):
+
+            songs = {}
+
+            self.data["songs"] = songs
+
+        return songs
+
+    def get_song(
+        self,
+        song_id
+    ):
+
+        return self.get_songs().get(
+            str(song_id)
+        )
+
+    def ensure_song(
+        self,
+        song_id
+    ):
+
+        song_id = str(song_id)
+
+        songs = self.get_songs()
+
+        if song_id not in songs:
+
+            songs[song_id] = {
+                "name":
+                    f"Fusion Song {song_id}",
+
+                "channels": {}
+            }
+
+        return songs[song_id]
+
+    def iter_songs(self):
+
+        songs = self.get_songs()
+
+        for song_id in sorted(
+            songs,
+            key=lambda value: int(value)
+        ):
+
+            yield (
+                song_id,
+                songs[song_id]
+            )
+
+    def count_songs(self):
+
+        return len(
+            self.get_songs()
         )
 
     #

@@ -692,5 +692,65 @@
       }
     }
   },
-  "songs": {}
+  "songs": {
+    "0": {
+      "name": "Fusion Song 0",
+      "channels": {
+        "2": {
+          "volume": 127,
+          "pan": 64,
+          "bank": 0,
+          "program": 35,
+          "expression": 127,
+          "chorus": 35,
+          "reverb": 0
+        },
+        "3": {
+          "volume": 75,
+          "pan": 4,
+          "bank": 0,
+          "program": 25,
+          "expression": 127,
+          "chorus": 127,
+          "reverb": 127
+        },
+        "4": {
+          "volume": 110,
+          "pan": 64,
+          "bank": 0,
+          "program": 0,
+          "expression": 127,
+          "chorus": 60,
+          "reverb": 60
+        },
+        "6": {
+          "volume": 110,
+          "pan": 64,
+          "bank": 0,
+          "program": 100,
+          "expression": 127,
+          "chorus": 60,
+          "reverb": 60
+        },
+        "5": {
+          "volume": 120,
+          "pan": 104,
+          "bank": 0,
+          "program": 26,
+          "expression": 127,
+          "chorus": 90,
+          "reverb": 80
+        },
+        "10": {
+          "volume": 127,
+          "pan": 64,
+          "bank": 0,
+          "program": 0,
+          "expression": 127,
+          "chorus": 0,
+          "reverb": 70
+        }
+      }
+    }
+  }
 }

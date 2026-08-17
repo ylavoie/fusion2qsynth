@@ -599,6 +599,240 @@ def capture_mix(
         print("Retour au menu")
         return
 
+def capture_song(
+    project,
+    port_name
+):
+
+    print(
+        "Ecoute :",
+        port_name
+    )
+
+    print()
+    print(
+        "Sélectionne une Song Fusion"
+    )
+
+    print(
+        "Démarre la Song pour lancer la capture"
+    )
+
+    print(
+        "Ctrl+C pour quitter"
+    )
+
+    song_id = None
+    capture_active = False
+
+    channels = {}
+    banks_msb = {}
+    banks_lsb = {}
+
+    static_cc = {
+        7: "volume",
+        10: "pan",
+        11: "expression",
+        91: "reverb",
+        93: "chorus"
+    }
+
+    try:
+
+        with mido.open_input(
+            port_name
+        ) as inp:
+
+            for msg in inp:
+
+                #
+                # Sélection SONG
+                #
+                if msg.type == "song_select":
+
+                    song_id = msg.song
+
+                    print()
+                    print(
+                        "SONG détectée :",
+                        song_id
+                    )
+
+                    continue
+
+                #
+                # Début transport
+                #
+                if msg.type == "start":
+
+                    if song_id is None:
+
+                        continue
+
+                    capture_active = True
+
+                    channels = {}
+                    banks_msb = {}
+                    banks_lsb = {}
+
+                    print()
+                    print("====================")
+                    print(
+                        "Capture SONG",
+                        song_id
+                    )
+                    print("====================")
+
+                    continue
+
+                #
+                # Fin transport
+                #
+                if (
+                    msg.type == "stop"
+                    and
+                    capture_active
+                ):
+
+                    capture_active = False
+
+                    song = project.ensure_song(
+                        song_id
+                    )
+
+                    song["channels"] = channels
+
+                    if project.save_safe():
+
+                        print()
+                        print(
+                            "SONG sauvegardée :",
+                            song_id
+                        )
+
+                        print(
+                            "Canaux détectés :",
+                            len(channels)
+                        )
+
+                    else:
+
+                        print(
+                            "⚠ Sauvegarde non effectuée."
+                        )
+
+                    continue
+
+                if not capture_active:
+
+                    continue
+
+                #
+                # Bank Select MSB
+                #
+                if (
+                    msg.type == "control_change"
+                    and
+                    msg.control == 0
+                ):
+
+                    banks_msb[
+                        msg.channel
+                    ] = msg.value
+
+                    continue
+
+                #
+                # Bank Select LSB
+                #
+                if (
+                    msg.type == "control_change"
+                    and
+                    msg.control == 32
+                ):
+
+                    banks_lsb[
+                        msg.channel
+                    ] = msg.value
+
+                    continue
+
+                #
+                # Program Change
+                #
+                if msg.type == "program_change":
+
+                    channel = str(
+                        msg.channel + 1
+                    )
+
+                    channels.setdefault(
+                        channel,
+                        {}
+                    )
+
+                    bank = (
+                        banks_msb.get(
+                            msg.channel,
+                            0
+                        )
+                        * 128
+                        +
+                        banks_lsb.get(
+                            msg.channel,
+                            0
+                        )
+                    )
+
+                    channels[
+                        channel
+                    ][
+                        "bank"
+                    ] = bank
+
+                    channels[
+                        channel
+                    ][
+                        "program"
+                    ] = msg.program
+
+                    continue
+
+                #
+                # Contrôleurs statiques
+                #
+                if (
+                    msg.type == "control_change"
+                    and
+                    msg.control in static_cc
+                ):
+
+                    channel = str(
+                        msg.channel + 1
+                    )
+
+                    channels.setdefault(
+                        channel,
+                        {}
+                    )
+
+                    channels[
+                        channel
+                    ][
+                        static_cc[msg.control]
+                    ] = msg.value
+
+                    continue
+
+    except KeyboardInterrupt:
+
+        print()
+        print(
+            "Retour au menu Capture"
+        )
+
+        return
+
 def main():
 
     port_name = find_fusion_input()
@@ -644,8 +878,9 @@ def main():
 
         elif choice == "3":
 
-            print(
-                "Capture SONG non implantée."
+            capture_song(
+                project,
+                port_name
             )
 
         elif choice.lower() == "q":
