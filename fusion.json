@@ -105,6 +105,11 @@
       "name": "Acoustic Bass",
       "sf2_bank": 0,
       "sf2_program": 32
+    },
+    "metal_pad": {
+      "name": "Metal Pad",
+      "sf2_bank": 0,
+      "sf2_program": 93
     }
   },
   "programs": {},
@@ -235,8 +240,7 @@
         "3": {
           "midi_channel": 3,
           "bank": 0,
-          "program": 0,
-          "instrument": "standard"
+          "program": 0
         }
       }
     },
@@ -592,6 +596,48 @@
           "note_max": 100,
           "velocity_min": 9,
           "velocity_max": 83
+        }
+      }
+    },
+    "1:100": {
+      "name": "Fusion Mix 1:100",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 1,
+          "program": 100
+        }
+      }
+    },
+    "1:99": {
+      "name": "Fusion Mix 1:99",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 1,
+          "program": 99
+        }
+      }
+    },
+    "2:8": {
+      "name": "Fusion Mix 2:8",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 2,
+          "program": 8,
+          "instrument": "metal_pad"
+        },
+        "2": {
+          "midi_channel": 2,
+          "bank": 0,
+          "program": 0,
+          "instrument": "warm_pad"
+        },
+        "3": {
+          "midi_channel": 3,
+          "bank": 0,
+          "program": 0
         }
       }
     }

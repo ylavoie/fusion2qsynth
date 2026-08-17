@@ -432,28 +432,20 @@ class FusionProject:
     #
     def get_mixes(self):
 
-        #
-        # Format v2
-        #
         mixes = self.data.get(
             "mixes"
         )
 
-        if isinstance(
+        if not isinstance(
             mixes,
             dict
         ):
 
-            return mixes
+            mixes = {}
 
-        #
-        # Format v1
-        #
-        return {
-            mix_id: mix
-            for mix_id, mix in self.data.items()
-            if mix_id != "instruments"
-        }
+            self.data["mixes"] = mixes
+
+        return mixes
 
     def get_mix(
         self,
@@ -1410,7 +1402,7 @@ class FusionProject:
         )
 
         for mix_id in self.sort_mix_ids(
-            self.data
+            self.get_mixes()
         ):
 
             errors.extend(
@@ -1426,10 +1418,13 @@ class FusionProject:
         mix_id
     ):
 
-        mix = self.data.get(
-            mix_id,
-            {}
+        mix = self.get_mix(
+            mix_id
         )
+
+        if not mix:
+
+            return False
 
         return bool(
             mix.get(
@@ -1442,9 +1437,11 @@ class FusionProject:
         mix_id
     ):
 
-        if mix_id not in self.data:
+        mixes = self.get_mixes()
 
-            self.data[mix_id] = {
+        if mix_id not in mixes:
+
+            mixes[mix_id] = {
 
                 "name":
                     f"Fusion Mix {mix_id}",
@@ -1453,7 +1450,7 @@ class FusionProject:
 
             }
 
-        return self.data[mix_id]
+        return mixes[mix_id]
 
     def replace_mix_parts(
         self,
@@ -1502,9 +1499,11 @@ class FusionProject:
         mix_id
     ):
 
-        if mix_id not in self.data:
+        mixes = self.get_mixes()
 
-            self.data[mix_id] = {
+        if mix_id not in mixes:
+
+            mixes[mix_id] = {
 
                 "name":
                     f"Fusion Mix {mix_id}",
@@ -1516,9 +1515,9 @@ class FusionProject:
             return True
 
         if (
-            "parts" in self.data[mix_id]
+            "parts" in mixes[mix_id]
             and
-            self.data[mix_id]["parts"]
+            mixes[mix_id]["parts"]
         ):
 
             return False
@@ -1557,7 +1556,7 @@ class FusionProject:
 
         channels = {}
 
-        for mix_id, mix in self.data.items():
+        for mix_id, mix in self.iter_mixes():
 
             for part_id, part in mix.get(
                 "parts",
@@ -1573,19 +1572,12 @@ class FusionProject:
                     continue
 
                 channels[ch] = {
-
-                    "mix_id":
-                        mix_id,
-
-                    "part_id":
-                        part_id,
-
-                    "part":
-                        part
+                    "mix_id": mix_id,
+                    "part_id": part_id,
+                    "part": part
                 }
 
         return channels
-
     #
     # Instruments
     #
