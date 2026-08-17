@@ -703,7 +703,8 @@
           "program": 35,
           "expression": 127,
           "chorus": 35,
-          "reverb": 0
+          "reverb": 0,
+          "instrument": "Pop Bass"
         },
         "3": {
           "volume": 75,
@@ -712,7 +713,8 @@
           "program": 25,
           "expression": 127,
           "chorus": 127,
-          "reverb": 127
+          "reverb": 127,
+          "instrument": "12_string_guitar"
         },
         "4": {
           "volume": 110,

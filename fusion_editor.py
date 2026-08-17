@@ -2086,6 +2086,199 @@ def edit_program(
             "⚠ Sauvegarde non effectuée."
         )
 
+def list_songs(
+    project
+):
+
+    songs = list(
+        project.iter_songs()
+    )
+
+    if not songs:
+
+        print(
+            "Aucune SONG."
+        )
+
+        return
+
+    print()
+
+    for song_id, song in songs:
+
+        print(
+            "SONG",
+            song_id,
+            "-",
+            song.get(
+                "name",
+                ""
+            )
+        )
+
+        for channel_id, channel in song.get(
+            "channels",
+            {}
+        ).items():
+
+            instrument = project.resolve_part_instrument(
+                channel
+            )
+
+            print(
+                " CH",
+                channel_id,
+                "→",
+                instrument.get(
+                    "name",
+                    "Non configuré"
+                )
+                if instrument
+                else "Non configuré",
+                "| Bank",
+                channel.get(
+                    "bank",
+                    "?"
+                ),
+                "| Program",
+                channel.get(
+                    "program",
+                    "?"
+                )
+            )
+
+def edit_song(
+    project,
+    song_id
+):
+
+    song = project.get_song(
+        song_id
+    )
+
+    if not song:
+
+        print(
+            "SONG inconnue."
+        )
+
+        return
+
+    channels = song.get(
+        "channels",
+        {}
+    )
+
+    if not channels:
+
+        print(
+            "Aucun canal."
+        )
+
+        return
+
+    while True:
+
+        print()
+        print(
+            "SONG :",
+            song_id,
+            "-",
+            song.get(
+                "name",
+                ""
+            )
+        )
+
+        print()
+
+        for channel_id, channel in channels.items():
+
+            instrument = project.resolve_part_instrument(
+                channel
+            )
+
+            print(
+                "CH",
+                channel_id,
+                "-",
+                instrument.get(
+                    "name",
+                    "Non configuré"
+                )
+                if instrument
+                else "Non configuré",
+                f"({channel.get('bank', '?')}:"
+                f"{channel.get('program', '?')})"
+            )
+
+        print()
+
+        channel_id = input(
+            "Canal à modifier (q pour quitter) : "
+        )
+
+        if channel_id.lower() == "q":
+
+            return
+
+        channel = channels.get(
+            channel_id
+        )
+
+        if channel is None:
+
+            print(
+                "Canal inconnu."
+            )
+
+            continue
+
+        print()
+        print(
+            "Fusion Bank    :",
+            channel.get(
+                "bank",
+                "?"
+            )
+        )
+
+        print(
+            "Fusion Program :",
+            channel.get(
+                "program",
+                "?"
+            )
+        )
+
+        instrument = choose_instrument(
+            project,
+            channel
+        )
+
+        if instrument is None:
+
+            continue
+
+        channel[
+            "instrument"
+        ] = instrument[
+            "id"
+        ]
+
+        if project.save_safe():
+
+            print(
+                "Instrument affecté."
+            )
+
+        else:
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
+
 def main():
 
     def delete_empty_mixes_menu():
@@ -2298,6 +2491,54 @@ def main():
 
                 return
 
+    def songs_menu(
+        project
+    ):
+
+        while True:
+
+            print()
+            print("===================")
+            print(" SONGS ")
+            print("===================")
+
+            print(
+                "1 - Liste"
+            )
+
+            print(
+                "2 - Éditer"
+            )
+
+            print(
+                "q - Retour"
+            )
+
+            choice = input(
+                "> "
+            )
+
+            if choice == "1":
+
+                list_songs(
+                    project
+                )
+
+            elif choice == "2":
+
+                song_id = input(
+                    "SONG à éditer : "
+                )
+
+                edit_song(
+                    project,
+                    song_id
+                )
+
+            elif choice.lower() == "q":
+
+                return
+
     project = FusionProject()
 
     validate_and_repair(
@@ -2316,6 +2557,7 @@ def main():
         print("4 - Supprimer les MIX vides")
         print("5 - Gestion Instruments")
         print("6 - Gestion PROGRAM")
+        print("7 - Gestion SONG")
         print("q - Quitter")
 
         choix = input("> ")
@@ -2347,6 +2589,12 @@ def main():
         elif choix == "6":
 
             programs_menu(project)
+
+        elif choix == "7":
+
+            songs_menu(
+                project
+            )
 
         elif choix.lower() == "q":
 
