@@ -115,6 +115,11 @@
       "name": "Harpsichord",
       "sf2_bank": 0,
       "sf2_program": 6
+    },
+    "harmonica": {
+      "name": "Harmonica",
+      "sf2_bank": 0,
+      "sf2_program": 22
     }
   },
   "programs": {
@@ -723,7 +728,8 @@
           "program": 0,
           "expression": 127,
           "chorus": 60,
-          "reverb": 60
+          "reverb": 60,
+          "instrument": "grand_piano"
         },
         "6": {
           "volume": 110,
@@ -732,7 +738,8 @@
           "program": 100,
           "expression": 127,
           "chorus": 60,
-          "reverb": 60
+          "reverb": 60,
+          "instrument": "metal_pad"
         },
         "5": {
           "volume": 120,
@@ -741,7 +748,8 @@
           "program": 26,
           "expression": 127,
           "chorus": 90,
-          "reverb": 80
+          "reverb": 80,
+          "instrument": "harmonica"
         },
         "10": {
           "volume": 127,
@@ -750,7 +758,8 @@
           "program": 0,
           "expression": 127,
           "chorus": 0,
-          "reverb": 70
+          "reverb": 70,
+          "instrument": "grand_piano"
         }
       }
     }

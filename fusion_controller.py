@@ -33,12 +33,11 @@ class ControllerState:
         self.active_notes = set()
         self.pending_reload = False
         self.reload_wait_announced = False
+        self.pending_song = None
 
 state = ControllerState()
 
 LAST_MIX_FILE = "last_mix.json"
-
-DEBUG = True
 
 def save_last_mix(mix_id):
 
@@ -265,6 +264,14 @@ def reload_current_performance(
             project
         )
 
+    elif state.current_mode == "song":
+
+        load_song(
+            state.current_performance,
+            out,
+            project
+        )
+
 def execute_pending_reload(
     out,
     project,
@@ -436,6 +443,165 @@ def load_program(
 
     print()
 
+def load_song(
+    song_id,
+    out,
+    project
+):
+
+    song = project.get_song(
+        song_id
+    )
+
+    if not song:
+
+        print()
+        print(
+            "SONG inconnue:",
+            song_id
+        )
+
+        return
+
+    channels = song.get(
+        "channels",
+        {}
+    )
+
+    if not channels:
+
+        print()
+        print(
+            "SONG sans canaux:",
+            song_id
+        )
+
+        return
+
+    state.current_mode = "song"
+    state.current_performance = song_id
+    state.current_parts = {}
+    state.pending_reload = False
+
+    print()
+    print("======================")
+    print(
+        "SONG:",
+        song.get(
+            "name",
+            song_id
+        )
+    )
+    print(
+        "Fusion Song:",
+        song_id
+    )
+    print("======================")
+
+    panic(
+        out
+    )
+
+    state.active_notes.clear()
+
+    time.sleep(
+        0.1
+    )
+
+    loaded_channels = 0
+
+    for channel_id, channel in channels.items():
+
+        instrument = project.resolve_part_instrument(
+            channel
+        )
+
+        if not instrument:
+
+            print(
+                "CH",
+                channel_id,
+                "instrument non configuré"
+            )
+
+            continue
+
+        midi_channel = (
+            int(channel_id) - 1
+        )
+
+        #
+        # Instrument SoundFont
+        #
+        send_program(
+            out,
+            midi_channel,
+            instrument
+        )
+
+        #
+        # Paramètres statiques SONG
+        #
+        controls = {
+            7: "volume",
+            10: "pan",
+            11: "expression",
+            91: "reverb",
+            93: "chorus"
+        }
+
+        for cc, field in controls.items():
+
+            if field not in channel:
+
+                continue
+
+            out.send(
+                mido.Message(
+                    "control_change",
+                    channel=midi_channel,
+                    control=cc,
+                    value=channel[field]
+                )
+            )
+
+        state.current_parts[
+            int(channel_id)
+        ] = channel
+
+        loaded_channels += 1
+
+    print()
+    print(
+        loaded_channels,
+        "canaux chargés dans FluidSynth"
+    )
+
+    print()
+    print(
+        "Canaux actifs :"
+    )
+
+    for ch, channel in state.current_parts.items():
+
+        instrument = project.resolve_part_instrument(
+            channel
+        )
+
+        print(
+            " CH",
+            ch,
+            "→",
+            instrument.get(
+                "name",
+                "Non configuré"
+            )
+            if instrument
+            else "Non configuré"
+        )
+
+    print()
+
 def main():
 
     def choose_controller_mode():
@@ -449,6 +615,7 @@ def main():
             print()
             print("1 - PROGRAM")
             print("2 - MIX")
+            print("3 - SONG")
             print("q - Retour")
             print()
 
@@ -460,11 +627,15 @@ def main():
 
                 return "program"
 
-            if choice == "2":
+            elif choice == "2":
 
                 return "mix"
 
-            if choice.lower() == "q":
+            elif choice == "3":
+
+                return "song"
+
+            elif choice.lower() == "q":
 
                 return None
 
@@ -552,6 +723,7 @@ def main():
             project.count_mixes(),
             "Mix chargés"
         )
+
     print()
 
     fusion_port = find_fusion_input()
@@ -610,6 +782,12 @@ def main():
                         "Attente des changements de Program..."
                     )
 
+                elif selected_mode == "song":
+
+                    print(
+                        "Attente des changements de Song..."
+                    )
+
                 else:
 
                     print(
@@ -643,6 +821,24 @@ def main():
                     # MIDI
                     #
                     for msg in inp.iter_pending():
+
+                        if (
+                            selected_mode == "song"
+                            and
+                            msg.type == "song_select"
+                        ):
+
+                            state.pending_song = str(
+                                msg.song
+                            )
+
+                            print()
+                            print(
+                                "SONG sélectionnée :",
+                                state.pending_song
+                            )
+
+                            continue
 
                         if msg.type in [
                             "note_on",
@@ -805,51 +1001,55 @@ def main():
 
                         if msg.type == "control_change":
 
-                            #
-                            # Détection banque du MIX Fusion
-                            #
-                            if (
-                                msg.channel == fusion_default_channel
-                                and
-                                msg.control == 0
+                            if selected_mode in (
+                                "program",
+                                "mix"
                             ):
+                                #
+                                # Détection banque du MIX Fusion
+                                #
+                                if (
+                                    msg.channel == fusion_default_channel
+                                    and
+                                    msg.control == 0
+                                ):
 
-                                bank = msg.value
+                                    bank = msg.value
 
-                                continue
+                                    continue
 
-                            #
-                            # Bank Select des PARTs :
-                            # ne pas écraser le mapping SoundFont
-                            #
-                            if msg.control in (
-                                0,
-                                32
-                            ):
+                                #
+                                # Bank Select des PARTs :
+                                # ne pas écraser le mapping SoundFont
+                                #
+                                if msg.control in (
+                                    0,
+                                    32
+                                ):
 
-                                continue
+                                    continue
 
-                            #
-                            # PART non active
-                            #
-                            if (
-                                msg.channel + 1
-                                not in state.current_parts
-                            ):
+                                #
+                                # PART non active
+                                #
+                                if (
+                                    msg.channel + 1
+                                    not in state.current_parts
+                                ):
 
-                                if DEBUG:
+                                    if DEBUG:
 
-                                    print(
-                                        "CC ignoré",
-                                        "CH",
-                                        msg.channel + 1,
-                                        "CC",
-                                        msg.control,
-                                        "Value",
-                                        msg.value
-                                    )
+                                        print(
+                                            "CC ignoré",
+                                            "CH",
+                                            msg.channel + 1,
+                                            "CC",
+                                            msg.control,
+                                            "Value",
+                                            msg.value
+                                        )
 
-                                continue
+                                    continue
 
                             #
                             # Autres contrôleurs MIDI
@@ -861,6 +1061,10 @@ def main():
                             continue
 
                         elif msg.type == "program_change":
+
+                            if selected_mode == "song":
+
+                                continue
 
                             if msg.channel != fusion_default_channel:
 
@@ -929,6 +1133,28 @@ def main():
                             log_event(
                                 f"PERFORMANCE chargée {performance_id}"
                             )
+
+                        if (
+                            selected_mode == "song"
+                            and
+                            msg.type == "start"
+                        ):
+
+                            if state.pending_song is None:
+
+                                print(
+                                    "START reçu sans SONG sélectionnée."
+                                )
+
+                                continue
+
+                            load_song(
+                                state.pending_song,
+                                out,
+                                project
+                            )
+
+                            continue
 
                 time_sleep(
                     0.01
