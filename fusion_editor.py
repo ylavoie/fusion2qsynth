@@ -2281,169 +2281,233 @@ def edit_song(
 
 def main():
 
-    def delete_empty_mixes_menu():
+    def mixes_menu(
+        project
+    ):
 
-        empty_mixes = []
+        def delete_empty_mixes_menu():
 
-        for mix_id, mix in project.iter_mixes():
+            empty_mixes = []
 
-            if not mix.get(
-                "parts",
-                {}
-            ):
+            for mix_id, mix in project.iter_mixes():
 
-                empty_mixes.append(
-                    mix_id
-                )
+                if not mix.get(
+                    "parts",
+                    {}
+                ):
 
-        if not empty_mixes:
+                    empty_mixes.append(
+                        mix_id
+                    )
 
-            print()
-            print(
-                "Aucun MIX vide."
-            )
-
-            return
-
-        print()
-
-        print(
-            "MIX vides détectés :"
-        )
-
-        for mix_id in empty_mixes:
-
-            print(
-                "-",
-                mix_id
-            )
-
-        rep = input(
-            "Supprimer ? (o/n) : "
-        )
-
-        if rep.lower() != "o":
-
-            return
-
-        ok, removed = project.delete_empty_mixes()
-
-        if ok:
-
-            if not removed:
+            if not empty_mixes:
 
                 print()
-
                 print(
                     "Aucun MIX vide."
                 )
 
                 return
 
-            if project.save_safe():
+            print()
 
-                print()
+            print(
+                "MIX vides détectés :"
+            )
+
+            for mix_id in empty_mixes:
 
                 print(
-                    "MIX supprimés :"
+                    "-",
+                    mix_id
                 )
 
-                for mix_id in removed:
+            rep = input(
+                "Supprimer ? (o/n) : "
+            )
+
+            if rep.lower() != "o":
+
+                return
+
+            ok, removed = project.delete_empty_mixes()
+
+            if ok:
+
+                if not removed:
+
+                    print()
 
                     print(
-                        "-",
-                        mix_id
+                        "Aucun MIX vide."
                     )
 
-                print()
+                    return
+
+                if project.save_safe():
+
+                    print()
+
+                    print(
+                        "MIX supprimés :"
+                    )
+
+                    for mix_id in removed:
+
+                        print(
+                            "-",
+                            mix_id
+                        )
+
+                    print()
+
+                    print(
+                        len(removed),
+                        "MIX supprimé(s)."
+                    )
+
+                    print(
+                        "Sauvegarde effectuée."
+                    )
+
+            else:
 
                 print(
-                    len(removed),
-                    "MIX supprimé(s)."
+                    "⚠ Sauvegarde non effectuée."
                 )
+
+        def delete_mix_menu():
+
+            mix_id = input(
+                "Mix à supprimer : "
+            )
+
+            mix = project.get_mix(
+                mix_id
+            )
+
+            if mix is None:
 
                 print(
-                    "Sauvegarde effectuée."
+                    "Mix inconnu."
                 )
 
-        else:
+                return
+
+            print()
 
             print(
-                "⚠ Sauvegarde non effectuée."
+                "Suppression du MIX :"
             )
-
-    def delete_mix_menu():
-
-        mix_id = input(
-            "Mix à supprimer : "
-        )
-
-        mix = project.get_mix(
-            mix_id
-        )
-
-        if mix is None:
 
             print(
-                "Mix inconnu."
+                "ID :",
+                mix_id
             )
 
-            return
-
-        print()
-
-        print(
-            "Suppression du MIX :"
-        )
-
-        print(
-            "ID :",
-            mix_id
-        )
-
-        print(
-            "Nom :",
-            mix.get(
-                "name",
-                ""
-            )
-        )
-
-        print(
-            "PARTS :",
-            len(
+            print(
+                "Nom :",
                 mix.get(
-                    "parts",
-                    {}
+                    "name",
+                    ""
                 )
             )
-        )
-
-        rep = input(
-            "Confirmer suppression ? (o/n) : "
-        )
-
-        if rep.lower() != "o":
-
-            return
-
-        ok, errors = project.delete_mix(
-            mix_id
-        )
-
-        if not ok:
 
             print(
-                "Suppression refusée."
+                "PARTS :",
+                len(
+                    mix.get(
+                        "parts",
+                        {}
+                    )
+                )
             )
 
-            return
+            rep = input(
+                "Confirmer suppression ? (o/n) : "
+            )
 
-        if project.save_safe():
+            if rep.lower() != "o":
+
+                return
+
+            ok, errors = project.delete_mix(
+                mix_id
+            )
+
+            if not ok:
+
+                print(
+                    "Suppression refusée."
+                )
+
+                return
+
+            if project.save_safe():
+
+                print(
+                    "MIX supprimé."
+                )
+
+        while True:
+
+            print()
+            print("===================")
+            print(" MIX ")
+            print("===================")
 
             print(
-                "MIX supprimé."
+                "1 - Liste"
             )
+
+            print(
+                "2 - Éditer"
+            )
+
+            print(
+                "3 - Supprimer"
+            )
+
+            print(
+                "4 - Supprimer les MIX vides"
+            )
+
+            print(
+                "q - Retour"
+            )
+
+            choice = input(
+                "> "
+            )
+
+            if choice == "1":
+
+                list_mixes(
+                    project
+                )
+
+            elif choice == "2":
+
+                mix_id = input(
+                    "Numéro du Mix (ex: 2:4) : "
+                )
+
+                edit_mix(
+                    project,
+                    mix_id
+                )
+
+            elif choice == "3":
+
+                delete_mix_menu()
+
+            elif choice == "4":
+
+                delete_empty_mixes_menu()
+
+            elif choice.lower() == "q":
+
+                return
 
     def programs_menu(project):
 
@@ -2551,48 +2615,52 @@ def main():
         print("===================")
         print("Fusion Editor")
         print("===================")
-        print("1 - Liste des Mix")
-        print("2 - Editer un Mix")
-        print("3 - Supprimer un MIX")
-        print("4 - Supprimer les MIX vides")
-        print("5 - Gestion Instruments")
-        print("6 - Gestion PROGRAM")
-        print("7 - Gestion SONG")
-        print("q - Quitter")
 
-        choix = input("> ")
+        print(
+            "1 - Gestion MIX"
+        )
+
+        print(
+            "2 - Gestion PROGRAM"
+        )
+
+        print(
+            "3 - Gestion SONG"
+        )
+
+        print(
+            "4 - Gestion Instruments"
+        )
+
+        print(
+            "q - Quitter"
+        )
+
+        choix = input(
+            "> "
+        )
 
         if choix == "1":
 
-            list_mixes(project)
+            mixes_menu(
+                project
+            )
 
         elif choix == "2":
 
-            mix_id = input(
-                "Numéro du Mix (ex: 2:4) : "
+            programs_menu(
+                project
             )
-
-            edit_mix(project,mix_id)
 
         elif choix == "3":
 
-            delete_mix_menu()
+            songs_menu(
+                project
+            )
 
         elif choix == "4":
 
-            delete_empty_mixes_menu()
-
-        elif choix == "5":
-
-            instruments_menu(project)
-
-        elif choix == "6":
-
-            programs_menu(project)
-
-        elif choix == "7":
-
-            songs_menu(
+            instruments_menu(
                 project
             )
 
