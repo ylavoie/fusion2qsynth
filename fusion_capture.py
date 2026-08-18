@@ -751,6 +751,47 @@ def capture_song(
                         song_id
                     )
 
+                    if not channels:
+
+                        print()
+                        print(
+                            "Aucun canal détecté : "
+                            "SONG non sauvegardée."
+                        )
+
+                        song_id = None
+
+                        continue
+
+                    old_channels = song.get(
+                        "channels",
+                        {}
+                    )
+
+                    for channel_id, channel in channels.items():
+
+                        old_channel = old_channels.get(
+                            channel_id
+                        )
+
+                        if not old_channel:
+
+                            continue
+
+                        if (
+                            old_channel.get("bank")
+                            == channel.get("bank")
+                            and
+                            old_channel.get("program")
+                            == channel.get("program")
+                            and
+                            "instrument" in old_channel
+                        ):
+
+                            channel["instrument"] = (
+                                old_channel["instrument"]
+                            )
+
                     song["channels"] = channels
 
                     if project.save_safe():
