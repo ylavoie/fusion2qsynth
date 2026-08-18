@@ -737,10 +737,92 @@ def main():
         print()
 
     selected_mode = choose_controller_mode()
+    state.current_mode = selected_mode
+
+    last_mix = None
 
     selected_song = None
 
+    if selected_mode == "program":
+        diagnostic = project.get_program_diagnostic()
+
+        for program in diagnostic:
+
+            print()
+            print(
+                "PROGRAM :",
+                program["program"],
+                "-",
+                program["name"]
+            )
+
+            print(
+                " Fusion:",
+                "OK"
+                if program["fusion_valid"]
+                else "ERREUR",
+                "QSynth:",
+                "OK"
+                if program["qsynth_configured"]
+                else "Non configuré"
+            )
+
+        print()
+        print(
+            project.count_programs(),
+            "PROGRAM enregistrés"
+        )
+
     if selected_mode == "song":
+
+        diagnostic = project.get_song_diagnostic()
+
+        for song in diagnostic:
+
+            print()
+            song_id = song["song"]
+            song_name = song["name"]
+
+            if (
+                song_name
+                and
+                song_name != song_id
+            ):
+
+                print(
+                    "SONG :",
+                    song_id,
+                    "-",
+                    song_name
+                )
+
+            else:
+
+                print(
+                    "SONG :",
+                    song_id
+                )
+
+            for channel in song["channels"]:
+
+                print(
+                    " CH",
+                    channel["channel"],
+                    "Fusion:",
+                    "OK"
+                    if channel["fusion_valid"]
+                    else "ERREUR",
+                    "QSynth:",
+                    "OK"
+                    if channel["qsynth_configured"]
+                    else "Non configuré"
+                )
+
+        print()
+        print(
+            project.count_songs(),
+            "SONG enregistrées"
+        )
 
         selected_song = choose_song(
             project
@@ -749,10 +831,6 @@ def main():
         if selected_song is None:
 
             return
-
-    state.current_mode = selected_mode
-
-    last_mix = None
 
     if selected_mode == "mix":
 

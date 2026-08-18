@@ -1461,8 +1461,11 @@ class FusionProject:
     #
     def get_diagnostic(self):
 
-        results = []
+        return self.get_mix_diagnostic()
 
+    def get_mix_diagnostic(self):
+
+        results = []
 
         for mix_id, mix in self.iter_mixes():
 
@@ -1516,11 +1519,10 @@ class FusionProject:
                 #
 
                 part_result["qsynth_configured"] = (
-                    "sf2_bank" in part
-                    and
-                    "sf2_program" in part
+                    self.is_qsynth_ready(
+                        part
+                    )
                 )
-
 
                 mix_result["parts"].append(
                     part_result
@@ -1547,6 +1549,126 @@ class FusionProject:
                 mix_result
             )
 
+
+        return results
+
+    def get_program_diagnostic(self):
+
+        results = []
+
+        for program_id, program in self.iter_programs():
+
+            parts = program.get(
+                "parts",
+                {}
+            )
+
+            part = parts.get(
+                "1"
+            )
+
+            result = {
+                "program": program_id,
+                "name": program.get(
+                    "name",
+                    ""
+                ),
+                "fusion_valid": False,
+                "qsynth_configured": False,
+                "errors": []
+            }
+
+            if not part:
+
+                result["errors"].append(
+                    "PART absente"
+                )
+
+            else:
+
+                if "midi_channel" in part:
+
+                    result["fusion_valid"] = True
+
+                else:
+
+                    result["errors"].append(
+                        "Canal MIDI absent"
+                    )
+
+                result["qsynth_configured"] = (
+                    self.is_qsynth_ready(
+                        part
+                    )
+                )
+
+            results.append(
+                result
+            )
+
+        return results
+
+    def get_song_diagnostic(self):
+
+        results = []
+
+        for song_id, song in self.iter_songs():
+
+            song_result = {
+                "song": song_id,
+                "name": song.get(
+                    "name",
+                    ""
+                ),
+                "channels": []
+            }
+
+            for channel_id, channel in song.get(
+                "channels",
+                {}
+            ).items():
+
+                channel_result = {
+                    "channel": channel_id,
+                    "fusion_valid": (
+                        "bank" in channel
+                        and
+                        "program" in channel
+                    ),
+                    "qsynth_configured": (
+                        self.resolve_part_instrument(
+                            channel
+                        )
+                        is not None
+                    ),
+                    "errors": []
+                }
+
+                if "bank" not in channel:
+
+                    channel_result[
+                        "errors"
+                    ].append(
+                        "Bank absente"
+                    )
+
+                if "program" not in channel:
+
+                    channel_result[
+                        "errors"
+                    ].append(
+                        "Program absent"
+                    )
+
+                song_result[
+                    "channels"
+                ].append(
+                    channel_result
+                )
+
+            results.append(
+                song_result
+            )
 
         return results
 
