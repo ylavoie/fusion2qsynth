@@ -790,7 +790,8 @@
           "volume": 105,
           "pan": 81,
           "reverb": 127,
-          "chorus": 116
+          "chorus": 116,
+          "instrument": "grand_piano"
         },
         "3": {
           "bank": 0,
@@ -798,7 +799,8 @@
           "volume": 90,
           "pan": 54,
           "reverb": 105,
-          "chorus": 110
+          "chorus": 110,
+          "instrument": "electric_piano"
         },
         "4": {
           "bank": 0,
@@ -806,7 +808,8 @@
           "volume": 80,
           "pan": 44,
           "reverb": 121,
-          "chorus": 111
+          "chorus": 111,
+          "instrument": "harmonica"
         },
         "5": {
           "bank": 0,
@@ -814,7 +817,8 @@
           "volume": 95,
           "pan": 84,
           "reverb": 63,
-          "chorus": 111
+          "chorus": 111,
+          "instrument": "12_string_guitar"
         },
         "6": {
           "bank": 0,
@@ -822,7 +826,8 @@
           "volume": 90,
           "pan": 74,
           "reverb": 40,
-          "chorus": 105
+          "chorus": 105,
+          "instrument": "acoustic_bass"
         },
         "10": {
           "bank": 0,
@@ -830,7 +835,8 @@
           "volume": 101,
           "pan": 79,
           "reverb": 46,
-          "chorus": 81
+          "chorus": 81,
+          "instrument": "grand_piano"
         }
       }
     },
@@ -892,10 +898,6 @@
           "reverb": 70
         }
       }
-    },
-    "Yesterday": {
-      "name": "Fusion Song Yesterday",
-      "channels": {}
     }
   }
 }

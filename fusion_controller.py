@@ -33,7 +33,6 @@ class ControllerState:
         self.active_notes = set()
         self.pending_reload = False
         self.reload_wait_announced = False
-        self.pending_song = None
 
 state = ControllerState()
 
@@ -600,6 +599,76 @@ def load_song(
 
     print()
 
+def choose_song(
+    project
+):
+
+    songs = list(
+        project.iter_songs()
+    )
+
+    if not songs:
+
+        print()
+        print(
+            "Aucune SONG enregistrée."
+        )
+
+        return None
+
+    while True:
+
+        print()
+        print(
+            "SONGS disponibles :"
+        )
+        print()
+
+        for index, (song_id, song) in enumerate(
+            songs,
+            start=1
+        ):
+
+            print(
+                index,
+                "-",
+                song.get(
+                    "name",
+                    song_id
+                )
+            )
+
+        print(
+            "q - Retour"
+        )
+
+        print()
+
+        choice = input(
+            "> "
+        ).strip()
+
+        if choice.lower() == "q":
+
+            return None
+
+        try:
+
+            index = int(
+                choice
+            ) - 1
+
+            return songs[index][0]
+
+        except (
+            ValueError,
+            IndexError
+        ):
+
+            print(
+                "Choix invalide."
+            )
+
 def main():
 
     def choose_controller_mode():
@@ -641,14 +710,6 @@ def main():
                 "Choix invalide."
             )
 
-    selected_mode = choose_controller_mode()
-
-    if selected_mode is None:
-
-        return
-
-    state.current_mode = selected_mode
-
     project = FusionProject()
 
     errors = project.validate()
@@ -674,6 +735,22 @@ def main():
             )
 
         print()
+
+    selected_mode = choose_controller_mode()
+
+    selected_song = None
+
+    if selected_mode == "song":
+
+        selected_song = choose_song(
+            project
+        )
+
+        if selected_song is None:
+
+            return
+
+    state.current_mode = selected_mode
 
     last_mix = None
 
@@ -783,7 +860,12 @@ def main():
                 elif selected_mode == "song":
 
                     print(
-                        "Attente des changements de Song..."
+                        "SONG sélectionnée :",
+                        selected_song
+                    )
+
+                    print(
+                        "Attente du START..."
                     )
 
                 else:
@@ -826,15 +908,12 @@ def main():
                             msg.type == "song_select"
                         ):
 
-                            state.pending_song = str(
-                                msg.song
-                            )
+                            if DEBUG:
 
-                            print()
-                            print(
-                                "SONG sélectionnée :",
-                                state.pending_song
-                            )
+                                print(
+                                    "SONG SELECT reçu :",
+                                    msg.song
+                                )
 
                             continue
 
@@ -1138,16 +1217,8 @@ def main():
                             msg.type == "start"
                         ):
 
-                            if state.pending_song is None:
-
-                                print(
-                                    "START reçu sans SONG sélectionnée."
-                                )
-
-                                continue
-
                             load_song(
-                                state.pending_song,
+                                selected_song,
                                 out,
                                 project
                             )

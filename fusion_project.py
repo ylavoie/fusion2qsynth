@@ -1258,7 +1258,7 @@ class FusionProject:
 
         for song_id in sorted(
             songs,
-            key=lambda value: int(value)
+            key=lambda value: value.lower()
         ):
 
             yield (
