@@ -31,8 +31,18 @@ def show_status(project):
     )
 
     print(
-        "Mix enregistrés :",
+        "Mix enregistrés      :",
         status["mix_count"]
+    )
+
+    print(
+        "Programs enregistrés :",
+        status["program_count"]
+    )
+
+    print(
+        "Songs enregistrées   :",
+        status["song_count"]
     )
 
 def choose_backup_restore():
