@@ -37,8 +37,6 @@ class ControllerState:
 
 state = ControllerState()
 
-LAST_MIX_FILE = "last_mix.json"
-
 def save_last_mix(mix_id):
 
     with open(

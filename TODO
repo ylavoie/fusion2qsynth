@@ -1,0 +1,71 @@
+TODO v1.9 ?
+Supprimer le shadowing :
+    project = FusionProject()
+dans edit_mix()
+
+v1.8.x / v1.9
+Refactoring fusion_editor :
+- supprimer les réinitialisations inutiles de FusionProject
+- conserver l'injection de dépendance actuelle
+
+Gestion structure Mix
+=====================
+
+- Renuméroter une PART
+  (changer le part_id)
+
+- Dupliquer une PART
+  (copie complète avec nouvel identifiant)
+
+- Supprimer une PART
+  (avec confirmation et contrôle d'usage)
+
+- Réorganiser les PARTS
+  (ordre logique / présentation)
+
+À plus tard
+-----------
+
+- Validation "candidate" sans modifier self.data temporairement
+- Messages de validation plus orientés utilisateur
+- Renommer une PART
+- Réaffecter une PART / déplacer une PART
+- Supprimer une PART
+- Fonctionnalités avancées côté MIX
+
+À corriger
+----------
+
+TODO MIDI / Instruments
+=======================
+
+test_mix_all()
+--------------
+
+- Corriger l'envoi Bank Select pour les instruments SF2
+- Ne pas envoyer directement sf2_bank > 127 dans CC0
+- Implémenter la conversion SF2 bank → MIDI bank MSB/LSB
+- Vérifier les cas General MIDI percussion (ex: bank 128)
+
+Capture affichage
+=================
+
+- séparer affichage dynamique et événements PART
+- éviter les collisions de ligne
+- résumé final identique à print_part()
+- afficher :
+  - canal MIDI
+  - instrument si résolu
+  - plage de notes
+  - plage velocity
+
+Future amélioration
+===================
+
+read_note()
+
+Objectif :
+
+- accepter C3, D#4, etc.
+- conserver compatibilité numérique
+- simplifier création d'intervalles

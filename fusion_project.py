@@ -578,7 +578,8 @@ class FusionProject:
 
             if not any(
                 mix.get("name") == candidate
-                for mix in self.get_mixes().values()            ):
+                for mix in self.get_mixes().values()
+            ):
                 return candidate
 
         index = 2
