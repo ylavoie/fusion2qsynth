@@ -94,8 +94,6 @@ Fonctionnalités :
 * affichage du preset SF2 associé ;
 * diagnostic des problèmes d'assignation.
 
----
-
 ## Amélioré
 
 ### Gestion des configurations
@@ -599,3 +597,105 @@ Date : 2026-08-09
 * Suppression de code devenu redondant dans le Contrôleur Live.
 * Simplification des tests de canaux actifs.
 * Audit des fonctions du contrôleur et conservation uniquement des chemins réellement utilisés.
+
+---
+
+## Version 2.0 - Support PROGRAM, MIX et SONG
+
+Date : 2026-08-17
+
+### Ajouté
+
+#### Nouveau format de projet
+
+* Introduction du format de projet v2.
+* Ajout de `format_version`.
+* Séparation des données en sections :
+  * `instruments` ;
+  * `programs` ;
+  * `mixes` ;
+  * `songs`.
+* Migration des MIX existants sous la section `mixes`.
+* Encapsulation des accès aux MIX dans `FusionProject`.
+
+#### Mode PROGRAM
+
+* Ajout de la capture des PROGRAM du Fusion 8HD.
+* Stockage des PROGRAM dans `fusion.json`.
+* Ajout de la gestion des PROGRAM dans l'éditeur.
+* Affectation d'instruments SoundFont aux PROGRAM.
+* Ajout du support PROGRAM dans le Contrôleur Live.
+* Détection des changements de PROGRAM par Bank Select et Program Change.
+* Routage MIDI d'un PROGRAM vers l'instrument SoundFont configuré.
+
+#### Mode SONG
+
+* Ajout de la capture des SONG du Fusion 8HD.
+* Capture de la configuration statique des canaux :
+  * Bank ;
+  * Program ;
+  * Volume ;
+  * Pan ;
+  * Expression ;
+  * Reverb ;
+  * Chorus.
+* Les événements temporels de la SONG restent pilotés par le séquenceur du Fusion.
+* Utilisation de `SONG SELECT` comme signal de sélection et non comme identifiant de SONG.
+* Ajout d'identifiants libres pour les SONG.
+* Demande de l'identifiant à chaque nouvelle sélection de SONG.
+* Détection des SONG déjà enregistrées avant réenregistrement.
+* Confirmation avant remplacement d'une SONG existante.
+* Possibilité de choisir un autre identifiant sans refaire un `SONG SELECT`.
+* Conservation des associations SoundFont lors d'un réenregistrement si le Bank/Program Fusion du canal n'a pas changé.
+* Refus de sauvegarder une SONG lorsqu'aucun canal n'a été détecté.
+
+#### Éditeur SONG
+
+* Ajout de la liste des SONG.
+* Affichage des canaux et des Bank/Program Fusion.
+* Affectation d'un instrument SoundFont à chaque canal d'une SONG.
+* Réutilisation de la bibliothèque commune d'instruments SoundFont.
+
+#### Contrôleur Live SONG
+
+* Ajout du mode SONG au Contrôleur Live.
+* Sélection d'une SONG enregistrée par son identifiant.
+* Chargement de la configuration SoundFont au `START`.
+* Chargement des instruments et des paramètres statiques par canal.
+* Transmission des notes, contrôleurs MIDI et Pitch Bend des canaux actifs.
+* Interception des Bank Select et Program Change Fusion afin de préserver le mapping SoundFont.
+* Rechargement d'une SONG à chaque `START`.
+
+### Amélioré
+
+#### Contrôleur Live
+
+* Généralisation de l'état courant :
+  * `current_mode` ;
+  * `current_performance`.
+* Support uniforme des modes PROGRAM, MIX et SONG.
+* Généralisation du rechargement de la performance courante.
+* Ajout d'un menu de sélection du mode Live.
+
+#### Éditeur
+
+* Renommage de `editor.py` en `fusion_editor.py`.
+* Harmonisation du menu principal :
+  * Gestion MIX ;
+  * Gestion PROGRAM ;
+  * Gestion SONG ;
+  * Gestion Instruments.
+* Organisation cohérente des sous-menus par type de performance.
+
+#### État du système
+
+* Ajout du nombre de PROGRAM enregistrés.
+* Ajout du nombre de SONG enregistrées.
+* Conservation du nombre de MIX enregistrés.
+
+### Nettoyage interne
+
+* Suppression d'anciens fichiers de sauvegarde du projet.
+* Nettoyage de constantes devenues redondantes.
+* Correction de résidus de code issus du format v1.
+* Ajout de fichiers accessoires à `.gitignore`.
