@@ -2511,24 +2511,170 @@ def main():
 
     def programs_menu(project):
 
+        def rename_program_menu():
+
+            program_id = input(
+                "PROGRAM à renommer : "
+            )
+
+            program = project.get_program(
+                program_id
+            )
+
+            if not program:
+
+                print(
+                    "PROGRAM inconnu."
+                )
+
+                return
+
+            print()
+
+            print(
+                "Nom actuel :",
+                program.get(
+                    "name",
+                    program_id
+                )
+            )
+
+            new_name = input(
+                "Nouveau nom : "
+            ).strip()
+
+            if not new_name:
+
+                return
+
+            ok, errors = project.rename_program(
+                program_id,
+                new_name
+            )
+
+            if not ok:
+
+                print(
+                    "Renommage refusé."
+                )
+
+                for error in errors:
+
+                    print(
+                        "-",
+                        error
+                    )
+
+                return
+
+            if project.save_safe():
+
+                print(
+                    "PROGRAM renommé."
+                )
+
+            else:
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
+
+        def delete_program_menu():
+
+            program_id = input(
+                "PROGRAM à supprimer : "
+            )
+
+            program = project.get_program(
+                program_id
+            )
+
+            if not program:
+
+                print(
+                    "PROGRAM inconnu."
+                )
+
+                return
+
+            print()
+            print(
+                "Suppression du PROGRAM :"
+            )
+
+            print(
+                "ID :",
+                program_id
+            )
+
+            print(
+                "Nom :",
+                program.get(
+                    "name",
+                    ""
+                )
+            )
+
+            print(
+                "PARTS :",
+                len(
+                    program.get(
+                        "parts",
+                        {}
+                    )
+                )
+            )
+
+            rep = input(
+                "Confirmer suppression ? (o/n) : "
+            )
+
+            if rep.lower() != "o":
+
+                return
+
+            ok, errors = project.delete_program(
+                program_id
+            )
+
+            if not ok:
+
+                print(
+                    "Suppression refusée."
+                )
+
+                for error in errors:
+
+                    print(
+                        "-",
+                        error
+                    )
+
+                return
+
+            if project.save_safe():
+
+                print(
+                    "PROGRAM supprimé."
+                )
+
+            else:
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
+
         while True:
 
             print()
             print("===================")
             print(" PROGRAMS ")
             print("===================")
-
-            print(
-                "1 - Liste"
-            )
-
-            print(
-                "2 - Éditer"
-            )
-
-            print(
-                "q - Retour"
-            )
+            print("1 - Liste")
+            print("2 - Éditer")
+            print("3 - Renommer")
+            print("4 - Supprimer")
+            print("q - Retour")
 
             choice = input(
                 "> "
@@ -2550,6 +2696,14 @@ def main():
                     project,
                     program_id
                 )
+
+            elif choice == "3":
+
+                rename_program_menu()
+
+            elif choice == "4":
+
+                delete_program_menu()
 
             elif choice.lower() == "q":
 

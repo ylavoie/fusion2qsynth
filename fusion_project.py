@@ -1166,6 +1166,96 @@ class FusionProject:
             program_id
         )
 
+    def rename_program(
+        self,
+        program_id,
+        name
+    ):
+
+        program = self.get_program(
+            program_id
+        )
+
+        if not program:
+
+            return (
+                False,
+                []
+            )
+
+        old_name = program.get(
+            "name"
+        )
+
+        program["name"] = name
+
+        errors = self.validate()
+
+        if errors:
+
+            if old_name is None:
+
+                program.pop(
+                    "name",
+                    None
+                )
+
+            else:
+
+                program["name"] = old_name
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def delete_program(
+        self,
+        program_id
+    ):
+
+        import copy
+
+        programs = self.get_programs()
+
+        if program_id not in programs:
+
+            return (
+                False,
+                [
+                    "PROGRAM inconnu"
+                ]
+            )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        del programs[
+            program_id
+        ]
+
+        errors = self.validate()
+
+        if errors:
+
+            self.data = backup
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
     def ensure_program(
         self,
         program_id

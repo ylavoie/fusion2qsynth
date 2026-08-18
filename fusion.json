@@ -182,22 +182,8 @@
         }
       }
     },
-    "0:13": {
-      "name": "Fusion Program 0:13",
-      "parts": {
-        "1": {
-          "midi_channel": 1,
-          "bank": 0,
-          "program": 13,
-          "note_min": 21,
-          "note_max": 108,
-          "velocity_min": 5,
-          "velocity_max": 72
-        }
-      }
-    },
     "0:14": {
-      "name": "Fusion Program 0:14",
+      "name": "Chimey",
       "parts": {
         "1": {
           "midi_channel": 1,
@@ -782,7 +768,7 @@
   },
   "songs": {
     "Blowing in the wind": {
-      "name": "Fusion Song Blowing in the wind",
+      "name": "Blowing in the wind",
       "channels": {
         "2": {
           "bank": 0,
