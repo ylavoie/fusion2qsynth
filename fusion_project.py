@@ -1232,6 +1232,100 @@ class FusionProject:
             str(song_id)
         )
 
+    def rename_song(
+        self,
+        song_id,
+        name
+    ):
+
+        song = self.get_song(
+            song_id
+        )
+
+        if not song:
+
+            return (
+                False,
+                []
+            )
+
+        old_name = song.get(
+            "name"
+        )
+
+        song["name"] = name
+
+        errors = self.validate()
+
+        if errors:
+
+            if old_name is None:
+
+                song.pop(
+                    "name",
+                    None
+                )
+
+            else:
+
+                song["name"] = old_name
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def delete_song(
+        self,
+        song_id
+    ):
+
+        import copy
+
+        song_id = str(
+            song_id
+        )
+
+        songs = self.get_songs()
+
+        if song_id not in songs:
+
+            return (
+                False,
+                [
+                    "SONG inconnue"
+                ]
+            )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        del songs[
+            song_id
+        ]
+
+        errors = self.validate()
+
+        if errors:
+
+            self.data = backup
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
     def ensure_song(
         self,
         song_id

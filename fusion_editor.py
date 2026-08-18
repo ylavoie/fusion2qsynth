@@ -2559,24 +2559,151 @@ def main():
         project
     ):
 
+        def rename_song_menu():
+
+            song_id = input(
+                "SONG à renommer : "
+            )
+
+            song = project.get_song(
+                song_id
+            )
+
+            if not song:
+
+                print(
+                    "SONG inconnue."
+                )
+
+                return
+
+            print()
+
+            print(
+                "Nom actuel :",
+                song.get(
+                    "name",
+                    song_id
+                )
+            )
+
+            new_name = input(
+                "Nouveau nom : "
+            ).strip()
+
+            if not new_name:
+
+                return
+
+            ok, errors = project.rename_song(
+                song_id,
+                new_name
+            )
+
+            if not ok:
+
+                print(
+                    "Renommage refusé."
+                )
+
+                for error in errors:
+
+                    print(
+                        "-",
+                        error
+                    )
+
+                return
+
+            if project.save_safe():
+
+                print(
+                    "SONG renommée."
+                )
+
+        def delete_song_menu():
+
+            song_id = input(
+                "SONG à supprimer : "
+            )
+
+            song = project.get_song(
+                song_id
+            )
+
+            if not song:
+
+                print(
+                    "SONG inconnue."
+                )
+
+                return
+
+            print()
+            print(
+                "Suppression de la SONG :"
+            )
+
+            print(
+                "ID :",
+                song_id
+            )
+
+            print(
+                "Nom :",
+                song.get(
+                    "name",
+                    ""
+                )
+            )
+
+            print(
+                "Canaux :",
+                len(
+                    song.get(
+                        "channels",
+                        {}
+                    )
+                )
+            )
+
+            rep = input(
+                "Confirmer suppression ? (o/n) : "
+            )
+
+            if rep.lower() != "o":
+
+                return
+
+            ok, errors = project.delete_song(
+                song_id
+            )
+
+            if not ok:
+
+                print(
+                    "Suppression refusée."
+                )
+
+                return
+
+            if project.save_safe():
+
+                print(
+                    "SONG supprimée."
+                )
+
         while True:
 
             print()
             print("===================")
-            print(" SONGS ")
+            print(" SONG ")
             print("===================")
-
-            print(
-                "1 - Liste"
-            )
-
-            print(
-                "2 - Éditer"
-            )
-
-            print(
-                "q - Retour"
-            )
+            print("1 - Liste")
+            print("2 - Éditer")
+            print("3 - Renommer")
+            print("4 - Supprimer")
+            print("q - Retour")
 
             choice = input(
                 "> "
@@ -2598,6 +2725,14 @@ def main():
                     project,
                     song_id
                 )
+
+            elif choice == "3":
+
+                rename_song_menu()
+
+            elif choice == "4":
+
+                delete_song_menu()
 
             elif choice.lower() == "q":
 
