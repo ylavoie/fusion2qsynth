@@ -120,6 +120,21 @@
       "name": "Harmonica",
       "sf2_bank": 0,
       "sf2_program": 22
+    },
+    "violin": {
+      "name": "Violin",
+      "sf2_bank": 0,
+      "sf2_program": 40
+    },
+    "xylophone": {
+      "name": "Xylophone",
+      "sf2_bank": 0,
+      "sf2_program": 13
+    },
+    "alto_sax": {
+      "name": "Alto Sax",
+      "sf2_bank": 0,
+      "sf2_program": 65
     }
   },
   "programs": {
@@ -164,6 +179,34 @@
           "velocity_min": 12,
           "velocity_max": 95,
           "instrument": "harpsichord"
+        }
+      }
+    },
+    "0:13": {
+      "name": "Fusion Program 0:13",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 13,
+          "note_min": 21,
+          "note_max": 108,
+          "velocity_min": 5,
+          "velocity_max": 72
+        }
+      }
+    },
+    "0:14": {
+      "name": "Fusion Program 0:14",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 14,
+          "note_min": 21,
+          "note_max": 108,
+          "velocity_min": 5,
+          "velocity_max": 72
         }
       }
     }
@@ -695,11 +738,104 @@
           "program": 0
         }
       }
+    },
+    "0:8": {
+      "name": "Fusion Mix 0:8",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 8
+        }
+      }
+    },
+    "0:9": {
+      "name": "Fusion Mix 0:9",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 9
+        },
+        "2": {
+          "midi_channel": 2,
+          "bank": 0,
+          "program": 0
+        },
+        "3": {
+          "midi_channel": 3,
+          "bank": 0,
+          "program": 0
+        },
+        "4": {
+          "midi_channel": 4,
+          "bank": 0,
+          "program": 0
+        },
+        "5": {
+          "midi_channel": 5,
+          "bank": 0,
+          "program": 0
+        }
+      }
     }
   },
   "songs": {
-    "0": {
-      "name": "Fusion Song 0",
+    "Blowing in the wind": {
+      "name": "Fusion Song Blowing in the wind",
+      "channels": {
+        "2": {
+          "bank": 0,
+          "program": 32,
+          "volume": 105,
+          "pan": 81,
+          "reverb": 127,
+          "chorus": 116
+        },
+        "3": {
+          "bank": 0,
+          "program": 4,
+          "volume": 90,
+          "pan": 54,
+          "reverb": 105,
+          "chorus": 110
+        },
+        "4": {
+          "bank": 0,
+          "program": 26,
+          "volume": 80,
+          "pan": 44,
+          "reverb": 121,
+          "chorus": 111
+        },
+        "5": {
+          "bank": 0,
+          "program": 25,
+          "volume": 95,
+          "pan": 84,
+          "reverb": 63,
+          "chorus": 111
+        },
+        "6": {
+          "bank": 0,
+          "program": 24,
+          "volume": 90,
+          "pan": 74,
+          "reverb": 40,
+          "chorus": 105
+        },
+        "10": {
+          "bank": 0,
+          "program": 0,
+          "volume": 101,
+          "pan": 79,
+          "reverb": 46,
+          "chorus": 81
+        }
+      }
+    },
+    "Mrs. Robinson": {
+      "name": "Fusion Song Mrs. Robinson",
       "channels": {
         "2": {
           "volume": 127,
@@ -708,8 +844,7 @@
           "program": 35,
           "expression": 127,
           "chorus": 35,
-          "reverb": 0,
-          "instrument": "Pop Bass"
+          "reverb": 0
         },
         "3": {
           "volume": 75,
@@ -718,8 +853,7 @@
           "program": 25,
           "expression": 127,
           "chorus": 127,
-          "reverb": 127,
-          "instrument": "12_string_guitar"
+          "reverb": 127
         },
         "4": {
           "volume": 110,
@@ -728,8 +862,7 @@
           "program": 0,
           "expression": 127,
           "chorus": 60,
-          "reverb": 60,
-          "instrument": "grand_piano"
+          "reverb": 60
         },
         "6": {
           "volume": 110,
@@ -738,8 +871,7 @@
           "program": 100,
           "expression": 127,
           "chorus": 60,
-          "reverb": 60,
-          "instrument": "metal_pad"
+          "reverb": 60
         },
         "5": {
           "volume": 120,
@@ -748,8 +880,7 @@
           "program": 26,
           "expression": 127,
           "chorus": 90,
-          "reverb": 80,
-          "instrument": "harmonica"
+          "reverb": 80
         },
         "10": {
           "volume": 127,
@@ -758,10 +889,13 @@
           "program": 0,
           "expression": 127,
           "chorus": 0,
-          "reverb": 70,
-          "instrument": "grand_piano"
+          "reverb": 70
         }
       }
+    },
+    "Yesterday": {
+      "name": "Fusion Song Yesterday",
+      "channels": {}
     }
   }
 }

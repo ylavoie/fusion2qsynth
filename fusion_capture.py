@@ -622,9 +622,9 @@ def capture_song(
         "Ctrl+C pour quitter"
     )
 
-    song_id = None
     capture_active = False
 
+    song_id = None
     channels = {}
     banks_msb = {}
     banks_lsb = {}
@@ -650,12 +650,59 @@ def capture_song(
                 #
                 if msg.type == "song_select":
 
-                    song_id = msg.song
-
                     print()
                     print(
-                        "SONG détectée :",
-                        song_id
+                        "SONG SELECT reçu :",
+                        msg.song
+                    )
+
+                    while True:
+
+                        print()
+
+                        song_id = input(
+                            "Identifiant de la SONG : "
+                        ).strip()
+
+                        if not song_id:
+
+                            print(
+                                "Identifiant invalide."
+                            )
+
+                            continue
+
+                        existing_song = project.get_song(
+                            song_id
+                        )
+
+                        if existing_song:
+
+                            print()
+                            print(
+                                "SONG déjà enregistrée :",
+                                song_id
+                            )
+
+                            rep = input(
+                                "Réenregistrer cette SONG ? (o/n) : "
+                            ).strip().lower()
+
+                            if rep != "o":
+
+                                print(
+                                    "Choisis un autre identifiant."
+                                )
+
+                                continue
+
+                        break
+
+                    channels = {}
+                    capture_active = False
+
+                    print(
+                        "Démarre la Song pour lancer la capture"
                     )
 
                     continue
@@ -666,6 +713,10 @@ def capture_song(
                 if msg.type == "start":
 
                     if song_id is None:
+
+                        print(
+                            "START reçu sans identifiant de SONG."
+                        )
 
                         continue
 
@@ -714,6 +765,16 @@ def capture_song(
                             "Canaux détectés :",
                             len(channels)
                         )
+
+                        song_id = None
+                        channels = {}
+
+                        print()
+                        print(
+                            "Sélectionne une autre Song Fusion"
+                        )
+
+                        continue
 
                     else:
 
