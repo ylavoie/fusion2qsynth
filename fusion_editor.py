@@ -1944,6 +1944,11 @@ def list_programs(project):
         project.iter_programs()
     )
 
+    diagnostic = {
+        item["program"]: item
+        for item in project.get_program_diagnostic()
+    }
+
     print()
 
     if not programs:
@@ -1967,11 +1972,12 @@ def list_programs(project):
         f"{'CH':>4}"
         f"{'Bank':>8}"
         f"{'Program':>10}"
-        f"  Instrument"
+        f"  {'Instrument':<22}"
+        f"État"
     )
 
     print(
-        "-" * 78
+        "-" * 100
     )
 
     for program_id, program in programs:
@@ -2005,13 +2011,37 @@ def list_programs(project):
                     instrument_id
                 )
 
+        status = diagnostic.get(
+            program_id,
+            {}
+        )
+
+        if not status.get(
+            "fusion_valid",
+            False
+        ):
+
+            state = "Erreur Fusion"
+
+        elif not status.get(
+            "qsynth_configured",
+            False
+        ):
+
+            state = "À configurer"
+
+        else:
+
+            state = "OK"
+
         print(
             f"{program_id:<10}"
             f"{program.get('name', ''):<28}"
             f"{part.get('midi_channel', '?'):>4}"
             f"{part.get('bank', '?'):>8}"
             f"{part.get('program', '?'):>10}"
-            f"  {instrument_name}"
+            f"  {instrument_name:<22}"
+            f"{state}"
         )
 
 def edit_program(
@@ -2094,6 +2124,11 @@ def list_songs(
         project.iter_songs()
     )
 
+    diagnostic = {
+        item["song"]: item
+        for item in project.get_song_diagnostic()
+    }
+
     if not songs:
 
         print(
@@ -2106,15 +2141,71 @@ def list_songs(
 
     for song_id, song in songs:
 
-        print(
-            "SONG",
+        song_name = song.get(
+            "name",
+            ""
+        )
+
+        if (
+            song_name
+            and
+            song_name != song_id
+        ):
+
+            print(
+                "SONG",
+                song_id,
+                "-",
+                song_name
+            )
+
+        else:
+
+            print(
+                "SONG",
+                song_id
+            )
+
+        song_diag = diagnostic.get(
             song_id,
-            "-",
-            song.get(
-                "name",
-                ""
+            {}
+        )
+
+        channels_diag = song_diag.get(
+            "channels",
+            []
+        )
+
+        configured = sum(
+            1
+            for channel in channels_diag
+            if channel.get(
+                "qsynth_configured",
+                False
             )
         )
+
+        total = len(
+            channels_diag
+        )
+
+        if (
+            total > 0
+            and
+            configured == total
+        ):
+
+            state = "OK"
+
+        else:
+
+            state = "À configurer"
+
+        print(
+            f" {configured}/{total} canaux configurés - {state}"
+        )
+
+        print()
 
         for channel_id, channel in song.get(
             "channels",
@@ -2125,27 +2216,24 @@ def list_songs(
                 channel
             )
 
-            print(
-                " CH",
-                channel_id,
-                "→",
+            instrument_name = (
                 instrument.get(
                     "name",
                     "Non configuré"
                 )
                 if instrument
-                else "Non configuré",
-                "| Bank",
-                channel.get(
-                    "bank",
-                    "?"
-                ),
-                "| Program",
-                channel.get(
-                    "program",
-                    "?"
-                )
+                else "Non configuré"
             )
+
+            print(
+                f" CH {str(channel_id):<2}"
+                f" → {instrument_name:<20}"
+                f" | Bank {channel.get('bank', '?'):>3}"
+                f" | Program {channel.get('program', '?'):>3}"
+            )
+
+        print()
+    print()
 
 def edit_song(
     project,
@@ -2277,7 +2365,6 @@ def edit_song(
             print(
                 "⚠ Sauvegarde non effectuée."
             )
-
 
 def main():
 

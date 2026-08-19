@@ -139,7 +139,7 @@
   },
   "programs": {
     "0:12": {
-      "name": "Fusion Program 0:12",
+      "name": "Concert Marinba",
       "parts": {
         "1": {
           "midi_channel": 1,
@@ -153,7 +153,7 @@
       }
     },
     "0:11": {
-      "name": "Fusion Program 0:11",
+      "name": "Dream Vibes",
       "parts": {
         "1": {
           "midi_channel": 1,
@@ -168,7 +168,7 @@
       }
     },
     "0:10": {
-      "name": "Fusion Program 0:10",
+      "name": "Plukermann Harpsi",
       "parts": {
         "1": {
           "midi_channel": 1,
