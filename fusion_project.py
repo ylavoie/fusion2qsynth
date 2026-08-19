@@ -1494,7 +1494,6 @@ class FusionProject:
                     "errors": []
                 }
 
-
                 #
                 # Validation Fusion
                 #
@@ -1509,10 +1508,77 @@ class FusionProject:
 
                 else:
 
-                    channels.append(
-                        part["midi_channel"]
-                    )
+                    midi_channel = part[
+                        "midi_channel"
+                    ]
 
+                    if not (
+                        1 <= midi_channel <= 16
+                    ):
+
+                        part_result["fusion_valid"] = False
+
+                        part_result["errors"].append(
+                            f"Canal MIDI invalide ({midi_channel})"
+                        )
+
+                    else:
+
+                        channels.append(
+                            midi_channel
+                        )
+
+                #
+                # Plage de notes
+                #
+                if (
+                    "note_min" in part
+                    and
+                    "note_max" in part
+                ):
+
+                    if not (
+                        0
+                        <= part["note_min"]
+                        <= part["note_max"]
+                        <= 127
+                    ):
+
+                        part_result[
+                            "fusion_valid"
+                        ] = False
+
+                        part_result[
+                            "errors"
+                        ].append(
+                            "Zone de notes invalide"
+                        )
+
+                #
+                # Plage de vélocité
+                #
+                if (
+                    "velocity_min" in part
+                    and
+                    "velocity_max" in part
+                ):
+
+                    if not (
+                        0
+                        <= part["velocity_min"]
+                        <= part["velocity_max"]
+                        <= 127
+                    ):
+
+                        part_result[
+                            "fusion_valid"
+                        ] = False
+
+                        part_result[
+                            "errors"
+                        ].append(
+                            "Plage de vélocité invalide"
+                        )
 
                 #
                 # Configuration QSynth

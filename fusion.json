@@ -570,7 +570,7 @@
       }
     },
     "0:0": {
-      "name": "Fusion Mix 0:0",
+      "name": "Cold Fusion",
       "parts": {
         "1": {
           "midi_channel": 10,
@@ -579,7 +579,8 @@
           "note_min": 33,
           "note_max": 57,
           "velocity_min": 5,
-          "velocity_max": 70
+          "velocity_max": 70,
+          "instrument": "orchestra_kit"
         },
         "2": {
           "midi_channel": 2,
@@ -588,7 +589,8 @@
           "note_min": 33,
           "note_max": 57,
           "velocity_min": 5,
-          "velocity_max": 70
+          "velocity_max": 70,
+          "instrument": "square_lead"
         },
         "3": {
           "midi_channel": 3,
@@ -597,21 +599,23 @@
           "note_min": 33,
           "note_max": 57,
           "velocity_min": 5,
-          "velocity_max": 70
+          "velocity_max": 70,
+          "instrument": "Pan Flute"
         },
         "4": {
-          "midi_channel": 1,
+          "midi_channel": 3,
           "bank": 0,
           "program": 0,
           "note_min": 67,
           "note_max": 91,
           "velocity_min": 13,
-          "velocity_max": 67
+          "velocity_max": 67,
+          "instrument": "grand_piano"
         }
       }
     },
     "0:1": {
-      "name": "Fusion Mix 0:1",
+      "name": "Tunnel Trance",
       "parts": {
         "1": {
           "midi_channel": 2,
@@ -656,13 +660,13 @@
       }
     },
     "0:2": {
-      "name": "Fusion Mix 0:2",
+      "name": "MellowZ",
       "parts": {
         "1": {
-          "midi_channel": 1,
+          "midi_channel": 17,
           "bank": 0,
           "program": 2,
-          "note_min": 62,
+          "note_min": 162,
           "note_max": 79,
           "velocity_min": 13,
           "velocity_max": 68
@@ -670,7 +674,7 @@
       }
     },
     "0:3": {
-      "name": "Fusion Mix 0:3",
+      "name": "Groove in Egypt",
       "parts": {
         "1": {
           "midi_channel": 1,
@@ -679,7 +683,7 @@
           "note_min": 28,
           "note_max": 100,
           "velocity_min": 9,
-          "velocity_max": 83
+          "velocity_max": 142
         }
       }
     },
@@ -729,7 +733,6 @@
       "name": "Fusion Mix 0:8",
       "parts": {
         "1": {
-          "midi_channel": 1,
           "bank": 0,
           "program": 8
         }
@@ -760,6 +763,40 @@
         },
         "5": {
           "midi_channel": 5,
+          "bank": 0,
+          "program": 0
+        }
+      }
+    },
+    "0:5": {
+      "name": "4-Bits Mix",
+      "parts": {}
+    },
+    "0:6": {
+      "name": "Action Mix",
+      "parts": {
+        "1": {
+          "midi_channel": 1,
+          "bank": 0,
+          "program": 6
+        },
+        "2": {
+          "midi_channel": 10,
+          "bank": 0,
+          "program": 0
+        },
+        "3": {
+          "midi_channel": 2,
+          "bank": 0,
+          "program": 0
+        },
+        "4": {
+          "midi_channel": 3,
+          "bank": 0,
+          "program": 0
+        },
+        "5": {
+          "midi_channel": 4,
           "bank": 0,
           "program": 0
         }

@@ -581,6 +581,25 @@ def edit_mix(project,mix_id):
             mix_id
         )
 
+        errors = project.validate_mix(
+            mix_id
+        )
+
+        if errors:
+
+            print()
+            print("====================")
+            print("Erreurs de validation")
+            print("====================")
+
+            for error in errors:
+
+                print(
+                    "-",
+                    error
+                )
+
+
         print()
         print("====================")
         print("Edition Mix")
@@ -1397,22 +1416,89 @@ def list_mixes(project):
         project.count_mixes()
     )
 
+    diagnostic = {
+        item["mix"]: item
+        for item in project.get_diagnostic()
+    }
+
     print()
 
     print(
-        f"{'ID':<10}{'Nom':<30}{'PARTS':>5}"
+        f"{'ID':<10}"
+        f"{'Nom':<30}"
+        f"{'PARTS':>7}"
+        f"{'Configurées':>14}"
+        f"{'État':>16}"
     )
 
     print(
-        "-" * 45
+        "-" * 77
     )
 
     for mix_id, mix in project.iter_mixes():
 
+        mix_diag = diagnostic.get(
+            mix_id,
+            {}
+        )
+
+        parts_diag = mix_diag.get(
+            "parts",
+            []
+        )
+
+        configured = sum(
+            1
+            for part in parts_diag
+            if part.get(
+                "qsynth_configured",
+                False
+            )
+        )
+
+        total = len(
+            parts_diag
+        )
+
+        fusion_valid = all(
+            part.get(
+                "fusion_valid",
+                False
+            )
+            for part in parts_diag
+        )
+
+        shared_channels = mix_diag.get(
+            "shared_channels",
+            []
+        )
+
+        if not fusion_valid:
+
+            state = "Erreur Fusion"
+
+        elif shared_channels:
+
+            state = "Canaux partagés"
+
+        elif (
+            total > 0
+            and
+            configured == total
+        ):
+
+            state = "OK"
+
+        else:
+
+            state = "À configurer"
+
         print(
             f"{mix_id:<10}"
             f"{mix.get('name', ''):<30}"
-            f"{len(mix.get('parts', {})):>5}"
+            f"{total:>7}"
+            f"{f'{configured}/{total}':>14}"
+            f"{state:>16}"
         )
 
 def instruments_menu(project):
