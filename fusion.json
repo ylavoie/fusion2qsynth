@@ -135,6 +135,36 @@
       "name": "Alto Sax",
       "sf2_bank": 0,
       "sf2_program": 65
+    },
+    "marimba": {
+      "name": "Marimba",
+      "sf2_bank": 0,
+      "sf2_program": 12
+    },
+    "church_bell": {
+      "name": "Church Bell",
+      "sf2_bank": 8,
+      "sf2_program": 14
+    },
+    "banjo": {
+      "name": "Banjo",
+      "sf2_bank": 0,
+      "sf2_program": 105
+    },
+    "distortion_guitar": {
+      "name": "Distortion Guitar",
+      "sf2_bank": 0,
+      "sf2_program": 30
+    },
+    "saw_lead": {
+      "name": "Saw Lead",
+      "sf2_bank": 0,
+      "sf2_program": 81
+    },
+    "synth_bass_1": {
+      "name": "Synth Bass 1",
+      "sf2_bank": 0,
+      "sf2_program": 38
     }
   },
   "programs": {
@@ -148,7 +178,8 @@
           "note_min": 21,
           "note_max": 108,
           "velocity_min": 8,
-          "velocity_max": 97
+          "velocity_max": 97,
+          "instrument": "marimba"
         }
       }
     },
@@ -192,7 +223,8 @@
           "note_min": 21,
           "note_max": 108,
           "velocity_min": 5,
-          "velocity_max": 72
+          "velocity_max": 72,
+          "instrument": "church_bell"
         }
       }
     }
@@ -779,27 +811,32 @@
         "1": {
           "midi_channel": 1,
           "bank": 0,
-          "program": 6
+          "program": 6,
+          "instrument": "banjo"
         },
         "2": {
           "midi_channel": 10,
           "bank": 0,
-          "program": 0
+          "program": 0,
+          "instrument": "orchestra_kit"
         },
         "3": {
           "midi_channel": 2,
           "bank": 0,
-          "program": 0
+          "program": 0,
+          "instrument": "distortion_guitar"
         },
         "4": {
           "midi_channel": 3,
           "bank": 0,
-          "program": 0
+          "program": 0,
+          "instrument": "distortion_guitar"
         },
         "5": {
           "midi_channel": 4,
           "bank": 0,
-          "program": 0
+          "program": 0,
+          "instrument": "saw_lead"
         }
       }
     }
@@ -874,7 +911,8 @@
           "program": 35,
           "expression": 127,
           "chorus": 35,
-          "reverb": 0
+          "reverb": 0,
+          "instrument": "synth_bass_1"
         },
         "3": {
           "volume": 75,
@@ -883,7 +921,8 @@
           "program": 25,
           "expression": 127,
           "chorus": 127,
-          "reverb": 127
+          "reverb": 127,
+          "instrument": "12_string_guitar"
         },
         "4": {
           "volume": 110,
@@ -892,7 +931,8 @@
           "program": 0,
           "expression": 127,
           "chorus": 60,
-          "reverb": 60
+          "reverb": 60,
+          "instrument": "grand_piano"
         },
         "6": {
           "volume": 110,
@@ -901,7 +941,8 @@
           "program": 100,
           "expression": 127,
           "chorus": 60,
-          "reverb": 60
+          "reverb": 60,
+          "instrument": "warm_pad"
         },
         "5": {
           "volume": 120,
@@ -910,7 +951,8 @@
           "program": 26,
           "expression": 127,
           "chorus": 90,
-          "reverb": 80
+          "reverb": 80,
+          "instrument": "harmonica"
         },
         "10": {
           "volume": 127,
@@ -919,7 +961,8 @@
           "program": 0,
           "expression": 127,
           "chorus": 0,
-          "reverb": 70
+          "reverb": 70,
+          "instrument": "grand_piano"
         }
       }
     }

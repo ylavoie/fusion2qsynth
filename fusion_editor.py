@@ -137,93 +137,91 @@ def choose_instrument(
 ):
     print()
 
-    print(
-        "===================="
-    )
+    print("====================")
+    print("Choix Instrument")
+    print("====================")
 
-    print(
-        "Choix Instrument"
-    )
+    while True:
+        current_id = None
 
-    print(
-        "===================="
-    )
+        if part is not None:
 
-    current_id = None
+            current = project.resolve_part_instrument(part)
 
-    if part is not None:
+            if current:
 
-        current = project.resolve_part_instrument(part)
+                print()
 
-        if current:
+                print(
+                    "Instrument actuel :",
+                    current.get("name", "?")
+                )
+            else:
 
-            print()
+                print("Instrument non-configuré")
+
+            current_id = part.get(
+                "instrument"
+            )
+
+        print()
+        print("Choisir un instrument")
+        print()
+
+        instruments = sorted(
+            project.list_instruments(),
+            key=lambda item: item[1].get("name", "").lower()
+        )
+
+        for index, (instrument_id, instrument) in enumerate(
+            instruments,
+            start=1
+        ):
+            marker = "* " if instrument_id == current_id else "  "
 
             print(
-                "Instrument actuel :",
-                current.get("name", "?")
+                f"{marker}{index:2} - "
+                f"{instrument.get('name', '?'):<25}"
+                f"({instrument.get('sf2_bank', '?')}:"
+                f"{instrument.get('sf2_program', '?')})"
             )
-        else:
 
-            print("Instrument non-configuré")
+        print("a - Ajouter un instrument")
+        print("q - Annuler")
 
-        current_id = part.get(
-            "instrument"
+        choix = input(
+            "> "
         )
 
-    print()
-    print("Choisir un instrument")
-    print()
+        if choix.lower() == "q":
 
-    instruments = sorted(
-        project.list_instruments(),
-        key=lambda item: item[1].get("name", "").lower()
-    )
+            return None
 
-    for index, (instrument_id, instrument) in enumerate(
-        instruments,
-        start=1
-    ):
-        marker = "* " if instrument_id == current_id else "  "
+        if choix.lower() == "a":
 
-        print(
-            f"{marker}{index:2} - "
-            f"{instrument.get('name', '?'):<25}"
-            f"({instrument.get('sf2_bank', '?')}:"
-            f"{instrument.get('sf2_program', '?')})"
-        )
+            add_instrument(
+                project
+            )
 
-    print(
-        "q - Annuler"
-    )
+            continue
 
-    choix = input(
-        "> "
-    )
+        try:
 
-    if choix.lower() == "q":
+            index = int(choix) - 1
 
-        return None
+            instrument_id, instrument = instruments[index]
 
-    try:
+        except (ValueError, IndexError):
 
-        index = int(choix) - 1
+            print("Choix invalide")
 
-        instrument_id, instrument = instruments[index]
+            return None
 
-    except (ValueError, IndexError):
+        result = dict(instrument)
 
-        print(
-            "Choix invalide"
-        )
+        result["id"] = instrument_id
 
-        return None
-
-    result = dict(instrument)
-
-    result["id"] = instrument_id
-
-    return result
+        return result
 
 def compare_instrument(
     part,
@@ -1444,7 +1442,7 @@ def list_mixes(
         "-" * 77
     )
 
-    displayed = 0
+    displayed = []
 
     for mix_id, mix in project.iter_mixes():
 
@@ -1503,7 +1501,9 @@ def list_mixes(
 
             continue
 
-        displayed += 1
+        displayed.append(
+            mix_id
+        )
 
         if state_code == "error":
 
@@ -1530,7 +1530,7 @@ def list_mixes(
             f"{f'{configured}/{total}':>14}"
             f"{state:>16}"
         )
-    if displayed == 0:
+    if len(displayed) == 0:
 
         if status_filter == "error":
 
@@ -1543,6 +1543,10 @@ def list_mixes(
         else:
 
             print("Aucun MIX.")
+
+        return
+
+    return displayed
 
 def instruments_menu(project):
 
@@ -2286,6 +2290,8 @@ def list_programs(
         "-" * 100
     )
 
+    displayed = []
+
     for program_id, program, state_code in filtered_programs:
 
         part = program.get(
@@ -2343,6 +2349,11 @@ def list_programs(
             f"  {instrument_name:<22}"
             f"{state}"
         )
+
+        displayed.append(
+            program_id
+        )
+
     if len(filtered_programs) == 0:
 
         if status_filter == "error":
@@ -2356,6 +2367,10 @@ def list_programs(
         else:
 
             print("Aucun PROGRAM.")
+
+        return
+
+    return displayed
 
 def edit_program(
     project,
@@ -2534,7 +2549,7 @@ def list_songs(
 
     print()
 
-    displayed = 0
+    displayed = []
 
     for song_id, song in songs:
 
@@ -2596,7 +2611,9 @@ def list_songs(
 
             continue
 
-        displayed += 1
+        displayed.append(
+            song_id
+        )
         #
         # Seulement ici on affiche la SONG
         #
@@ -2674,7 +2691,7 @@ def list_songs(
 
         print()
 
-    if displayed == 0:
+    if len(displayed) == 0:
 
         if status_filter == "error":
 
@@ -2694,7 +2711,11 @@ def list_songs(
                 "Aucune SONG."
             )
 
+        return
+
     print()
+
+    return displayed
 
 def edit_song(
     project,
@@ -3421,17 +3442,75 @@ def main():
 
             elif choice == "2":
 
-                list_mixes(
-                    project,
-                    status_filter="unconfigured"
-                )
+                while True:
+
+                    mix_ids = list_mixes(
+                        project,
+                        status_filter="unconfigured"
+                    )
+
+                    if not mix_ids:
+
+                        break
+
+                    print()
+
+                    mix_id = input(
+                        "MIX à éditer (Entrée = retour) : "
+                    ).strip()
+
+                    if not mix_id:
+
+                        break
+
+                    if mix_id not in mix_ids:
+
+                        print(
+                            "MIX non présent dans cette liste."
+                        )
+
+                        continue
+
+                    edit_mix(
+                        project,
+                        mix_id
+                    )
 
             elif choice == "3":
 
-                list_mixes(
-                    project,
-                    status_filter="error"
-                )
+                while True:
+
+                    mix_ids = list_mixes(
+                        project,
+                        status_filter="error"
+                    )
+
+                    if not mix_ids:
+
+                        break
+
+                    print()
+
+                    mix_id = input(
+                        "MIX à éditer (Entrée = retour) : "
+                    ).strip()
+
+                    if not mix_id:
+
+                        break
+
+                    if mix_id not in mix_ids:
+
+                        print(
+                            "MIX non présent dans cette liste."
+                        )
+
+                        continue
+
+                    edit_mix(
+                        project,
+                        mix_id
+                    )
 
             elif choice == "4":
 
@@ -3637,17 +3716,75 @@ def main():
 
             elif choice == "2":
 
-                list_programs(
-                    project,
-                    status_filter="unconfigured"
-                )
+                while True:
+
+                    program_ids = list_programs(
+                        project,
+                        status_filter="unconfigured"
+                    )
+
+                    if not program_ids:
+
+                        break
+
+                    print()
+
+                    program_id = input(
+                        "PROGRAM à éditer (Entrée = retour) : "
+                    ).strip()
+
+                    if not program_id:
+
+                        break
+
+                    if program_id not in program_ids:
+
+                        print(
+                            "PROGRAM non présent dans cette liste."
+                        )
+
+                        continue
+
+                    edit_program(
+                        project,
+                        program_id
+                    )
 
             elif choice == "3":
 
-                list_programs(
-                    project,
-                    status_filter="error"
-                )
+                while True:
+
+                    program_ids = list_programs(
+                        project,
+                        status_filter="error"
+                    )
+
+                    if not program_ids:
+
+                        break
+
+                    print()
+
+                    program_id = input(
+                        "PROGRAM à éditer (Entrée = retour) : "
+                    ).strip()
+
+                    if not program_id:
+
+                        break
+
+                    if program_id not in program_ids:
+
+                        print(
+                            "PROGRAM non présent dans cette liste."
+                        )
+
+                        continue
+
+                    edit_program(
+                        project,
+                        program_id
+                    )
 
             elif choice == "4":
 
@@ -3836,17 +3973,75 @@ def main():
 
             elif choice == "2":
 
-                list_songs(
-                    project,
-                    status_filter="unconfigured"
-                )
+                while True:
+
+                    song_ids = list_songs(
+                        project,
+                        status_filter="unconfigured"
+                    )
+
+                    if not song_ids:
+
+                        break
+
+                    print()
+
+                    song_id = input(
+                        "SONG à éditer (Entrée = retour) : "
+                    ).strip()
+
+                    if not song_id:
+
+                        break
+
+                    if song_id not in song_ids:
+
+                        print(
+                            "SONG non présente dans cette liste."
+                        )
+
+                        continue
+
+                    edit_song(
+                        project,
+                        song_id
+                    )
 
             elif choice == "3":
 
-                list_songs(
-                    project,
-                    status_filter="error"
-                )
+                while True:
+
+                    song_ids = list_songs(
+                        project,
+                        status_filter="error"
+                    )
+
+                    if not song_ids:
+
+                        break
+
+                    print()
+
+                    song_id = input(
+                        "SONG à éditer (Entrée = retour) : "
+                    ).strip()
+
+                    if not song_id:
+
+                        break
+
+                    if song_id not in song_ids:
+
+                        print(
+                            "SONG non présente dans cette liste."
+                        )
+
+                        continue
+
+                    edit_song(
+                        project,
+                        song_id
+                    )
 
             elif choice == "4":
 
