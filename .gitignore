@@ -18,6 +18,9 @@ venv/
 # Sauvegardes locales
 fusion.json.bak*
 
+# Fichiers de configuration
+.markdownlint.json
+
 # Archives de release
 releases/*.tar.gz
 
