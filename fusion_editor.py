@@ -1891,37 +1891,161 @@ def edit_instrument(project):
             "⚠ Sauvegarde non effectuée."
         )
 
-def print_validation_errors(errors):
+def print_validation_errors(project,errors):
 
-    print()
+    mix_errors = []
+    program_errors = []
+    song_errors = []
+    other_errors = []
+    structured_errors = []
 
-    print(
-        "===================="
-    )
+    mix_ids = {
+        mix_id
+        for mix_id, _ in project.iter_mixes()
+    }
 
-    print(
-        "Erreurs de validation"
-    )
+    program_ids = {
+        program_id
+        for program_id, _ in project.iter_programs()
+    }
 
-    print(
-        "===================="
-    )
+    song_ids = {
+        song_id
+        for song_id, _ in project.iter_songs()
+    }
 
     for error in errors:
 
-        if isinstance(error, str):
+        if not isinstance(
+            error,
+            str
+        ):
+
+            structured_errors.append(
+                error
+            )
+
+            continue
+
+        matched = False
+
+        for song_id in song_ids:
+
+            if error.startswith(
+                f"{song_id} "
+            ):
+
+                song_errors.append(
+                    error
+                )
+
+                matched = True
+                break
+
+        if matched:
+
+            continue
+
+        for program_id in program_ids:
+
+            if error.startswith(
+                f"{program_id} "
+            ):
+
+                program_errors.append(
+                    error
+                )
+
+                matched = True
+                break
+
+        if matched:
+
+            continue
+
+        for mix_id in mix_ids:
+
+            if error.startswith(
+                f"{mix_id} "
+            ):
+
+                mix_errors.append(
+                    error
+                )
+
+                matched = True
+                break
+
+        if not matched:
+
+            other_errors.append(
+                error
+            )
+
+    print()
+    print("====================")
+    print("Erreurs de validation")
+    print("====================")
+
+    if mix_errors:
+
+        print()
+        print("MIX")
+        print("---")
+
+        for error in mix_errors:
 
             print(
                 "-",
                 error
             )
 
-            continue
+    if program_errors:
 
-        if error.get("type") == "missing_instrument":
+        print()
+        print("PROGRAM")
+        print("-------")
+
+        for error in program_errors:
+
+            print(
+                "-",
+                error
+            )
+
+    if song_errors:
+
+        print()
+        print("SONG")
+        print("----")
+
+        for error in song_errors:
+
+            print(
+                "-",
+                error
+            )
+
+    if other_errors:
+
+        print()
+        print("AUTRES")
+        print("------")
+
+        for error in other_errors:
+
+            print(
+                "-",
+                error
+            )
+
+    for error in structured_errors:
+
+        if error.get(
+            "type"
+        ) == "missing_instrument":
 
             print()
-
             print(
                 "⚠ Instrument absent"
             )
@@ -1949,12 +2073,20 @@ def print_validation_errors(errors):
                 error["instrument"]
             )
 
-        elif error.get("type") == "midi_channel_conflict":
+        elif error.get(
+            "type"
+        ) == "midi_channel_conflict":
 
             print()
+            print(
+                "INFORMATION"
+            )
+            print(
+                "-----------"
+            )
 
             print(
-                "⚠ Information : canal MIDI partagé"
+                "⚠ Canal MIDI partagé"
             )
 
             print(
@@ -1973,9 +2105,11 @@ def print_validation_errors(errors):
                     error["parts"]
                 )
             )
+
             print(
                 "Note : ce partage peut être volontaire."
             )
+
         else:
 
             print(
@@ -1997,6 +2131,7 @@ def validate_and_repair(project):
             return
 
         print_validation_errors(
+            project,
             errors
         )
 

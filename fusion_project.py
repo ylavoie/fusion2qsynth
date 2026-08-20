@@ -2206,6 +2206,22 @@ class FusionProject:
                 )
             )
 
+        for program_id, program in self.iter_programs():
+
+            errors.extend(
+                self.validate_program(
+                    program_id
+                )
+            )
+
+        for song_id, song in self.iter_songs():
+
+            errors.extend(
+                self.validate_song(
+                    song_id
+                )
+            )
+
         return errors
 
     def mix_has_parts(
