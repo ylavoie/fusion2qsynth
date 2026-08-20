@@ -699,3 +699,117 @@ Date : 2026-08-17
 * Nettoyage de constantes devenues redondantes.
 * Correction de résidus de code issus du format v1.
 * Ajout de fichiers accessoires à `.gitignore`.
+
+---
+
+## Version 2.1 - Gestion et validation des performances
+
+Date : 2026-08-19
+
+### Ajouté
+
+#### Gestion PROGRAM
+
+* Ajout du renommage des PROGRAM.
+* Ajout de la suppression des PROGRAM.
+* Ajout d'un diagnostic détaillé des PROGRAM.
+* Ajout d'un état synthétique dans la liste :
+  * OK ;
+  * À configurer ;
+  * Erreur Fusion.
+* Ajout d'un vrai menu d'édition PROGRAM :
+  * modification de l'instrument ;
+  * modification des paramètres de la PART.
+* Réutilisation de l'éditeur commun des paramètres de PART.
+* Validation des paramètres PROGRAM :
+  * canal MIDI ;
+  * plage de notes ;
+  * plage de vélocité.
+
+#### Gestion SONG
+
+* Ajout du renommage des SONG.
+* Ajout de la suppression des SONG.
+* Ajout d'un diagnostic détaillé par canal.
+* Ajout d'un résumé de configuration par SONG.
+* Affichage du nombre de canaux configurés.
+* Ajout d'un vrai menu d'édition des canaux SONG :
+  * modification de l'instrument ;
+  * modification des paramètres ;
+  * modification du canal MIDI.
+* Édition des paramètres SONG :
+  * Bank ;
+  * Program ;
+  * Volume ;
+  * Pan ;
+  * Expression ;
+  * Reverb ;
+  * Chorus.
+* Validation des canaux MIDI entre 1 et 16.
+* Validation des Bank et Program.
+* Validation des contrôleurs MIDI entre 0 et 127.
+* Refus du déplacement d'un canal SONG vers un canal déjà utilisé.
+* Correction progressive des erreurs d'une SONG sans annuler les corrections déjà valides.
+
+### Amélioré
+
+#### Diagnostic MIX
+
+* Enrichissement de la liste des MIX avec :
+  * nombre de PARTS ;
+  * nombre de PARTS configurées ;
+  * état global.
+* Ajout des états :
+  * OK ;
+  * À configurer ;
+  * Erreur Fusion ;
+  * Canaux partagés.
+* Validation étendue des PARTS :
+  * canal MIDI ;
+  * plage de notes ;
+  * plage de vélocité.
+* Affichage détaillé des erreurs lors de l'édition d'un MIX.
+
+#### Diagnostic PROGRAM
+
+* Affichage de l'état de chaque PROGRAM directement dans la liste.
+* Affichage détaillé des erreurs lors de l'édition.
+* Distinction entre erreur Fusion et absence de configuration SoundFont.
+
+#### Diagnostic SONG
+
+* Affichage du nombre de canaux configurés.
+* Distinction entre :
+  * OK ;
+  * À configurer ;
+  * Erreur Fusion.
+* Centralisation de la validation des canaux SONG.
+* Utilisation de la même logique de validation par :
+  * la validation globale ;
+  * le diagnostic ;
+  * l'éditeur.
+
+#### Validation globale
+
+* Extension de la validation globale aux MIX, PROGRAM et SONG.
+* Regroupement des erreurs par catégorie :
+  * MIX ;
+  * PROGRAM ;
+  * SONG.
+* Conservation des diagnostics informatifs séparément des erreurs bloquantes.
+* Les conflits de canaux MIDI dans un MIX restent signalés comme information lorsqu'ils peuvent être volontaires.
+* Les diagnostics informatifs n'empêchent plus la sauvegarde.
+* Affichage de la cause réelle lorsqu'une sauvegarde est refusée.
+
+#### Éditeur
+
+* Harmonisation accrue des fonctions de gestion entre MIX, PROGRAM et SONG.
+* Amélioration de la lisibilité des listes PROGRAM, MIX et SONG.
+* Ajout de résumés d'état permettant d'identifier rapidement les configurations à corriger.
+* Extraction de la saisie commune des paramètres de PART afin de la réutiliser pour MIX et PROGRAM.
+
+### Nettoyage interne
+
+* Centralisation des règles de validation des canaux SONG.
+* Réduction de la duplication entre diagnostic et validation.
+* Traitement uniforme des erreurs bloquantes et des diagnostics informatifs.
