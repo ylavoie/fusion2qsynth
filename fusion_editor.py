@@ -989,17 +989,14 @@ def validate_part_updates(
 
     return True
 
-def edit_part_parameters(
-    project,
-    mix_id,
-    part_id,
-    part
+def edit_part_values(
+    part,
+    part_id
 ):
 
     updates = {}
 
     print()
-
     print("====================")
     print("Paramètres PART", part_id)
     print("====================")
@@ -1156,7 +1153,7 @@ def edit_part_parameters(
             "Aucune modification."
         )
 
-        return
+        return None
 
     if not validate_part_updates(
         part,
@@ -1167,8 +1164,25 @@ def edit_part_parameters(
             "PART non modifiée."
         )
 
-        return
+        return None
 
+    return updates
+
+def edit_part_parameters(
+    project,
+    mix_id,
+    part_id,
+    part
+):
+
+    updates = edit_part_values(
+        part,
+        part_id
+    )
+
+    if not updates:
+
+        return
 
     success, messages = project.update_part(
         mix_id,
@@ -1176,40 +1190,32 @@ def edit_part_parameters(
         updates
     )
 
-    if success:
-
-        mix = project.get_mix(
-            mix_id
-        )
-
-        part = mix["parts"][part_id]
-
-        if project.save_safe():
-
-            print(
-                "PART modifiée."
-            )
-
-        else:
-
-            print(
-                "⚠ Sauvegarde non effectuée."
-            )
-
-    else:
-
-        print()
+    if not success:
 
         print(
-            "Modification refusée :"
+            "PART non modifiée."
         )
 
         for message in messages:
 
             print(
                 "-",
-                message["message"]
+                message
             )
+
+        return
+
+    if project.save_safe():
+
+        print(
+            "PART modifiée."
+        )
+
+    else:
+
+        print(
+            "⚠ Sauvegarde non effectuée."
+        )
 
 def test_mix_parts(project, mix):
 
@@ -2147,6 +2153,26 @@ def edit_program(
 
         return
 
+    errors = project.validate_program(
+        program_id
+    )
+
+    if errors:
+
+        print()
+        print("====================")
+        print("Erreurs de validation")
+        print("====================")
+
+        for error in errors:
+
+            print(
+                "-",
+                error
+            )
+
+        print()
+
     part = program.get(
         "parts",
         {}
@@ -2179,28 +2205,91 @@ def edit_program(
         part
     )
 
-    instrument = choose_instrument(
-        project,
-        part
-    )
+    while True:
 
-    if instrument is None:
+        print()
+        print("====================")
+        print("Edition PROGRAM")
+        print("====================")
+        print("1 - Modifier l'instrument")
+        print("2 - Modifier les paramètres")
+        print("q - Retour")
 
-        return
-
-    part["instrument"] = instrument["id"]
-
-    if project.save_safe():
-
-        print(
-            "Instrument affecté."
+        choice = input(
+            "> "
         )
 
-    else:
+        if choice == "1":
 
-        print(
-            "⚠ Sauvegarde non effectuée."
-        )
+            instrument = choose_instrument(
+                project,
+                part
+            )
+
+            if instrument is None:
+
+                continue
+
+            part["instrument"] = instrument["id"]
+
+            if project.save_safe():
+
+                print(
+                    "Instrument affecté."
+                )
+
+        elif choice == "2":
+
+            updates = edit_part_values(
+                part,
+                "1"
+            )
+
+            if not updates:
+
+                continue
+
+            old_part = dict(
+                part
+            )
+
+            part.update(
+                updates
+            )
+
+            errors = project.validate_program(
+                program_id
+            )
+
+            if errors:
+
+                part.clear()
+                part.update(
+                    old_part
+                )
+
+                print(
+                    "PROGRAM non modifié."
+                )
+
+                for error in errors:
+
+                    print(
+                        "-",
+                        error
+                    )
+
+                continue
+
+            if project.save_safe():
+
+                print(
+                    "PROGRAM modifié."
+                )
+
+        elif choice.lower() == "q":
+
+            return
 
 def list_songs(
     project
@@ -2275,7 +2364,19 @@ def list_songs(
             channels_diag
         )
 
-        if (
+        fusion_valid = all(
+            channel.get(
+                "fusion_valid",
+                False
+            )
+            for channel in channels_diag
+        )
+
+        if not fusion_valid:
+
+            state = "Erreur Fusion"
+
+        elif (
             total > 0
             and
             configured == total
@@ -2337,6 +2438,26 @@ def edit_song(
         )
 
         return
+
+    errors = project.validate_song(
+        song_id
+    )
+
+    if errors:
+
+        print()
+        print("====================")
+        print("Erreurs de validation")
+        print("====================")
+
+        for error in errors:
+
+            print(
+                "-",
+                error
+            )
+
+        print()
 
     channels = song.get(
         "channels",
