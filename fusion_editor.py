@@ -1413,7 +1413,10 @@ def test_mix_all(project, mix):
                     )
                 )
 
-def list_mixes(project):
+def list_mixes(
+    project,
+    status_filter=None
+):
 
     print()
 
@@ -1424,7 +1427,7 @@ def list_mixes(project):
 
     diagnostic = {
         item["mix"]: item
-        for item in project.get_diagnostic()
+        for item in project.get_mix_diagnostic()
     }
 
     print()
@@ -1441,6 +1444,8 @@ def list_mixes(project):
         "-" * 77
     )
 
+    displayed = 0
+
     for mix_id, mix in project.iter_mixes():
 
         mix_diag = diagnostic.get(
@@ -1451,6 +1456,14 @@ def list_mixes(project):
         parts_diag = mix_diag.get(
             "parts",
             []
+        )
+
+        fusion_valid = all(
+            part.get(
+                "fusion_valid",
+                False
+            )
+            for part in parts_diag
         )
 
         configured = sum(
@@ -1466,38 +1479,49 @@ def list_mixes(project):
             parts_diag
         )
 
-        fusion_valid = all(
-            part.get(
-                "fusion_valid",
-                False
-            )
-            for part in parts_diag
-        )
-
-        shared_channels = mix_diag.get(
-            "shared_channels",
-            []
-        )
-
         if not fusion_valid:
 
-            state = "Erreur Fusion"
-
-        elif shared_channels:
-
-            state = "Canaux partagés"
+            state_code = "error"
 
         elif (
-            total > 0
-            and
-            configured == total
+            total == 0
+            or
+            configured < total
         ):
 
-            state = "OK"
+            state_code = "unconfigured"
 
         else:
 
+            state_code = "ok"
+
+        if (
+            status_filter is not None
+            and
+            state_code != status_filter
+        ):
+
+            continue
+
+        displayed += 1
+
+        if state_code == "error":
+
+            state = "Erreur Fusion"
+
+        elif state_code == "unconfigured":
+
             state = "À configurer"
+
+        elif mix_diag.get(
+            "shared_channels"
+        ):
+
+            state = "Canaux partagés"
+
+        else:
+
+            state = "OK"
 
         print(
             f"{mix_id:<10}"
@@ -1506,6 +1530,19 @@ def list_mixes(project):
             f"{f'{configured}/{total}':>14}"
             f"{state:>16}"
         )
+    if displayed == 0:
+
+        if status_filter == "error":
+
+            print("Aucun MIX en erreur.")
+
+        elif status_filter == "unconfigured":
+
+            print("Aucun MIX à configurer.")
+
+        else:
+
+            print("Aucun MIX.")
 
 def instruments_menu(project):
 
@@ -2165,7 +2202,10 @@ def validate_and_repair(project):
             errors
         )
 
-def list_programs(project):
+def list_programs(
+    project,
+    status_filter=None
+):
 
     programs = list(
         project.iter_programs()
@@ -2180,15 +2220,54 @@ def list_programs(project):
 
     if not programs:
 
-        print(
-            "Aucun PROGRAM."
-        )
+        print("Aucun PROGRAM.")
 
         return
 
+    filtered_programs = []
+
+    for program_id, program in programs:
+
+        status = diagnostic.get(
+            program_id,
+            {}
+        )
+
+        if not status.get(
+            "fusion_valid",
+            False
+        ):
+
+            state = "error"
+
+        elif not status.get(
+            "qsynth_configured",
+            False
+        ):
+
+            state = "unconfigured"
+
+        else:
+
+            state = "ok"
+
+        if (
+            status_filter is None
+            or
+            state == status_filter
+        ):
+
+            filtered_programs.append(
+                (
+                    program_id,
+                    program,
+                    state
+                )
+            )
+
     print(
         "PROGRAMS :",
-        len(programs)
+        len(filtered_programs)
     )
 
     print()
@@ -2207,7 +2286,7 @@ def list_programs(project):
         "-" * 100
     )
 
-    for program_id, program in programs:
+    for program_id, program, state_code in filtered_programs:
 
         part = program.get(
             "parts",
@@ -2243,17 +2322,11 @@ def list_programs(project):
             {}
         )
 
-        if not status.get(
-            "fusion_valid",
-            False
-        ):
+        if state_code == "error":
 
             state = "Erreur Fusion"
 
-        elif not status.get(
-            "qsynth_configured",
-            False
-        ):
+        elif state_code == "unconfigured":
 
             state = "À configurer"
 
@@ -2270,6 +2343,19 @@ def list_programs(project):
             f"  {instrument_name:<22}"
             f"{state}"
         )
+    if len(filtered_programs) == 0:
+
+        if status_filter == "error":
+
+            print("Aucun PROGRAM en erreur.")
+
+        elif status_filter == "unconfigured":
+
+            print("Aucun PROGRAM à configurer.")
+
+        else:
+
+            print("Aucun PROGRAM.")
 
 def edit_program(
     project,
@@ -2427,7 +2513,8 @@ def edit_program(
             return
 
 def list_songs(
-    project
+    project,
+    status_filter=None
 ):
 
     songs = list(
@@ -2441,40 +2528,15 @@ def list_songs(
 
     if not songs:
 
-        print(
-            "Aucune SONG."
-        )
+        print("Aucune SONG.")
 
         return
 
     print()
 
+    displayed = 0
+
     for song_id, song in songs:
-
-        song_name = song.get(
-            "name",
-            ""
-        )
-
-        if (
-            song_name
-            and
-            song_name != song_id
-        ):
-
-            print(
-                "SONG",
-                song_id,
-                "-",
-                song_name
-            )
-
-        else:
-
-            print(
-                "SONG",
-                song_id
-            )
 
         song_diag = diagnostic.get(
             song_id,
@@ -2509,23 +2571,79 @@ def list_songs(
 
         if not fusion_valid:
 
-            state = "Erreur Fusion"
+            state_code = "error"
 
         elif (
-            total > 0
-            and
-            configured == total
+            total == 0
+            or
+            configured < total
         ):
 
-            state = "OK"
+            state_code = "unconfigured"
 
         else:
 
+            state_code = "ok"
+
+        #
+        # Filtre AVANT affichage
+        #
+        if (
+            status_filter is not None
+            and
+            state_code != status_filter
+        ):
+
+            continue
+
+        displayed += 1
+        #
+        # Seulement ici on affiche la SONG
+        #
+        song_name = song.get(
+            "name",
+            ""
+        )
+
+        if (
+            song_name
+            and
+            song_name != song_id
+        ):
+
+            print(
+                "SONG",
+                song_id,
+                "-",
+                song_name
+            )
+
+        else:
+
+            print(
+                "SONG",
+                song_id
+            )
+
+        if state_code == "error":
+
+            state = "Erreur Fusion"
+
+        elif state_code == "unconfigured":
+
             state = "À configurer"
+
+        else:
+
+            state = "OK"
 
         print(
             f" {configured}/{total} canaux configurés - {state}"
         )
+
+        print()
+
+        # boucle des canaux...
 
         print()
 
@@ -2555,6 +2673,27 @@ def list_songs(
             )
 
         print()
+
+    if displayed == 0:
+
+        if status_filter == "error":
+
+            print(
+                "Aucune SONG en erreur."
+            )
+
+        elif status_filter == "unconfigured":
+
+            print(
+                "Aucune SONG à configurer."
+            )
+
+        else:
+
+            print(
+                "Aucune SONG."
+            )
+
     print()
 
 def edit_song(
@@ -3045,6 +3184,47 @@ def edit_song(
 
             continue
 
+def print_project_summary(
+    project
+):
+
+    summary = project.get_project_diagnostic_summary()
+
+    print()
+    print("État du projet")
+    print("--------------")
+
+    for label, key in (
+        ("MIX", "mixes"),
+        ("PROGRAM", "programs"),
+        ("SONG", "songs")
+    ):
+
+        data = summary[
+            key
+        ]
+
+        line = (
+            f"{label:<8}: "
+            f"{data['total']:>3} | "
+            f"OK {data['ok']:>2} | "
+            f"À configurer {data['unconfigured']:>2} | "
+            f"Erreurs {data['error']:>2}"
+        )
+
+        if data.get(
+            "info",
+            0
+        ):
+
+            line += (
+                f" | Infos {data['info']:>2}"
+            )
+
+        print(
+            line
+        )
+
 def main():
 
     def mixes_menu(
@@ -3221,26 +3401,13 @@ def main():
             print("===================")
             print(" MIX ")
             print("===================")
-
-            print(
-                "1 - Liste"
-            )
-
-            print(
-                "2 - Éditer"
-            )
-
-            print(
-                "3 - Supprimer"
-            )
-
-            print(
-                "4 - Supprimer les MIX vides"
-            )
-
-            print(
-                "q - Retour"
-            )
+            print("1 - Liste complète")
+            print("2 - À configurer")
+            print("3 - En erreur")
+            print("4 - Éditer")
+            print("5 - Supprimer")
+            print("6 - Supprimer les MIX vides")
+            print("q - Retour")
 
             choice = input(
                 "> "
@@ -3254,6 +3421,20 @@ def main():
 
             elif choice == "2":
 
+                list_mixes(
+                    project,
+                    status_filter="unconfigured"
+                )
+
+            elif choice == "3":
+
+                list_mixes(
+                    project,
+                    status_filter="error"
+                )
+
+            elif choice == "4":
+
                 mix_id = input(
                     "Numéro du Mix (ex: 2:4) : "
                 )
@@ -3263,11 +3444,11 @@ def main():
                     mix_id
                 )
 
-            elif choice == "3":
+            elif choice == "5":
 
                 delete_mix_menu()
 
-            elif choice == "4":
+            elif choice == "6":
 
                 delete_empty_mixes_menu()
 
@@ -3436,10 +3617,12 @@ def main():
             print("===================")
             print(" PROGRAMS ")
             print("===================")
-            print("1 - Liste")
-            print("2 - Éditer")
-            print("3 - Renommer")
-            print("4 - Supprimer")
+            print("1 - Liste complète")
+            print("2 - À configurer")
+            print("3 - En erreur")
+            print("4 - Éditer")
+            print("5 - Renommer")
+            print("6 - Supprimer")
             print("q - Retour")
 
             choice = input(
@@ -3454,6 +3637,20 @@ def main():
 
             elif choice == "2":
 
+                list_programs(
+                    project,
+                    status_filter="unconfigured"
+                )
+
+            elif choice == "3":
+
+                list_programs(
+                    project,
+                    status_filter="error"
+                )
+
+            elif choice == "4":
+
                 program_id = input(
                     "PROGRAM à éditer : "
                 )
@@ -3463,11 +3660,11 @@ def main():
                     program_id
                 )
 
-            elif choice == "3":
+            elif choice == "5":
 
                 rename_program_menu()
 
-            elif choice == "4":
+            elif choice == "6":
 
                 delete_program_menu()
 
@@ -3619,10 +3816,12 @@ def main():
             print("===================")
             print(" SONG ")
             print("===================")
-            print("1 - Liste")
-            print("2 - Éditer")
-            print("3 - Renommer")
-            print("4 - Supprimer")
+            print("1 - Liste complète")
+            print("2 - À configurer")
+            print("3 - En erreur")
+            print("4 - Éditer")
+            print("5 - Renommer")
+            print("6 - Supprimer")
             print("q - Retour")
 
             choice = input(
@@ -3637,6 +3836,20 @@ def main():
 
             elif choice == "2":
 
+                list_songs(
+                    project,
+                    status_filter="unconfigured"
+                )
+
+            elif choice == "3":
+
+                list_songs(
+                    project,
+                    status_filter="error"
+                )
+
+            elif choice == "4":
+
                 song_id = input(
                     "SONG à éditer : "
                 )
@@ -3646,11 +3859,11 @@ def main():
                     song_id
                 )
 
-            elif choice == "3":
+            elif choice == "5":
 
                 rename_song_menu()
 
-            elif choice == "4":
+            elif choice == "6":
 
                 delete_song_menu()
 
@@ -3671,26 +3884,16 @@ def main():
         print("Fusion Editor")
         print("===================")
 
-        print(
-            "1 - Gestion MIX"
+        print_project_summary(
+            project
         )
+        print()
 
-        print(
-            "2 - Gestion PROGRAM"
-        )
-
-        print(
-            "3 - Gestion SONG"
-        )
-
-        print(
-            "4 - Gestion Instruments"
-        )
-
-        print(
-            "q - Quitter"
-        )
-
+        print("1 - Gestion MIX")
+        print("2 - Gestion PROGRAM")
+        print("3 - Gestion SONG")
+        print("4 - Gestion Instruments")
+        print("q - Quitter")
         choix = input(
             "> "
         )

@@ -1687,10 +1687,6 @@ class FusionProject:
     #
     # Diagnostic
     #
-    def get_diagnostic(self):
-
-        return self.get_mix_diagnostic()
-
     def get_mix_diagnostic(self):
 
         results = []
@@ -2024,6 +2020,152 @@ class FusionProject:
             )
 
         return results
+
+    def get_project_diagnostic_summary(self):
+
+        summary = {
+            "mixes": {
+                "total": 0,
+                "ok": 0,
+                "unconfigured": 0,
+                "error": 0,
+                "info": 0
+            },
+            "programs": {
+                "total": 0,
+                "ok": 0,
+                "unconfigured": 0,
+                "error": 0,
+                "info": 0
+            },
+            "songs": {
+                "total": 0,
+                "ok": 0,
+                "unconfigured": 0,
+                "error": 0,
+                "info": 0
+            }
+        }
+
+
+        # MIX
+
+        for mix in self.get_mix_diagnostic():
+
+            summary["mixes"]["total"] += 1
+
+            parts = mix.get(
+                "parts",
+                []
+            )
+
+            fusion_valid = all(
+                part.get(
+                    "fusion_valid",
+                    False
+                )
+                for part in parts
+            )
+
+            qsynth_configured = (
+                bool(parts)
+                and all(
+                    part.get(
+                        "qsynth_configured",
+                        False
+                    )
+                    for part in parts
+                )
+            )
+
+            if not fusion_valid:
+
+                summary["mixes"]["error"] += 1
+
+            elif not qsynth_configured:
+
+                summary["mixes"]["unconfigured"] += 1
+
+            else:
+
+                summary["mixes"]["ok"] += 1
+
+            if mix.get(
+                "shared_channels"
+            ):
+
+                summary["mixes"]["info"] += 1
+
+
+        # PROGRAM
+
+        for program in self.get_program_diagnostic():
+
+            summary["programs"]["total"] += 1
+
+            if not program.get(
+                "fusion_valid",
+                False
+            ):
+
+                summary["programs"]["error"] += 1
+
+            elif not program.get(
+                "qsynth_configured",
+                False
+            ):
+
+                summary["programs"]["unconfigured"] += 1
+
+            else:
+
+                summary["programs"]["ok"] += 1
+
+
+        # SONG
+
+        for song in self.get_song_diagnostic():
+
+            summary["songs"]["total"] += 1
+
+            channels = song.get(
+                "channels",
+                []
+            )
+
+            fusion_valid = all(
+                channel.get(
+                    "fusion_valid",
+                    False
+                )
+                for channel in channels
+            )
+
+            qsynth_configured = (
+                bool(channels)
+                and all(
+                    channel.get(
+                        "qsynth_configured",
+                        False
+                    )
+                    for channel in channels
+                )
+            )
+
+            if not fusion_valid:
+
+                summary["songs"]["error"] += 1
+
+            elif not qsynth_configured:
+
+                summary["songs"]["unconfigured"] += 1
+
+            else:
+
+                summary["songs"]["ok"] += 1
+
+
+        return summary
 
     #
     # Affichage

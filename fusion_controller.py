@@ -836,7 +836,7 @@ def main():
 
         last_mix = load_last_mix()
 
-        diagnostic = project.get_diagnostic()
+        diagnostic = project.get_mix_diagnostic()
         for mix in diagnostic:
 
             print()
