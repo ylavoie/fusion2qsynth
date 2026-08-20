@@ -813,3 +813,77 @@ Date : 2026-08-19
 * Centralisation des règles de validation des canaux SONG.
 * Réduction de la duplication entre diagnostic et validation.
 * Traitement uniforme des erreurs bloquantes et des diagnostics informatifs.
+
+---
+
+## Version 2.2 - Diagnostic et correction assistée
+
+Date : 2026-08-20
+
+### Ajouté
+
+#### Résumé global du projet
+
+* Ajout d'un résumé de l'état du projet dans l'éditeur.
+* Affichage synthétique pour MIX, PROGRAM et SONG :
+  * nombre total ;
+  * éléments OK ;
+  * éléments à configurer ;
+  * éléments en erreur ;
+  * informations non bloquantes pour les MIX.
+* Les canaux partagés d'un MIX sont comptabilisés comme information sans invalider l'état global.
+
+#### Filtres de diagnostic
+
+* Ajout de filtres dans les menus MIX, PROGRAM et SONG :
+  * liste complète ;
+  * à configurer ;
+  * en erreur.
+* Les listes filtrées ne présentent que les performances correspondant à l'état demandé.
+* Ajout d'un message explicite lorsqu'aucun élément ne correspond au filtre.
+
+#### Correction assistée
+
+* Ajout de l'édition directe depuis les listes filtrées.
+* Les listes filtrées retournent les identifiants réellement affichés.
+* Validation de l'identifiant choisi avant l'ouverture de l'éditeur.
+* Recalcul automatique de la liste après chaque correction.
+* Une performance disparaît automatiquement de la liste lorsqu'elle devient valide ou entièrement configurée.
+* Possibilité d'enchaîner les corrections sans revenir au menu principal.
+* Support de la correction assistée pour :
+  * MIX ;
+  * PROGRAM ;
+  * SONG.
+
+#### Ajout d'instrument en contexte
+
+* Ajout de l'option `Ajouter un instrument` directement dans le choix d'instrument.
+* Possibilité d'ajouter un instrument depuis :
+  * la bibliothèque SoundFont ;
+  * la saisie manuelle.
+* Reconstruction automatique de la liste des instruments après ajout.
+* Le nouvel instrument peut être sélectionné immédiatement sans quitter l'édition en cours.
+
+### Amélioré
+
+#### Éditeur
+
+* Réduction du nombre d'étapes nécessaires pour corriger une configuration.
+* Navigation plus directe entre diagnostic et édition.
+* Conservation du contexte courant lors de l'ajout d'un instrument.
+* Mise à jour dynamique du résumé global après les corrections.
+
+#### Diagnostic
+
+* Uniformisation de la classification des performances :
+  * OK ;
+  * À configurer ;
+  * Erreur Fusion.
+* Conservation des informations non bloquantes indépendamment de l'état principal.
+* Traitement cohérent des performances vides comme éléments à configurer plutôt que comme éléments valides.
+
+### Nettoyage interne
+
+* Réutilisation des diagnostics existants pour construire le résumé global.
+* Centralisation du calcul des états sans duplication des règles de validation.
+* Réutilisation du même mécanisme de filtrage pour MIX, PROGRAM et SONG.
