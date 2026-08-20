@@ -2426,6 +2426,210 @@ def edit_song(
     project,
     song_id
 ):
+    def edit_song_channel_parameters(
+        project,
+        song_id,
+        channel_id,
+        channel
+    ):
+
+        updates = {}
+
+        print()
+        print("====================")
+        print(
+            "Paramètres canal",
+            channel_id
+        )
+        print("====================")
+
+        print(
+            "Bank       :",
+            channel.get(
+                "bank",
+                "?"
+            )
+        )
+
+        print(
+            "Program    :",
+            channel.get(
+                "program",
+                "?"
+            )
+        )
+
+        print(
+            "Volume     :",
+            channel.get(
+                "volume",
+                "?"
+            )
+        )
+
+        print(
+            "Pan        :",
+            channel.get(
+                "pan",
+                "?"
+            )
+        )
+
+        print(
+            "Expression :",
+            channel.get(
+                "expression",
+                "?"
+            )
+        )
+
+        print(
+            "Reverb     :",
+            channel.get(
+                "reverb",
+                "?"
+            )
+        )
+
+        print(
+            "Chorus     :",
+            channel.get(
+                "chorus",
+                "?"
+            )
+        )
+
+        print()
+
+        value = read_int(
+            "Nouveau Bank (Entrée = conserver) : ",
+            0,
+            16383
+        )
+
+        if value is not None:
+
+            updates["bank"] = value
+
+        value = read_int(
+            "Nouveau Program (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["program"] = value
+
+        value = read_int(
+            "Nouveau Volume (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["volume"] = value
+
+        value = read_int(
+            "Nouveau Pan (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["pan"] = value
+
+        value = read_int(
+            "Nouvelle Expression (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["expression"] = value
+
+        value = read_int(
+            "Nouvelle Reverb (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["reverb"] = value
+
+        value = read_int(
+            "Nouveau Chorus (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["chorus"] = value
+
+        if not updates:
+
+            print(
+                "Aucune modification."
+            )
+
+            return
+
+        old_channel = dict(
+            channel
+        )
+
+        channel.update(
+            updates
+        )
+
+        errors = project.validate_song_channel(
+            song_id,
+            channel_id
+        )
+
+        if errors:
+
+            channel.clear()
+
+            channel.update(
+                old_channel
+            )
+
+            print(
+                "Canal SONG non modifié."
+            )
+
+            for error in errors:
+
+                print(
+                    "-",
+                    error
+                )
+
+            return
+
+        if project.save_safe():
+
+            print(
+                "Canal SONG modifié."
+            )
+
+        else:
+
+            channel.clear()
+
+            channel.update(
+                old_channel
+            )
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
 
     song = project.get_song(
         song_id
@@ -2546,32 +2750,165 @@ def edit_song(
             )
         )
 
-        instrument = choose_instrument(
-            project,
-            channel
+        print()
+        print("====================")
+        print("Edition canal SONG")
+        print("====================")
+        print("1 - Modifier l'instrument")
+        print("2 - Modifier les paramètres")
+        print("3 - Modifier le canal MIDI")
+        print("q - Retour")
+
+        choice = input(
+            "> "
         )
 
-        if instrument is None:
+        if choice == "1":
+
+            instrument = choose_instrument(
+                project,
+                channel
+            )
+
+            if instrument is None:
+
+                continue
+
+            old_instrument = channel.get(
+                "instrument"
+            )
+
+            channel[
+                "instrument"
+            ] = instrument[
+                "id"
+            ]
+
+            if project.save_safe():
+
+                print(
+                    "Instrument affecté."
+                )
+
+            else:
+
+                if old_instrument is None:
+
+                    channel.pop(
+                        "instrument",
+                        None
+                    )
+
+                else:
+
+                    channel[
+                        "instrument"
+                    ] = old_instrument
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
+
+        elif choice == "2":
+
+            edit_song_channel_parameters(
+                project,
+                song_id,
+                channel_id,
+                channel
+            )
+
+        elif choice == "3":
+
+            new_channel = read_int(
+                "Nouveau canal MIDI : ",
+                1,
+                16
+            )
+
+            if new_channel is None:
+
+                continue
+
+            new_channel_id = str(
+                new_channel
+            )
+
+            if new_channel_id == channel_id:
+
+                print(
+                    "Canal inchangé."
+                )
+
+                continue
+
+            if new_channel_id in channels:
+
+                print(
+                    "Canal MIDI déjà utilisé."
+                )
+
+                continue
+
+            old_channels = dict(
+                channels
+            )
+
+            channels[
+                new_channel_id
+            ] = channels.pop(
+                channel_id
+            )
+
+            errors = project.validate_song(
+                song_id
+            )
+
+            if errors:
+
+                channels.clear()
+
+                channels.update(
+                    old_channels
+                )
+
+                print(
+                    "Canal MIDI non modifié."
+                )
+
+                for error in errors:
+
+                    print(
+                        "-",
+                        error
+                    )
+
+                continue
+
+            if project.save_safe():
+
+                print(
+                    "Canal MIDI modifié :",
+                    channel_id,
+                    "→",
+                    new_channel_id
+                )
+
+            else:
+
+                channels.clear()
+
+                channels.update(
+                    old_channels
+                )
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
+
+        elif choice.lower() == "q":
 
             continue
-
-        channel[
-            "instrument"
-        ] = instrument[
-            "id"
-        ]
-
-        if project.save_safe():
-
-            print(
-                "Instrument affecté."
-            )
-
-        else:
-
-            print(
-                "⚠ Sauvegarde non effectuée."
-            )
 
 def main():
 

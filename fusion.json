@@ -663,10 +663,10 @@
       "name": "MellowZ",
       "parts": {
         "1": {
-          "midi_channel": 17,
+          "midi_channel": 1,
           "bank": 0,
           "program": 2,
-          "note_min": 162,
+          "note_min": 62,
           "note_max": 79,
           "velocity_min": 13,
           "velocity_max": 68
@@ -683,7 +683,7 @@
           "note_min": 28,
           "note_max": 100,
           "velocity_min": 9,
-          "velocity_max": 142
+          "velocity_max": 83
         }
       }
     },
@@ -733,6 +733,7 @@
       "name": "Fusion Mix 0:8",
       "parts": {
         "1": {
+          "midi_channel": 1,
           "bank": 0,
           "program": 8
         }
@@ -767,10 +768,6 @@
           "program": 0
         }
       }
-    },
-    "0:5": {
-      "name": "4-Bits Mix",
-      "parts": {}
     },
     "0:6": {
       "name": "Action Mix",
@@ -818,7 +815,7 @@
         },
         "3": {
           "bank": 0,
-          "program": 4,
+          "program": 44,
           "volume": 90,
           "pan": 54,
           "reverb": 105,

@@ -1521,6 +1521,137 @@ class FusionProject:
             self.get_songs()
         )
 
+    def validate_song_channel_data(
+        self,
+        song_id,
+        channel_id,
+        channel
+    ):
+
+        errors = []
+
+        try:
+
+            midi_channel = int(
+                channel_id
+            )
+
+        except ValueError:
+
+            return [
+                f"{song_id} CH {channel_id} : canal MIDI invalide."
+            ]
+
+        if not (
+            1 <= midi_channel <= 16
+        ):
+
+            errors.append(
+                f"{song_id} CH {channel_id} : canal MIDI invalide."
+            )
+
+        if "bank" not in channel:
+
+            errors.append(
+                f"{song_id} CH {channel_id} : Bank absente."
+            )
+
+        else:
+
+            bank = channel["bank"]
+
+            if not (
+                0 <= bank <= 16383
+            ):
+
+                errors.append(
+                    f"{song_id} CH {channel_id} : "
+                    f"Bank invalide ({bank})."
+                )
+
+        if "program" not in channel:
+
+            errors.append(
+                f"{song_id} CH {channel_id} : Program absent."
+            )
+
+        else:
+
+            program = channel["program"]
+
+            if not (
+                0 <= program <= 127
+            ):
+
+                errors.append(
+                    f"{song_id} CH {channel_id} : "
+                    f"Program invalide ({program})."
+                )
+
+        for field in (
+            "volume",
+            "pan",
+            "expression",
+            "reverb",
+            "chorus"
+        ):
+
+            if field not in channel:
+
+                continue
+
+            value = channel[
+                field
+            ]
+
+            if not (
+                0 <= value <= 127
+            ):
+
+                errors.append(
+                    f"{song_id} CH {channel_id} : "
+                    f"{field} invalide ({value})."
+                )
+
+        return errors
+
+    def validate_song_channel(
+        self,
+        song_id,
+        channel_id
+    ):
+
+        song = self.get_song(
+            song_id
+        )
+
+        if not song:
+
+            return [
+                f"SONG inconnue : {song_id}"
+            ]
+
+        channels = song.get(
+            "channels",
+            {}
+        )
+
+        channel = channels.get(
+            str(channel_id)
+        )
+
+        if channel is None:
+
+            return [
+                f"{song_id} CH {channel_id} : canal inconnu."
+            ]
+
+        return self.validate_song_channel_data(
+            song_id,
+            str(channel_id),
+            channel
+        )
+
     def validate_song(
         self,
         song_id
@@ -1543,60 +1674,13 @@ class FusionProject:
             {}
         ).items():
 
-            try:
-
-                midi_channel = int(
-                    channel_id
+            errors.extend(
+                self.validate_song_channel_data(
+                    song_id,
+                    channel_id,
+                    channel
                 )
-
-            except ValueError:
-
-                errors.append(
-                    f"{song_id} CH {channel_id} : canal MIDI invalide."
-                )
-
-                continue
-
-            if not (
-                1 <= midi_channel <= 16
-            ):
-
-                errors.append(
-                    f"{song_id} CH {channel_id} : canal MIDI invalide."
-                )
-
-            if "bank" not in channel:
-
-                errors.append(
-                    f"{song_id} CH {channel_id} : Bank absente."
-                )
-
-            if "program" not in channel:
-
-                errors.append(
-                    f"{song_id} CH {channel_id} : Program absent."
-                )
-
-            for field in (
-                "volume",
-                "pan",
-                "expression",
-                "reverb",
-                "chorus"
-            ):
-
-                if field in channel:
-
-                    value = channel[field]
-
-                    if not (
-                        0 <= value <= 127
-                    ):
-
-                        errors.append(
-                            f"{song_id} CH {channel_id} : "
-                            f"{field} invalide ({value})."
-                        )
+            )
 
         return errors
 
@@ -1911,79 +1995,23 @@ class FusionProject:
                 {}
             ).items():
 
+                errors = self.validate_song_channel_data(
+                    song_id,
+                    channel_id,
+                    channel
+                )
+
                 channel_result = {
                     "channel": channel_id,
-                    "fusion_valid": False,
+                    "fusion_valid": not errors,
                     "qsynth_configured": (
                         self.resolve_part_instrument(
                             channel
                         )
                         is not None
                     ),
-                    "errors": []
+                    "errors": errors
                 }
-
-                bank_valid = False
-
-                if "bank" not in channel:
-
-                    bank_valid = False
-                    channel_result[
-                        "errors"
-                    ].append(
-                        "Bank absente"
-                    )
-                else:
-
-                    bank = channel[
-                        "bank"
-                    ]
-
-                    if not (
-                        0 <= bank <= 16383
-                    ):
-
-                        bank_valid = False
-                        channel_result[
-                            "errors"
-                        ].append(
-                            f"{song_id} CH {channel_id} : "
-                            f"Bank invalide ({bank})."
-                        )
-                    else:
-                        bank_valid = True
-
-                program_valid = False
-
-                if "program" not in channel:
-
-                    program_valid = False
-                    channel_result[
-                        "errors"
-                    ].append(
-                        "Program absent"
-                    )
-                else:
-
-                    program = channel[
-                        "program"
-                    ]
-
-                    if not (
-                        0 <= program <= 127
-                    ):
-
-                        program_valid = False
-                        channel_result[
-                            "errors"
-                        ].append(
-                            f"{song_id} CH {channel_id} : "
-                            f"Program invalide ({program})."
-                        )
-                    else:
-                        program_valid = True
-
-                channel_result["fusion_valid"] = bank_valid and program_valid
 
                 song_result[
                     "channels"
@@ -1995,7 +2023,6 @@ class FusionProject:
                 song_result
             )
 
-        print(json.dumps(results, indent=4))
         return results
 
     #
