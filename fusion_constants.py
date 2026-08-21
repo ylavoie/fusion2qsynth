@@ -13,8 +13,7 @@ VERSION = "2.2.0"
 
 LOG_FILE = "fusion.log"
 
-LAST_MIX_FILE = "last_mix.json"
-
+LAST_PERFORMANCE_FILE = "last_performance.json"
 
 # MIDI
 

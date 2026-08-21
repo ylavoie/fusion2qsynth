@@ -6,7 +6,7 @@ import json
 import mido
 
 from fusion_constants import (
-    LAST_MIX_FILE,
+    LAST_PERFORMANCE_FILE,
     FUSION_DEFAULT_CHANNEL,
     DEBUG
 )
@@ -36,17 +36,42 @@ class ControllerState:
 
 state = ControllerState()
 
-def save_last_mix(mix_id):
+def save_last_performance(
+    mode,
+    performance_id
+):
+
+    data = {}
+
+    if os.path.exists(
+        LAST_PERFORMANCE_FILE
+    ):
+
+        try:
+
+            with open(
+                LAST_PERFORMANCE_FILE
+            ) as f:
+
+                data = json.load(
+                    f
+                )
+
+        except Exception:
+
+            data = {}
+
+    data[
+        mode
+    ] = performance_id
 
     with open(
-        LAST_MIX_FILE,
+        LAST_PERFORMANCE_FILE,
         "w"
     ) as f:
 
         json.dump(
-            {
-                "mix": mix_id
-            },
+            data,
             f,
             indent=2
         )
@@ -216,7 +241,8 @@ def load_mix(mix_id, out, project):
 
     if loaded_parts > 0:
 
-        save_last_mix(
+        save_last_performance(
+            "mix",
             mix_id
         )
 
@@ -297,19 +323,33 @@ def execute_pending_reload(
     state.pending_reload = False
     state.reload_wait_announced = False
 
-def load_last_mix():
+def load_last_performance(
+    mode
+):
 
-    if not os.path.exists(LAST_MIX_FILE):
+    if not os.path.exists(
+        LAST_PERFORMANCE_FILE
+    ):
 
         return None
 
-    with open(LAST_MIX_FILE) as f:
+    try:
 
-        data = json.load(f)
+        with open(
+            LAST_PERFORMANCE_FILE
+        ) as f:
 
-        return data.get(
-            "mix"
-        )
+            data = json.load(
+                f
+            )
+
+    except Exception:
+
+        return None
+
+    return data.get(
+        mode
+    )
 
 def load_program(
     program_id,
@@ -418,10 +458,10 @@ def load_program(
         part["midi_channel"]
     ] = part
 
-    #save_last_performance(
-    #    "program",
-    #    program_id
-    #)
+    save_last_performance(
+        "program",
+        program_id
+    )
 
     print()
     print(
@@ -573,6 +613,13 @@ def load_song(
         loaded_channels,
         "canaux chargés dans FluidSynth"
     )
+
+    if loaded_channels > 0:
+
+        save_last_performance(
+            "song",
+            song_id
+        )
 
     print()
     print(
@@ -737,9 +784,16 @@ def main():
         print()
 
     selected_mode = choose_controller_mode()
+
+    if selected_mode is None:
+
+        return
+
     state.current_mode = selected_mode
 
-    last_mix = None
+    last_id = load_last_performance(
+        selected_mode
+    )
 
     selected_song = None
 
@@ -824,19 +878,10 @@ def main():
             "SONG enregistrées"
         )
 
-        selected_song = choose_song(
-            project
-        )
-
-        if selected_song is None:
-
-            return
-
     if selected_mode == "mix":
 
-        last_mix = load_last_mix()
-
         diagnostic = project.get_mix_diagnostic()
+
         for mix in diagnostic:
 
             print()
@@ -846,7 +891,6 @@ def main():
                 "-",
                 mix["name"]
             )
-
 
             for part in mix["parts"]:
 
@@ -862,7 +906,6 @@ def main():
                     if part["qsynth_configured"]
                     else "Non configuré"
                 )
-
 
             if "shared_channels" in mix:
 
@@ -919,16 +962,51 @@ def main():
                 if (
                     selected_mode == "mix"
                     and
-                    last_mix
+                    last_id
                 ):
 
                     load_mix(
-                        last_mix,
+                        last_id,
                         out,
                         project
                     )
 
+                elif (
+                    selected_mode == "program"
+                    and
+                    last_id
+                ):
+
+                    load_program(
+                        last_id,
+                        out,
+                        project
+                    )
+
+                elif selected_mode == "song":
+
+                    if (
+                        last_id
+                        and
+                        project.get_song(
+                            last_id
+                        )
+                    ):
+
+                        selected_song = last_id
+
+                    else:
+
+                        selected_song = choose_song(
+                            project
+                        )
+
+                    if selected_song is None:
+
+                        return
+
                 print()
+
                 if selected_mode == "program":
 
                     print(
@@ -1303,8 +1381,8 @@ def main():
 
                             continue
 
-                time_sleep(
-                    0.01
+                    time.sleep(
+                        0.01
                 )
 
     except KeyboardInterrupt:
