@@ -11,6 +11,10 @@ from fusion_constants import (
     DEBUG
 )
 
+from fusion_diagnostic import (
+    print_validation_errors
+)
+
 from fusion_project import FusionProject
 
 from fusion_lib import (
@@ -177,18 +181,11 @@ def load_mix(mix_id, out, project):
 
     if errors:
 
-        print()
-        print(
-            "Attention configuration Mix :",
-            mix_id
+        print_validation_errors(
+            project,
+            errors,
+            title="Attention configuration"
         )
-
-        for err in errors:
-
-            print(
-                "-",
-                err
-            )
 
         print()
 
@@ -1160,23 +1157,11 @@ def main():
 
     if errors:
 
-        print()
-        print(
-            "===================="
+        print_validation_errors(
+            project,
+            errors,
+            title="AVERTISSEMENTS CONFIGURATION"
         )
-        print(
-            "AVERTISSEMENTS CONFIGURATION"
-        )
-        print(
-            "===================="
-        )
-
-        for err in errors:
-
-            print(
-                "-",
-                err
-            )
 
         print()
 

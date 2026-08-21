@@ -8,6 +8,10 @@ from fusion_lib import (
     note_name
 )
 
+from fusion_diagnostic import (
+    print_error_messages
+)
+
 from fusion_constants import (
     FUSION_DEFAULT_CHANNEL
 )
@@ -426,12 +430,9 @@ def capture_mix(
                                             "Remplacement du Mix refusé :"
                                         )
 
-                                        for error in errors:
-
-                                            print(
-                                                "-",
-                                                error
-                                            )
+                                        print_error_messages(
+                                            errors
+                                        )
 
                                         continue
 
