@@ -510,7 +510,11 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             if old_name is None:
 
@@ -525,7 +529,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -577,7 +581,11 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             mixes.pop(
                 new_mix_id,
@@ -586,7 +594,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -658,13 +666,17 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             self.data = backup
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -696,13 +708,17 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             self.data = backup
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -1222,7 +1238,11 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             if old_name is None:
 
@@ -1237,7 +1257,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -1273,13 +1293,17 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             self.data = backup
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -1412,7 +1436,11 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             if old_name is None:
 
@@ -1427,7 +1455,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -1467,13 +1495,17 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             self.data = backup
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
@@ -2433,13 +2465,17 @@ class FusionProject:
 
         errors = self.validate()
 
-        if errors:
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if blocking_errors:
 
             mix["parts"] = old_parts
 
             return (
                 False,
-                errors
+                blocking_errors
             )
 
         return (
