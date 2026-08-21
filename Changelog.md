@@ -887,3 +887,86 @@ Date : 2026-08-20
 * Réutilisation des diagnostics existants pour construire le résumé global.
 * Centralisation du calcul des états sans duplication des règles de validation.
 * Réutilisation du même mécanisme de filtrage pour MIX, PROGRAM et SONG.
+
+---
+
+## Version 2.3 - Continuité et robustesse du Contrôleur Live
+
+Date : 2026-08-21
+
+### Ajouté
+
+#### Persistance des performances Live
+
+* Remplacement de la mémorisation spécifique au dernier MIX par une persistance commune aux trois modes Live.
+* Mémorisation indépendante de la dernière performance utilisée pour :
+  * PROGRAM ;
+  * MIX ;
+  * SONG.
+* Ajout du fichier d'état `last_performance.json`.
+* Conservation simultanée de la dernière performance de chaque mode.
+* Reprise automatique de la dernière performance PROGRAM.
+* Reprise automatique de la dernière performance MIX.
+* Présélection de la dernière SONG utilisée.
+* La SONG présélectionnée reste chargée uniquement lors de la réception du `START`.
+
+#### Navigation SONG
+
+* Ajout d'une boucle de sélection dédiée au mode SONG.
+* `Ctrl+C` en mode SONG retourne à la sélection des SONG plutôt qu'au menu principal.
+* Possibilité d'enchaîner plusieurs SONG sans quitter le Contrôleur Live.
+* `q` dans la sélection SONG permet de revenir au menu principal.
+* Conservation du comportement du Fusion :
+  * `SONG SELECT` reste traité comme signal de sélection et non comme identifiant ;
+  * le chargement de la SONG reste déclenché au `START`.
+* Refus propre des SONG sans canal utilisable sans perturber la dernière configuration active.
+
+### Amélioré
+
+#### Contrôleur Live
+
+* Uniformisation des en-têtes de chargement pour PROGRAM, MIX et SONG.
+* Ajout d'un message explicite lors de la reprise automatique d'un PROGRAM ou d'un MIX.
+* Remplacement des messages d'attente par un état reflétant la disponibilité réelle du contrôleur :
+  * PROGRAM prêt à jouer en attente d'un changement ;
+  * MIX prêt à jouer en attente d'un changement ;
+  * SONG sélectionnée en attente du `START`.
+* Les performances MIX sans PART configurée pour FluidSynth sont désormais refusées avant de remplacer la performance courante.
+* Une sélection MIX inconnue ou inutilisable ne détruit plus la configuration Live déjà active.
+* Extraction de la boucle MIDI principale afin de simplifier la gestion distincte des modes PROGRAM, MIX et SONG.
+
+#### Diagnostic
+
+* Ajout du module `fusion_diagnostic.py`.
+* Centralisation de l'affichage des erreurs et diagnostics.
+* Utilisation commune du même affichage par :
+  * l'éditeur ;
+  * le Contrôleur Live ;
+  * la capture lorsque pertinent.
+* Ajout de deux niveaux de présentation :
+  * diagnostic complet regroupé par MIX, PROGRAM et SONG ;
+  * messages d'erreur courts pour les opérations locales.
+* Les conflits de canaux MIDI sont affichés comme informations non bloquantes dans le Contrôleur Live au lieu d'être montrés sous forme de dictionnaire Python brut.
+
+#### Robustesse des transactions
+
+* Généralisation du filtrage des diagnostics non bloquants dans les opérations transactionnelles du projet.
+* Les conflits de canaux MIDI volontairement partagés ne bloquent plus :
+  * renommage des MIX ;
+  * duplication des MIX ;
+  * suppression des MIX ;
+  * suppression des MIX vides ;
+  * remplacement des PARTS ;
+  * renommage et suppression des PROGRAM ;
+  * renommage et suppression des SONG.
+* Uniformisation de la règle déjà appliquée à la sauvegarde et à la modification des PARTS.
+
+### Nettoyage interne
+
+* Remplacement de `LAST_MIX_FILE` par une persistance générique des performances.
+* Suppression des derniers chemins de reprise spécifiques au MIX.
+* Réduction de la duplication dans l'affichage des erreurs.
+* Séparation plus nette entre :
+  * validation du projet ;
+  * présentation des diagnostics ;
+  * logique du Contrôleur Live.
