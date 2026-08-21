@@ -970,3 +970,84 @@ Date : 2026-08-21
   * validation du projet ;
   * présentation des diagnostics ;
   * logique du Contrôleur Live.
+
+---
+
+## Version 2.4 - Restructuration et navigation du Contrôleur Live
+
+Date : 2026-08-21
+
+### Ajouté
+
+#### Architecture du Contrôleur Live
+
+* Séparation de l'état du contrôleur dans `fusion_controller_state.py`.
+* Centralisation de l'état courant :
+  * mode actif ;
+  * performance courante ;
+  * PARTS ou canaux actifs ;
+  * notes actives ;
+  * état du reload différé.
+* Déplacement de la persistance des dernières performances dans le module d'état.
+
+#### Chargement des performances
+
+* Ajout du module `fusion_performance.py`.
+* Déplacement de la logique de chargement des performances hors de `fusion_controller.py`.
+* Regroupement des fonctions liées à :
+  * PROGRAM ;
+  * MIX ;
+  * SONG ;
+  * envoi Bank/Program vers FluidSynth ;
+  * rechargement de la performance courante.
+* Conservation du comportement Live existant après extraction.
+
+#### Boucle MIDI
+
+* Ajout du module `fusion_controller_loop.py`.
+* Extraction de la boucle principale de traitement MIDI.
+* Déplacement de la gestion du reload différé dans la couche de boucle Live.
+* Conservation du traitement existant pour :
+  * notes ;
+  * contrôleurs MIDI ;
+  * Pitch Bend ;
+  * Aftertouch ;
+  * Program Change ;
+  * Bank Select ;
+  * START ;
+  * SONG SELECT.
+
+### Amélioré
+
+#### Navigation du Contrôleur Live
+
+* Le Contrôleur Live devient une interface autonome.
+* Possibilité de passer entre PROGRAM, MIX et SONG sans revenir au menu principal de Fusion2QSynth.
+* `Ctrl+C` en mode PROGRAM revient au menu du Contrôleur Live.
+* `Ctrl+C` en mode MIX revient au menu du Contrôleur Live.
+* En mode SONG :
+  * `Ctrl+C` revient à la sélection des SONG ;
+  * `q` depuis la sélection retourne au menu du Contrôleur Live.
+* `q` depuis le menu du Contrôleur Live retourne au menu principal.
+* Les ports MIDI restent ouverts lors des changements de mode.
+
+#### Orchestration
+
+* Extraction de la sélection du mode hors de `main()`.
+* Extraction de l'affichage des diagnostics propres à chaque mode.
+* Simplification de `main()` afin qu'il se concentre sur :
+  * l'ouverture des ports MIDI ;
+  * la sélection du mode ;
+  * la reprise de la dernière performance ;
+  * l'orchestration des différentes boucles Live.
+
+### Nettoyage interne
+
+* Réduction importante de la taille de `fusion_controller.py`.
+* Passage d'un contrôleur monolithique d'environ 1500 lignes à plusieurs modules spécialisés.
+* Séparation plus nette entre :
+  * orchestration ;
+  * état et persistance ;
+  * chargement des performances ;
+  * traitement MIDI Live.
+* Conservation d'un comportement fonctionnel identique après chaque étape de restructuration.
