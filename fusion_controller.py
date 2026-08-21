@@ -97,75 +97,49 @@ def choose_song(
                 "Choix invalide."
             )
 
-def main():
+def choose_controller_mode():
 
-    def choose_controller_mode():
-
-        while True:
-
-            print()
-            print("====================")
-            print("Contrôleur Live")
-            print("====================")
-            print()
-            print("1 - PROGRAM")
-            print("2 - MIX")
-            print("3 - SONG")
-            print("q - Retour")
-            print()
-
-            choice = input(
-                "> "
-            )
-
-            if choice == "1":
-
-                return "program"
-
-            elif choice == "2":
-
-                return "mix"
-
-            elif choice == "3":
-
-                return "song"
-
-            elif choice.lower() == "q":
-
-                return None
-
-            print(
-                "Choix invalide."
-            )
-
-    project = FusionProject()
-
-    errors = project.validate()
-
-    if errors:
-
-        print_validation_errors(
-            project,
-            errors,
-            title="AVERTISSEMENTS CONFIGURATION"
-        )
+    while True:
 
         print()
+        print("====================")
+        print("Contrôleur Live")
+        print("====================")
+        print()
+        print("1 - PROGRAM")
+        print("2 - MIX")
+        print("3 - SONG")
+        print("q - Retour")
+        print()
 
-    selected_mode = choose_controller_mode()
+        choice = input(
+            "> "
+        )
 
-    if selected_mode is None:
+        if choice == "1":
 
-        return
+            return "program"
 
-    state.current_mode = selected_mode
+        elif choice == "2":
 
-    last_id = load_last_performance(
-        selected_mode
-    )
+            return "mix"
 
-    selected_song = None
+        elif choice == "3":
 
+            return "song"
+
+        elif choice.lower() == "q":
+
+            return None
+
+        print(
+            "Choix invalide."
+        )
+
+def print_mode_diagnostic(
+    project,
+    selected_mode
+):
     if selected_mode == "program":
         diagnostic = project.get_program_diagnostic()
 
@@ -289,7 +263,21 @@ def main():
             "Mix chargés"
         )
 
-    print()
+def main():
+
+    project = FusionProject()
+
+    errors = project.validate()
+
+    if errors:
+
+        print_validation_errors(
+            project,
+            errors,
+            title="AVERTISSEMENTS CONFIGURATION"
+        )
+
+        print()
 
     fusion_port = find_fusion_input()
 
@@ -317,9 +305,8 @@ def main():
         synth_port
     )
 
-    bank = 0
-
     try:
+
         with mido.open_input(
             fusion_port
         ) as inp:
@@ -328,133 +315,46 @@ def main():
                 synth_port
             ) as out:
 
-                if (
-                    selected_mode == "mix"
-                    and
-                    last_id
-                ):
+                while True:
 
-                    print()
-                    print(
-                        "Reprise MIX :",
-                        last_id
-                    )
+                    selected_mode = choose_controller_mode()
 
-                    load_mix(
-                        last_id,
-                        out,
-                        project
-                    )
-
-                elif (
-                    selected_mode == "program"
-                    and
-                    last_id
-                ):
-
-                    print()
-                    print(
-                        "Reprise PROGRAM :",
-                        last_id
-                    )
-                    load_program(
-                        last_id,
-                        out,
-                        project
-                    )
-
-                elif selected_mode == "song":
-
-                    if (
-                        last_id
-                        and
-                        project.get_song(
-                            last_id
-                        )
-                    ):
-
-                        selected_song = last_id
-
-                    else:
-
-                        selected_song = choose_song(
-                            project
-                        )
-
-                    if selected_song is None:
+                    if selected_mode is None:
 
                         return
 
-                print()
+                    state.current_mode = selected_mode
 
-                if selected_mode == "program":
-
-                    print(
-                        "Prêt à jouer - en attente d'un changement de PROGRAM..."
+                    print_mode_diagnostic(
+                        project,
+                        selected_mode
                     )
 
-                elif selected_mode == "song":
-
-                    print(
-                        "SONG sélectionnée :",
-                        selected_song
+                    last_id = load_last_performance(
+                        selected_mode
                     )
 
-                    print(
-                        "Attente du START..."
-                    )
+                    selected_song = None
 
-                else:
+                    if selected_mode == "mix":
 
-                    print(
-                        "Prêt à jouer - en attente d'un changement de MIX..."
-                    )
+                        if last_id:
 
-                if selected_mode in (
-                    "program",
-                    "mix"
-                ):
+                            print()
+                            print(
+                                "Reprise MIX :",
+                                last_id
+                            )
 
-                    try:
-
-                        run_controller_loop(
-                            inp,
-                            out,
-                            project,
-                            selected_mode
-                        )
-
-                    except KeyboardInterrupt:
-
-                        print()
-                        print(
-                            "Retour au menu"
-                        )
-
-                        return
-
-                else:
-
-                    while True:
-
-                        if selected_song is None:
-
-                            selected_song = choose_song(
+                            load_mix(
+                                last_id,
+                                out,
                                 project
                             )
 
-                            if selected_song is None:
-
-                                return
-
                         print()
                         print(
-                            "SONG sélectionnée :",
-                            selected_song
-                        )
-
-                        print(
-                            "Attente du START..."
+                            "Prêt à jouer - en attente d'un changement de MIX..."
                         )
 
                         try:
@@ -463,28 +363,123 @@ def main():
                                 inp,
                                 out,
                                 project,
-                                "song",
-                                selected_song
+                                "mix"
                             )
 
                         except KeyboardInterrupt:
 
                             print()
                             print(
-                                "Retour à la sélection SONG"
+                                "Retour au Contrôleur Live"
                             )
+
+                            continue
+
+                    elif selected_mode == "program":
+
+                        if last_id:
+
+                            print()
+                            print(
+                                "Reprise PROGRAM :",
+                                last_id
+                            )
+
+                            load_program(
+                                last_id,
+                                out,
+                                project
+                            )
+
+                        print()
+                        print(
+                            "Prêt à jouer - en attente d'un changement de PROGRAM..."
+                        )
+
+                        try:
+
+                            run_controller_loop(
+                                inp,
+                                out,
+                                project,
+                                "program"
+                            )
+
+                        except KeyboardInterrupt:
+
+                            print()
+                            print(
+                                "Retour au Contrôleur Live"
+                            )
+
+                            continue
+
+                    elif selected_mode == "song":
+
+                        if (
+                            last_id
+                            and
+                            project.get_song(
+                                last_id
+                            )
+                        ):
+
+                            selected_song = last_id
+
+                        else:
 
                             selected_song = choose_song(
                                 project
                             )
 
-                            if selected_song is None:
+                        if selected_song is None:
 
-                                return
+                            continue
+
+                        while True:
+
+                            print()
+                            print(
+                                "SONG sélectionnée :",
+                                selected_song
+                            )
+
+                            print(
+                                "Attente du START..."
+                            )
+
+                            try:
+
+                                run_controller_loop(
+                                    inp,
+                                    out,
+                                    project,
+                                    "song",
+                                    selected_song
+                                )
+
+                            except KeyboardInterrupt:
+
+                                print()
+                                print(
+                                    "Retour à la sélection SONG"
+                                )
+
+                                selected_song = choose_song(
+                                    project
+                                )
+
+                                if selected_song is None:
+
+                                    break
 
     except KeyboardInterrupt:
+
         print()
-        print("Retour au menu")
+        print(
+            "Retour au menu"
+        )
+
         return
 
 if __name__ == "__main__":
