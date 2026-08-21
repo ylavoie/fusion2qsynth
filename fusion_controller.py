@@ -123,6 +123,36 @@ def send_program(out, channel, instrument):
         )
     )
 
+def print_performance_header(
+    mode,
+    performance_id,
+    name
+):
+
+    labels = {
+        "program": "PROGRAM",
+        "mix": "MIX",
+        "song": "SONG"
+    }
+
+    label = labels.get(
+        mode,
+        mode.upper()
+    )
+
+    print()
+    print("======================")
+    print(
+        f"{label}:",
+        name
+    )
+    print(
+        "Fusion",
+        f"{label}:",
+        performance_id
+    )
+    print("======================")
+
 def load_mix(mix_id, out, project):
 
     loaded_parts = 0
@@ -135,7 +165,7 @@ def load_mix(mix_id, out, project):
 
         print()
         print(
-            "Mix inconnu:",
+            "MIX inconnu:",
             mix_id
         )
 
@@ -162,24 +192,41 @@ def load_mix(mix_id, out, project):
 
         print()
 
+    ready_parts = [
+        (part_id, part)
+        for part_id, part in project.get_parts(
+            mix_id
+        ).items()
+        if project.is_qsynth_ready(
+            part
+        )
+    ]
+
+    if not ready_parts:
+
+        print()
+        print(
+            "MIX",
+            mix_id,
+            "sans PART configurée pour FluidSynth."
+        )
+
+        return
+
     state.current_mode = "mix"
     state.current_performance = mix_id
     state.current_parts = {}
     state.pending_reload = False
 
-    print()
-    print("======================")
-    print(
-        "Performance:",
+    print_performance_header(
+        "mix",
+        mix_id,
         mix.get(
             "name",
             mix_id
         )
     )
-    print(
-        "Fusion Mix:",
-        mix_id
-    )
+
     project.print_mix(
         mix_id
     )
@@ -365,7 +412,7 @@ def load_program(
 
         print()
         print(
-            "Program inconnu:",
+            "PROGRAM inconnu:",
             program_id
         )
 
@@ -380,7 +427,7 @@ def load_program(
 
         print()
         print(
-            "Program sans PART:",
+            "PROGRAM sans PART:",
             program_id
         )
 
@@ -423,20 +470,14 @@ def load_program(
     state.current_parts = {}
     state.pending_reload = False
 
-    print()
-    print("======================")
-    print(
-        "PROGRAM:",
+    print_performance_header(
+        "program",
+        program_id,
         program.get(
             "name",
             program_id
         )
     )
-    print(
-        "Fusion Program:",
-        program_id
-    )
-    print("======================")
 
     panic(out)
 
@@ -520,20 +561,14 @@ def load_song(
     state.current_parts = {}
     state.pending_reload = False
 
-    print()
-    print("======================")
-    print(
-        "SONG:",
+    print_performance_header(
+        "song",
+        song_id,
         song.get(
             "name",
             song_id
         )
     )
-    print(
-        "Fusion Song:",
-        song_id
-    )
-    print("======================")
 
     panic(
         out
@@ -715,6 +750,368 @@ def choose_song(
             print(
                 "Choix invalide."
             )
+
+def run_controller_loop(
+    inp,
+    out,
+    project,
+    selected_mode,
+    selected_song=None
+):
+    while True:
+
+        if project.reload_if_changed():
+
+            if not state.pending_reload:
+
+                state.pending_reload = True
+                state.reload_wait_announced = False
+
+        #
+        # Reload immédiat si repos
+        #
+        if (
+            state.pending_reload
+            and
+            not state.active_notes
+        ):
+
+            execute_pending_reload(
+                out,
+                project
+            )
+
+        #
+        # MIDI
+        #
+        for msg in inp.iter_pending():
+
+            if (
+                selected_mode == "song"
+                and
+                msg.type == "song_select"
+            ):
+
+                if DEBUG:
+
+                    print(
+                        "SONG SELECT reçu :",
+                        msg.song
+                    )
+
+                continue
+
+            if msg.type in [
+                "note_on",
+                "note_off"
+            ]:
+
+                if msg.channel + 1 not in state.current_parts:
+
+                    if DEBUG:
+
+                        print(
+                            "NOTE ignorée",
+                            "CH",
+                            msg.channel + 1,
+                            note_name(msg.note)
+                        )
+
+                    continue
+
+            if msg.type == "note_on":
+
+                key = (
+                    msg.channel,
+                    msg.note
+                )
+
+                if msg.velocity > 0:
+
+                    state.active_notes.add(
+                        key
+                    )
+
+                else:
+
+                    state.active_notes.discard(
+                        key
+                    )
+
+            elif msg.type == "note_off":
+
+                state.active_notes.discard(
+                    (
+                        msg.channel,
+                        msg.note
+                    )
+                )
+
+                if (
+                    state.pending_reload
+                    and
+                    not state.active_notes
+                ):
+                        execute_pending_reload(
+                            out,
+                            project,
+                            deferred=state.reload_wait_announced
+                        )
+
+            if (
+                state.pending_reload
+                and
+                state.active_notes
+                and
+                not state.reload_wait_announced
+            ):
+
+                print(
+                    "Projet modifié : reload en attente "
+                    "(notes actives)."
+                )
+
+                state.reload_wait_announced = True
+
+            if DEBUG:
+
+                part = state.current_parts.get(
+                    msg.channel + 1
+                )
+                name = "?"
+
+                if part:
+
+                    instrument = project.resolve_part_instrument(
+                        part
+                    )
+
+                    if instrument:
+
+                        name = instrument.get(
+                            "name",
+                            "?"
+                        )
+
+                if msg.type == "note_on" and msg.velocity > 0:
+
+                    print(
+                        "NOTE ON",
+                        "CH",
+                        msg.channel + 1, name,
+                        "Note",
+                        note_name(msg.note),
+                        "Vel",
+                        msg.velocity
+                    )
+
+                elif (
+                    msg.type == "note_off"
+                    or
+                    (
+                        msg.type == "note_on"
+                        and
+                        msg.velocity == 0
+                    )
+                ):
+                    print(
+                        "NOTE OFF",
+                        "CH",
+                        msg.channel + 1, name,
+                        "Note",
+                        note_name(msg.note)
+                    )
+
+            if msg.type in [
+                "note_on",
+                "note_off"
+            ]:
+
+                if not DEBUG:
+
+                    print(
+                        "NOTE",
+                        msg.channel + 1,
+                        msg.type,
+                        note_name(msg.note),
+                        msg.velocity
+                    )
+
+                out.send(msg)
+
+                continue
+
+            if msg.type in [
+                "pitchwheel",
+                "aftertouch",
+                "polytouch"
+            ]:
+
+                if (
+                    msg.channel + 1
+                    not in state.current_parts
+                ):
+
+                    continue
+
+                out.send(
+                    msg
+                )
+
+                continue
+
+            if msg.type == "control_change":
+
+                if selected_mode in (
+                    "program",
+                    "mix"
+                ):
+                    #
+                    # Détection banque du MIX Fusion
+                    #
+                    if (
+                        msg.channel == fusion_default_channel
+                        and
+                        msg.control == 0
+                    ):
+
+                        bank = msg.value
+
+                        continue
+
+                    #
+                    # Bank Select des PARTs :
+                    # ne pas écraser le mapping SoundFont
+                    #
+                    if msg.control in (
+                        0,
+                        32
+                    ):
+
+                        continue
+
+                    #
+                    # PART non active
+                    #
+                    if (
+                        msg.channel + 1
+                        not in state.current_parts
+                    ):
+
+                        if DEBUG:
+
+                            print(
+                                "CC ignoré",
+                                "CH",
+                                msg.channel + 1,
+                                "CC",
+                                msg.control,
+                                "Value",
+                                msg.value
+                            )
+
+                        continue
+
+                #
+                # Autres contrôleurs MIDI
+                #
+                out.send(
+                    msg
+                )
+
+                continue
+
+            elif msg.type == "program_change":
+
+                if selected_mode == "song":
+
+                    continue
+
+                if msg.channel != fusion_default_channel:
+
+                    continue
+
+                performance_id = (
+                    f"{bank}:{msg.program}"
+                )
+
+                log_event(
+                    f"PERFORMANCE détectée {performance_id}"
+                )
+
+                print()
+                print(
+                    "===================="
+                )
+
+                print(
+                    "Performance Fusion détecté"
+                )
+
+                print(
+                    "Bank:",
+                    bank
+                )
+
+                print(
+                    "Program:",
+                    msg.program
+                )
+
+                print(
+                    "ID:",
+                    performance_id
+                )
+
+                print(
+                    "===================="
+                )
+
+                if (
+                    state.current_mode == selected_mode
+                    and
+                    performance_id == state.current_performance
+                ):
+
+                    continue
+
+                if state.current_mode == "program":
+
+                    load_program(
+                        performance_id,
+                        out,
+                        project
+                    )
+
+                elif state.current_mode == "mix":
+
+                    load_mix(
+                        performance_id,
+                        out,
+                        project
+                    )
+
+                log_event(
+                    f"PERFORMANCE chargée {performance_id}"
+                )
+
+            if (
+                selected_mode == "song"
+                and
+                msg.type == "start"
+            ):
+
+                load_song(
+                    selected_song,
+                    out,
+                    project
+                )
+
+                continue
+
+        time.sleep(
+            0.01
+    )
 
 def main():
 
@@ -965,6 +1362,12 @@ def main():
                     last_id
                 ):
 
+                    print()
+                    print(
+                        "Reprise MIX :",
+                        last_id
+                    )
+
                     load_mix(
                         last_id,
                         out,
@@ -977,6 +1380,11 @@ def main():
                     last_id
                 ):
 
+                    print()
+                    print(
+                        "Reprise PROGRAM :",
+                        last_id
+                    )
                     load_program(
                         last_id,
                         out,
@@ -1010,7 +1418,7 @@ def main():
                 if selected_mode == "program":
 
                     print(
-                        "Attente des changements de Program..."
+                        "Prêt à jouer - en attente d'un changement de PROGRAM..."
                     )
 
                 elif selected_mode == "song":
@@ -1027,363 +1435,80 @@ def main():
                 else:
 
                     print(
-                        "Attente des changements de Mix..."
+                        "Prêt à jouer - en attente d'un changement de MIX..."
                     )
 
-                while True:
+                if selected_mode in (
+                    "program",
+                    "mix"
+                ):
 
-                    if project.reload_if_changed():
+                    try:
 
-                        if not state.pending_reload:
-
-                            state.pending_reload = True
-                            state.reload_wait_announced = False
-
-                    #
-                    # Reload immédiat si repos
-                    #
-                    if (
-                        state.pending_reload
-                        and
-                        not state.active_notes
-                    ):
-
-                        execute_pending_reload(
+                        run_controller_loop(
+                            inp,
                             out,
-                            project
+                            project,
+                            selected_mode
                         )
 
-                    #
-                    # MIDI
-                    #
-                    for msg in inp.iter_pending():
+                    except KeyboardInterrupt:
 
-                        if (
-                            selected_mode == "song"
-                            and
-                            msg.type == "song_select"
-                        ):
+                        print()
+                        print(
+                            "Retour au menu"
+                        )
 
-                            if DEBUG:
+                        return
 
-                                print(
-                                    "SONG SELECT reçu :",
-                                    msg.song
-                                )
+                else:
 
-                            continue
+                    while True:
 
-                        if msg.type in [
-                            "note_on",
-                            "note_off"
-                        ]:
+                        if selected_song is None:
 
-                            if msg.channel + 1 not in state.current_parts:
-
-                                if DEBUG:
-
-                                    print(
-                                        "NOTE ignorée",
-                                        "CH",
-                                        msg.channel + 1,
-                                        note_name(msg.note)
-                                    )
-
-                                continue
-
-                        if msg.type == "note_on":
-
-                            key = (
-                                msg.channel,
-                                msg.note
-                            )
-
-                            if msg.velocity > 0:
-
-                                state.active_notes.add(
-                                    key
-                                )
-
-                            else:
-
-                                state.active_notes.discard(
-                                    key
-                                )
-
-                        elif msg.type == "note_off":
-
-                            state.active_notes.discard(
-                                (
-                                    msg.channel,
-                                    msg.note
-                                )
-                            )
-
-                            if (
-                                state.pending_reload
-                                and
-                                not state.active_notes
-                            ):
-                                    execute_pending_reload(
-                                        out,
-                                        project,
-                                        deferred=state.reload_wait_announced
-                                    )
-
-                        if (
-                            state.pending_reload
-                            and
-                            state.active_notes
-                            and
-                            not state.reload_wait_announced
-                        ):
-
-                            print(
-                                "Projet modifié : reload en attente "
-                                "(notes actives)."
-                            )
-
-                            state.reload_wait_announced = True
-
-                        if DEBUG:
-
-                            part = state.current_parts.get(
-                                msg.channel + 1
-                            )
-                            name = "?"
-
-                            if part:
-
-                                instrument = project.resolve_part_instrument(
-                                    part
-                                )
-
-                                if instrument:
-
-                                    name = instrument.get(
-                                        "name",
-                                        "?"
-                                    )
-
-                            if msg.type == "note_on" and msg.velocity > 0:
-
-                                print(
-                                    "NOTE ON",
-                                    "CH",
-                                    msg.channel + 1, name,
-                                    "Note",
-                                    note_name(msg.note),
-                                    "Vel",
-                                    msg.velocity
-                                )
-
-                            elif (
-                                msg.type == "note_off"
-                                or
-                                (
-                                    msg.type == "note_on"
-                                    and
-                                    msg.velocity == 0
-                                )
-                            ):
-                                print(
-                                    "NOTE OFF",
-                                    "CH",
-                                    msg.channel + 1, name,
-                                    "Note",
-                                    note_name(msg.note)
-                                )
-
-                        if msg.type in [
-                            "note_on",
-                            "note_off"
-                        ]:
-
-                            if not DEBUG:
-
-                                print(
-                                    "NOTE",
-                                    msg.channel + 1,
-                                    msg.type,
-                                    note_name(msg.note),
-                                    msg.velocity
-                                )
-
-                            out.send(msg)
-
-                            continue
-
-                        if msg.type in [
-                            "pitchwheel",
-                            "aftertouch",
-                            "polytouch"
-                        ]:
-
-                            if (
-                                msg.channel + 1
-                                not in state.current_parts
-                            ):
-
-                                continue
-
-                            out.send(
-                                msg
-                            )
-
-                            continue
-
-                        if msg.type == "control_change":
-
-                            if selected_mode in (
-                                "program",
-                                "mix"
-                            ):
-                                #
-                                # Détection banque du MIX Fusion
-                                #
-                                if (
-                                    msg.channel == fusion_default_channel
-                                    and
-                                    msg.control == 0
-                                ):
-
-                                    bank = msg.value
-
-                                    continue
-
-                                #
-                                # Bank Select des PARTs :
-                                # ne pas écraser le mapping SoundFont
-                                #
-                                if msg.control in (
-                                    0,
-                                    32
-                                ):
-
-                                    continue
-
-                                #
-                                # PART non active
-                                #
-                                if (
-                                    msg.channel + 1
-                                    not in state.current_parts
-                                ):
-
-                                    if DEBUG:
-
-                                        print(
-                                            "CC ignoré",
-                                            "CH",
-                                            msg.channel + 1,
-                                            "CC",
-                                            msg.control,
-                                            "Value",
-                                            msg.value
-                                        )
-
-                                    continue
-
-                            #
-                            # Autres contrôleurs MIDI
-                            #
-                            out.send(
-                                msg
-                            )
-
-                            continue
-
-                        elif msg.type == "program_change":
-
-                            if selected_mode == "song":
-
-                                continue
-
-                            if msg.channel != fusion_default_channel:
-
-                                continue
-
-                            performance_id = (
-                                f"{bank}:{msg.program}"
-                            )
-
-                            log_event(
-                                f"PERFORMANCE détectée {performance_id}"
-                            )
-
-                            print()
-                            print(
-                                "===================="
-                            )
-
-                            print(
-                                "Performance Fusion détecté"
-                            )
-
-                            print(
-                                "Bank:",
-                                bank
-                            )
-
-                            print(
-                                "Program:",
-                                msg.program
-                            )
-
-                            print(
-                                "ID:",
-                                performance_id
-                            )
-
-                            print(
-                                "===================="
-                            )
-
-                            if (
-                                state.current_mode == selected_mode
-                                and
-                                performance_id == state.current_performance
-                            ):
-
-                                continue
-
-                            if state.current_mode == "program":
-
-                                load_program(
-                                    performance_id,
-                                    out,
-                                    project
-                                )
-
-                            elif state.current_mode == "mix":
-
-                                load_mix(
-                                    performance_id,
-                                    out,
-                                    project
-                                )
-
-                            log_event(
-                                f"PERFORMANCE chargée {performance_id}"
-                            )
-
-                        if (
-                            selected_mode == "song"
-                            and
-                            msg.type == "start"
-                        ):
-
-                            load_song(
-                                selected_song,
-                                out,
+                            selected_song = choose_song(
                                 project
                             )
 
-                            continue
+                            if selected_song is None:
 
-                    time.sleep(
-                        0.01
-                )
+                                return
+
+                        print()
+                        print(
+                            "SONG sélectionnée :",
+                            selected_song
+                        )
+
+                        print(
+                            "Attente du START..."
+                        )
+
+                        try:
+
+                            run_controller_loop(
+                                inp,
+                                out,
+                                project,
+                                "song",
+                                selected_song
+                            )
+
+                        except KeyboardInterrupt:
+
+                            print()
+                            print(
+                                "Retour à la sélection SONG"
+                            )
+
+                            selected_song = choose_song(
+                                project
+                            )
+
+                            if selected_song is None:
+
+                                return
 
     except KeyboardInterrupt:
         print()
