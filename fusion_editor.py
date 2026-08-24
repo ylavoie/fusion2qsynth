@@ -14,6 +14,10 @@ from fusion_diagnostic import (
     print_error_messages
 )
 
+from fusion_suggestions import (
+    suggest_instruments
+)
+
 from fusion_project import FusionProject
 from sf2_library import list_presets
 
@@ -50,6 +54,41 @@ def get_test_velocity(part):
         ) // 2
 
     return 80
+
+def get_sf2_suggestions(
+    name,
+    program
+):
+
+    if not name or program is None:
+
+        return {}
+
+    presets = list_presets()
+
+    if not presets:
+
+        return {}
+
+    sf2_presets = [
+        {
+            "id": preset["id"],
+            "name": preset["name"],
+            "bank": preset["sf2_bank"],
+            "program": preset["sf2_program"],
+            "sf2_bank": preset["sf2_bank"],
+            "sf2_program": preset["sf2_program"]
+        }
+        for preset in presets
+    ]
+
+    return suggest_instruments(
+        {
+            "name": name,
+            "program": program
+        },
+        sf2_presets
+    )
 
 def choose_sf2_preset():
 
@@ -136,9 +175,60 @@ def choose_sf2_preset():
                 "Choix invalide."
             )
 
+def ensure_project_instrument(
+    project,
+    preset
+):
+
+    instrument_id = preset["id"]
+
+    existing = project.get_instrument(
+        instrument_id
+    )
+
+    if existing:
+
+        result = dict(
+            existing
+        )
+
+        result["id"] = instrument_id
+
+        return result
+
+    instrument = {
+        "name": preset["name"],
+        "sf2_bank": preset["sf2_bank"],
+        "sf2_program": preset["sf2_program"]
+    }
+
+    if not project.add_instrument(
+        instrument_id,
+        instrument
+    ):
+
+        return None
+
+    if not project.save_safe():
+
+        project.remove_instrument(
+            instrument_id
+        )
+
+        return None
+
+    result = dict(
+        instrument
+    )
+
+    result["id"] = instrument_id
+
+    return result
+
 def choose_instrument(
-        project,
-        part=None
+    project,
+    part=None,
+    fusion_name=None
 ):
     print()
 
@@ -146,8 +236,12 @@ def choose_instrument(
     print("Choix Instrument")
     print("====================")
 
+    show_suggestions = True
+
     while True:
         current_id = None
+
+        suggestions = {}
 
         if part is not None:
 
@@ -168,6 +262,116 @@ def choose_instrument(
             current_id = part.get(
                 "instrument"
             )
+
+        if (
+            part is not None
+            and
+            fusion_name
+        ):
+
+            suggestions = get_sf2_suggestions(
+                fusion_name,
+                part.get(
+                    "program"
+                )
+            )
+            if (
+                show_suggestions
+                and
+                suggestions
+            ):
+
+                print()
+                print(
+                    "Suggestions pour :",
+                    fusion_name
+                )
+
+                print()
+
+                suggestion_list = []
+
+                for family, matches in suggestions.items():
+
+                    print(
+                        family.upper()
+                    )
+
+                    for score, preset in matches:
+
+                        suggestion_list.append(
+                            preset
+                        )
+
+                        print(
+                            f" {len(suggestion_list):2} - "
+                            f"{preset['name']:<25}"
+                            f"({preset['sf2_bank']}:"
+                            f"{preset['sf2_program']})"
+                        )
+
+                    print()
+
+                print(
+                    "t - Tous les instruments"
+                )
+
+                print(
+                    "a - Ajouter un instrument"
+                )
+
+                print(
+                    "q - Annuler"
+                )
+
+                choix = input(
+                    "> "
+                )
+
+                if choix.lower() == "q":
+
+                    return None
+
+                if choix.lower() == "a":
+
+                    add_instrument(
+                        project
+                    )
+
+                    continue
+
+                if choix.lower() == "t":
+
+                    suggestions = {}
+                    show_suggestions = False
+
+                    continue
+
+                try:
+
+                    index = int(
+                        choix
+                    ) - 1
+
+                    preset = suggestion_list[
+                        index
+                    ]
+
+                except (
+                    ValueError,
+                    IndexError
+                ):
+
+                    print(
+                        "Choix invalide."
+                    )
+
+                    continue
+
+                return ensure_project_instrument(
+                    project,
+                    preset
+                )
 
         print()
         print("Choisir un instrument")
@@ -2216,7 +2420,10 @@ def edit_program(
 
             instrument = choose_instrument(
                 project,
-                part
+                part,
+                fusion_name=program.get(
+                    "name"
+                )
             )
 
             if instrument is None:
