@@ -163,6 +163,10 @@ def choose_sf2_preset():
             "Choix : "
         )
 
+        if choice.lower() == "q":
+
+            return None
+
         try:
 
             index = int(choice) - 1
