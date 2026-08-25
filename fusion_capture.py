@@ -409,32 +409,86 @@ def capture_mix(
 
                                         continue
 
+                                old_parts = {}
+
+                                existing_mix = project.get_mix(
+                                    current_mix
+                                )
+
+                                if existing_mix:
+
+                                    old_parts = existing_mix.get(
+                                        "parts",
+                                        {}
+                                    )
+
                                 parts = {}
 
                                 for i, part in enumerate(
                                     parts_seen.values(),
                                     start=1
                                 ):
-                                    parts[str(i)] = part
 
-                                    success, errors = project.replace_mix_parts(
-                                        current_mix,
-                                        parts
+                                    new_part = dict(
+                                        part
                                     )
 
-                                    if not success:
+                                    for old_part in old_parts.values():
 
-                                        print()
+                                        if (
+                                            old_part.get("midi_channel")
+                                            !=
+                                            new_part.get("midi_channel")
+                                        ):
 
-                                        print(
-                                            "Remplacement du Mix refusé :"
-                                        )
+                                            continue
 
-                                        print_error_messages(
-                                            errors
-                                        )
+                                        if (
+                                            old_part.get("bank")
+                                            !=
+                                            new_part.get("bank")
+                                            or
+                                            old_part.get("program")
+                                            !=
+                                            new_part.get("program")
+                                        ):
 
-                                        continue
+                                            continue
+
+                                        if "instrument" in old_part:
+
+                                            new_part["instrument"] = (
+                                                old_part["instrument"]
+                                            )
+
+                                        if "fusion_name" in old_part:
+
+                                            new_part["fusion_name"] = (
+                                                old_part["fusion_name"]
+                                            )
+
+                                        break
+
+                                    parts[str(i)] = new_part
+
+                                success, errors = project.replace_mix_parts(
+                                    current_mix,
+                                    parts
+                                )
+
+                                if not success:
+
+                                    print()
+
+                                    print(
+                                        "Remplacement du Mix refusé :"
+                                    )
+
+                                    print_error_messages(
+                                        errors
+                                    )
+
+                                    continue
 
                                 if project.save_safe():
 
@@ -785,13 +839,19 @@ def capture_song(
                             and
                             old_channel.get("program")
                             == channel.get("program")
-                            and
-                            "instrument" in old_channel
                         ):
 
-                            channel["instrument"] = (
-                                old_channel["instrument"]
-                            )
+                            if "instrument" in old_channel:
+
+                                channel["instrument"] = (
+                                    old_channel["instrument"]
+                                )
+
+                            if "fusion_name" in old_channel:
+
+                                channel["fusion_name"] = (
+                                    old_channel["fusion_name"]
+                                )
 
                     song["channels"] = channels
 

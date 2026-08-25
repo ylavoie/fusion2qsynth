@@ -27,9 +27,6 @@ FAMILIES = {
         "gtr",
         "string guitar"
     ],
-    "bass": [
-        "bass"
-    ],
     "violin": [
         "violin"
     ],
@@ -37,7 +34,17 @@ FAMILIES = {
         "cello"
     ],
     "contrabass": [
-        "contrabass"
+        "upright bass",
+        "double bass",
+        "contrabass",
+        "acoustic upright"
+    ],
+    "bass": [
+        "bass",
+        "fretless bass",
+        "slap bass",
+        "fingered bass",
+        "picked bass"
     ],
     "strings": [
         "strings",
@@ -210,6 +217,26 @@ def detect_families(name):
 
         families.add(
             "bass"
+        )
+    #
+    # Spécialisations
+    #
+    if "contrabass" in families:
+
+        families.discard(
+            "bass"
+        )
+
+    if "electric_piano" in families:
+
+        families.discard(
+            "piano"
+        )
+
+    if "pan_flute" in families:
+
+        families.discard(
+            "flute"
         )
 
     return families

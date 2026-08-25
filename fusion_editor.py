@@ -595,7 +595,10 @@ def repair_instrument_errors(
 
         instrument = choose_instrument(
             project,
-            part
+            part,
+            fusion_name=part.get(
+                "fusion_name"
+            )
         )
 
         if instrument is None:
@@ -624,6 +627,44 @@ def repair_instrument_errors(
             repaired = False
 
     return repaired
+
+def edit_fusion_name(
+    data
+):
+
+    current_name = data.get(
+        "fusion_name",
+        ""
+    )
+
+    print()
+    print(
+        "Nom Fusion actuel :",
+        current_name
+        if current_name
+        else "Non défini"
+    )
+
+    name = input(
+        "Nom Fusion (Entrée = conserver, - = effacer) : "
+    ).strip()
+
+    if not name:
+
+        return False
+
+    if name == "-":
+
+        data.pop(
+            "fusion_name",
+            None
+        )
+
+        return True
+
+    data["fusion_name"] = name
+
+    return True
 
 def edit_mix(project,mix_id):
 
@@ -904,23 +945,22 @@ def edit_parts(
 
                 print()
 
-                print(
-                    "1 - Modifier instrument"
-                )
-
-                print(
-                    "2 - Modifier paramètres PART"
-                )
-
-                print(
-                    "q - Annuler"
-                )
+                print("1 - Modifier instrument")
+                print("2 - Modifier paramètres PART")
+                print("3 - Modifier nom Fusion")
+                print("q - Annuler")
 
                 choix = input("> ")
 
                 if choix == "1":
 
-                    instrument = choose_instrument(project, part)
+                    instrument = choose_instrument(
+                        project,
+                        part,
+                        fusion_name=part.get(
+                            "fusion_name"
+                        )
+                    )
 
                     if instrument is None:
 
@@ -1005,6 +1045,24 @@ def edit_parts(
                     )
 
                     break
+
+                elif choix == "3":
+
+                    if edit_fusion_name(
+                        part
+                    ):
+
+                        if project.save_safe():
+
+                            print(
+                                "Nom Fusion modifié."
+                            )
+
+                        else:
+
+                            print(
+                                "⚠ Sauvegarde non effectuée."
+                            )
 
 def read_int(
     prompt,
@@ -3003,6 +3061,7 @@ def edit_song(
         print("1 - Modifier l'instrument")
         print("2 - Modifier les paramètres")
         print("3 - Modifier le canal MIDI")
+        print("4 - Modifier le nom Fusion")
         print("q - Retour")
 
         choice = input(
@@ -3013,7 +3072,10 @@ def edit_song(
 
             instrument = choose_instrument(
                 project,
-                channel
+                channel,
+                fusion_name=channel.get(
+                    "fusion_name"
+                )
             )
 
             if instrument is None:
@@ -3148,6 +3210,24 @@ def edit_song(
                 print(
                     "⚠ Sauvegarde non effectuée."
                 )
+
+        elif choice == "4":
+
+            if edit_fusion_name(
+                channel
+            ):
+
+                if project.save_safe():
+
+                    print(
+                        "Nom Fusion modifié."
+                    )
+
+                else:
+
+                    print(
+                        "⚠ Sauvegarde non effectuée."
+                    )
 
         elif choice.lower() == "q":
 
