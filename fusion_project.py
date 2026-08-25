@@ -2253,8 +2253,30 @@ class FusionProject:
             part_id
         )
 
+        print("----------------")
+
         print(
-            "----------------"
+            "Nom Fusion     :",
+            part.get(
+                "fusion_name",
+                "Non défini"
+            )
+        )
+
+        print(
+            "Fusion Bank    :",
+            part.get(
+                "bank",
+                "?"
+            )
+        )
+
+        print(
+            "Fusion Program :",
+            part.get(
+                "program",
+                "?"
+            )
         )
 
 
@@ -2266,7 +2288,7 @@ class FusionProject:
         if instrument:
 
             print(
-                "Instrument :",
+                "Instrument     :",
                 instrument.get(
                     "name",
                     "?"
@@ -2274,7 +2296,7 @@ class FusionProject:
             )
 
             print(
-                "Bank       :",
+                "SF2 Bank       :",
                 instrument.get(
                     "sf2_bank",
                     0
@@ -2282,7 +2304,7 @@ class FusionProject:
             )
 
             print(
-                "Program    :",
+                "SF2 Program    :",
                 instrument.get(
                     "sf2_program",
                     0
@@ -2292,12 +2314,12 @@ class FusionProject:
         else:
 
             print(
-                "Instrument : Non configuré"
+                "Instrument     : Non configuré"
             )
 
 
         print(
-            "Canal MIDI :",
+            "Canal MIDI     :",
             part.get(
                 "midi_channel",
                 "?"
@@ -2305,7 +2327,7 @@ class FusionProject:
         )
 
         print(
-            "Plage      :",
+            "Plage          :",
             note_range(
                 part.get(
                     "note_min",
@@ -2319,7 +2341,7 @@ class FusionProject:
         )
 
         print(
-            "Velocity   :",
+            "Velocity       :",
             part.get(
                 "velocity_min",
                 0
@@ -2330,7 +2352,6 @@ class FusionProject:
                 127
             )
         )
-
 
     # Mix
     def iter_parts(
