@@ -153,6 +153,24 @@ def normalize_name(name):
         name.split()
     )
 
+def normalize_preset_name(
+    name
+):
+
+    normalized = normalize_name(
+        name
+    )
+
+    words = [
+        word
+        for word in normalized.split()
+        if word != "expr"
+    ]
+
+    return " ".join(
+        words
+    )
+
 def contains_term(
     normalized_name,
     term
@@ -317,10 +335,15 @@ def matches_for_family(
 
             continue
 
-        score = similarity(
-            fusion_program["name"],
-            preset["name"]
-        )
+        score = SequenceMatcher(
+            None,
+            normalize_name(
+                fusion_program["name"]
+            ),
+            normalize_preset_name(
+                preset["name"]
+            )
+        ).ratio()
 
         if (
             fusion_program["program"]
@@ -329,6 +352,14 @@ def matches_for_family(
         ):
 
             score += 0.10
+
+        normalized_preset = normalize_name(
+            preset["name"]
+        )
+
+        if "expr" in normalized_preset.split():
+
+            score -= 0.05
 
         candidates.append(
             (
