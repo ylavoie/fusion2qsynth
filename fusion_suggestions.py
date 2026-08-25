@@ -114,6 +114,9 @@ FAMILIES = {
         "kit",
         "drum",
         "percussion"
+    ],
+    "square_wave": [
+        "square"
     ]
 }
 
@@ -238,6 +241,20 @@ def detect_families(name):
         families.discard(
             "flute"
         )
+    #
+    # Square
+    #
+    if "square_wave" in families:
+
+        families.discard(
+            "square_wave"
+        )
+
+        if "bass" not in families:
+
+            families.add(
+                "square_lead"
+            )
 
     return families
 
