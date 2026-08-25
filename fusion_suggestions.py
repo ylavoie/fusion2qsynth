@@ -56,11 +56,17 @@ FAMILIES = {
     "trumpet": [
         "trumpet"
     ],
+    "english_horn": [
+        "english horn"
+    ],
+
+    "french_horn": [
+        "french horn",
+        "french horns"
+    ],
+
     "trombone": [
         "trombone"
-    ],
-    "horn": [
-        "horn"
     ],
     "clarinet": [
         "clarinet"
@@ -120,6 +126,19 @@ FAMILIES = {
     ]
 }
 
+FUSION_FAMILY_OVERRIDES = {
+    "arco marcato strings": {
+        "violin"
+    },
+    "lyrical english horn": {
+        "english_horn"
+    },
+    "big classical brass": {
+        "french_horn",
+        "trombone"
+    }
+}
+
 def normalize_name(name):
 
     name = name.lower()
@@ -167,6 +186,16 @@ def detect_families(name):
     normalized_name = normalize_name(
         name
     )
+
+    override = FUSION_FAMILY_OVERRIDES.get(
+        normalized_name
+    )
+
+    if override is not None:
+
+        return set(
+            override
+        )
 
     families = set()
 
