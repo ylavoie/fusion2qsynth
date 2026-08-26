@@ -1889,6 +1889,528 @@ FUSION_GM_DATA = [
     ),
 ]
 
+GM_PROGRAMS = {
+    "acoustic grand piano": {
+        "family": "piano",
+        "gm_program": 0,
+    },
+    "bright acoustic piano": {
+        "family": "piano",
+        "gm_program": 1,
+    },
+    "electric grand piano": {
+        "family": "piano",
+        "gm_program": 2,
+    },
+    "honky tonk piano": {
+        "family": "piano",
+        "gm_program": 3,
+    },
+    "electric piano 1": {
+        "family": "electric_piano",
+        "gm_program": 4,
+    },
+    "electric piano 2": {
+        "family": "electric_piano",
+        "gm_program": 5,
+    },
+    "harpsichord": {
+        "family": "harpsichord",
+        "gm_program": 6,
+    },
+    "clavinet": {
+        "family": "clavinet",
+        "gm_program": 7,
+    },
+    "celesta": {
+        "family": "celesta",
+        "gm_program": 8,
+    },
+    "glockenspiel": {
+        "family": "glockenspiel",
+        "gm_program": 9,
+    },
+    "music box": {
+        "family": "music_box",
+        "gm_program": 10,
+    },
+    "vibraphone": {
+        "family": "vibraphone",
+        "gm_program": 11,
+    },
+    "marimba": {
+        "family": "marimba",
+        "gm_program": 12,
+    },
+    "xylophone": {
+        "family": "xylophone",
+        "gm_program": 13,
+    },
+    "tubular bells": {
+        "family": "bells",
+        "gm_program": 14,
+    },
+    "dulcimer": {
+        "family": "dulcimer",
+        "gm_program": 15,
+    },
+    "drawbar organ": {
+        "family": "organ",
+        "gm_program": 16,
+    },
+    "percussive organ": {
+        "family": "organ",
+        "gm_program": 17,
+    },
+    "rock organ": {
+        "family": "organ",
+        "gm_program": 18,
+    },
+    "church organ": {
+        "family": "organ",
+        "gm_program": 19,
+    },
+    "reed organ": {
+        "family": "organ",
+        "gm_program": 20,
+    },
+    "accordion": {
+        "family": "accordion",
+        "gm_program": 21,
+    },
+    "harmonica": {
+        "family": "harmonica",
+        "gm_program": 22,
+    },
+    "tango accordion": {
+        "family": "accordion",
+        "gm_program": 23,
+    },
+
+    "acoustic guitar nylon": {
+        "family": "guitar",
+        "gm_program": 24,
+    },
+    "acoustic guitar steel": {
+        "family": "guitar",
+        "gm_program": 25,
+    },
+    "electric guitar jazz": {
+        "family": "guitar",
+        "gm_program": 26,
+    },
+    "electric guitar clean": {
+        "family": "guitar",
+        "gm_program": 27,
+    },
+    "electric guitar muted": {
+        "family": "guitar",
+        "gm_program": 28,
+    },
+    "overdriven guitar": {
+        "family": "guitar",
+        "gm_program": 29,
+    },
+    "distortion guitar": {
+        "family": "guitar",
+        "gm_program": 30,
+    },
+    "guitar harmonics": {
+        "family": "guitar",
+        "gm_program": 31,
+    },
+    "acoustic bass": {
+        "family": "contrabass",
+        "gm_program": 32,
+    },
+    "electric bass finger": {
+        "family": "bass",
+        "gm_program": 33,
+    },
+    "electric bass pick": {
+        "family": "bass",
+        "gm_program": 34,
+    },
+    "fretless bass": {
+        "family": "bass",
+        "gm_program": 35,
+    },
+    "slap bass 1": {
+        "family": "bass",
+        "gm_program": 36,
+    },
+    "slap bass 2": {
+        "family": "bass",
+        "gm_program": 37,
+    },
+    "synth bass 1": {
+        "family": "bass",
+        "gm_program": 38,
+    },
+    "synth bass 2": {
+        "family": "bass",
+        "gm_program": 39,
+    },
+
+    "violin": {
+        "family": "violin",
+        "gm_program": 40,
+    },
+    "viola": {
+        "family": "viola",
+        "gm_program": 41,
+    },
+    "cello": {
+        "family": "cello",
+        "gm_program": 42,
+    },
+    "contrabass": {
+        "family": "contrabass",
+        "gm_program": 43,
+    },
+    "tremolo strings": {
+        "family": "strings",
+        "gm_program": 44,
+    },
+    "pizzicato strings": {
+        "family": "strings",
+        "gm_program": 45,
+    },
+    "orchestral harp": {
+        "family": "harp",
+        "gm_program": 46,
+    },
+    "timpani": {
+        "family": "timpani",
+        "gm_program": 47,
+    },
+    "string ensemble 1": {
+        "family": "strings",
+        "gm_program": 48,
+    },
+    "string ensemble 2": {
+        "family": "strings",
+        "gm_program": 49,
+    },
+    "synth strings 1": {
+        "family": "strings",
+        "gm_program": 50,
+    },
+    "synth strings 2": {
+        "family": "strings",
+        "gm_program": 51,
+    },
+    "choir aahs": {
+        "family": "choir",
+        "gm_program": 52,
+    },
+    "voice oohs": {
+        "family": "voice",
+        "gm_program": 53,
+    },
+    "synth voice": {
+        "family": "voice",
+        "gm_program": 54,
+    },
+    "orchestra hit": {
+        "family": "orchestra_hit",
+        "gm_program": 55,
+    },
+
+    "trumpet": {
+        "family": "trumpet",
+        "gm_program": 56,
+    },
+    "trombone": {
+        "family": "trombone",
+        "gm_program": 57,
+    },
+    "tuba": {
+        "family": "tuba",
+        "gm_program": 58,
+    },
+    "muted trumpet": {
+        "family": "trumpet",
+        "gm_program": 59,
+    },
+    "french horn": {
+        "family": "french_horn",
+        "gm_program": 60,
+    },
+    "brass section": {
+        "family": "brass",
+        "gm_program": 61,
+    },
+    "synth brass 1": {
+        "family": "brass",
+        "gm_program": 62,
+    },
+    "synth brass 2": {
+        "family": "brass",
+        "gm_program": 63,
+    },
+    "soprano sax": {
+        "family": "sax",
+        "gm_program": 64,
+    },
+    "alto sax": {
+        "family": "sax",
+        "gm_program": 65,
+    },
+    "tenor sax": {
+        "family": "sax",
+        "gm_program": 66,
+    },
+    "baritone sax": {
+        "family": "sax",
+        "gm_program": 67,
+    },
+    "oboe": {
+        "family": "oboe",
+        "gm_program": 68,
+    },
+    "english horn": {
+        "family": "english_horn",
+        "gm_program": 69,
+    },
+    "bassoon": {
+        "family": "bassoon",
+        "gm_program": 70,
+    },
+    "clarinet": {
+        "family": "clarinet",
+        "gm_program": 71,
+    },
+
+    "piccolo": {
+        "family": "piccolo",
+        "gm_program": 72,
+    },
+    "flute": {
+        "family": "flute",
+        "gm_program": 73,
+    },
+    "recorder": {
+        "family": "recorder",
+        "gm_program": 74,
+    },
+    "pan flute": {
+        "family": "pan_flute",
+        "gm_program": 75,
+    },
+    "blown bottle": {
+        "family": "blown_bottle",
+        "gm_program": 76,
+    },
+    "shakuhachi": {
+        "family": "shakuhachi",
+        "gm_program": 77,
+    },
+    "whistle": {
+        "family": "whistle",
+        "gm_program": 78,
+    },
+    "ocarina": {
+        "family": "ocarina",
+        "gm_program": 79,
+    },
+    "lead 1 square": {
+        "family": "square_lead",
+        "gm_program": 80,
+    },
+    "lead 2 sawtooth": {
+        "family": "lead",
+        "gm_program": 81,
+    },
+    "lead 3 calliope": {
+        "family": "lead",
+        "gm_program": 82,
+    },
+    "lead 4 chiff": {
+        "family": "lead",
+        "gm_program": 83,
+    },
+    "lead 5 charang": {
+        "family": "lead",
+        "gm_program": 84,
+    },
+    "lead 6 voice": {
+        "family": "lead",
+        "gm_program": 85,
+    },
+    "lead 7 fifths": {
+        "family": "lead",
+        "gm_program": 86,
+    },
+    "lead 8 bass lead": {
+        "family": "lead",
+        "gm_program": 87,
+    },
+
+    "pad 1 new age": {
+        "family": "pad",
+        "gm_program": 88,
+    },
+    "pad 2 warm": {
+        "family": "pad",
+        "gm_program": 89,
+    },
+    "pad 3 polysynth": {
+        "family": "pad",
+        "gm_program": 90,
+    },
+    "pad 4 choir": {
+        "family": "pad",
+        "gm_program": 91,
+    },
+    "pad 5 bowed": {
+        "family": "pad",
+        "gm_program": 92,
+    },
+    "pad 6 metallic": {
+        "family": "pad",
+        "gm_program": 93,
+    },
+    "pad 7 halo": {
+        "family": "pad",
+        "gm_program": 94,
+    },
+    "pad 8 sweep": {
+        "family": "pad",
+        "gm_program": 95,
+    },
+    "fx 1 rain": {
+        "family": "fx",
+        "gm_program": 96,
+    },
+    "fx 2 soundtrack": {
+        "family": "fx",
+        "gm_program": 97,
+    },
+    "fx 3 crystal": {
+        "family": "fx",
+        "gm_program": 98,
+    },
+    "fx 4 atmosphere": {
+        "family": "fx",
+        "gm_program": 99,
+    },
+    "fx 5 brightness": {
+        "family": "fx",
+        "gm_program": 100,
+    },
+    "fx 6 goblins": {
+        "family": "fx",
+        "gm_program": 101,
+    },
+    "fx 7 echoes": {
+        "family": "fx",
+        "gm_program": 102,
+    },
+    "fx 8 sci fi": {
+        "family": "fx",
+        "gm_program": 103,
+    },
+
+    "sitar": {
+        "family": "sitar",
+        "gm_program": 104,
+    },
+    "banjo": {
+        "family": "banjo",
+        "gm_program": 105,
+    },
+    "shamisen": {
+        "family": "shamisen",
+        "gm_program": 106,
+    },
+    "koto": {
+        "family": "koto",
+        "gm_program": 107,
+    },
+    "kalimba": {
+        "family": "kalimba",
+        "gm_program": 108,
+    },
+    "bagpipe": {
+        "family": "bagpipe",
+        "gm_program": 109,
+    },
+    "fiddle": {
+        "family": "violin",
+        "gm_program": 110,
+    },
+    "shanai": {
+        "family": "shanai",
+        "gm_program": 111,
+    },
+    "tinkle bell": {
+        "family": "tinkle_bell",
+        "gm_program": 112,
+    },
+    "agogo": {
+        "family": "agogo",
+        "gm_program": 113,
+    },
+    "steel drums": {
+        "family": "steel_drums",
+        "gm_program": 114,
+    },
+    "woodblock": {
+        "family": "woodblock",
+        "gm_program": 115,
+    },
+    "taiko drum": {
+        "family": "taiko",
+        "gm_program": 116,
+    },
+    "melodic tom": {
+        "family": "melodic_tom",
+        "gm_program": 117,
+    },
+    "synth drum": {
+        "family": "synth_drum",
+        "gm_program": 118,
+    },
+    "reverse cymbal": {
+        "family": "reverse_cymbal",
+        "gm_program": 119,
+    },
+
+    "guitar fret noise": {
+        "family": "sfx",
+        "gm_program": 120,
+    },
+    "breath noise": {
+        "family": "sfx",
+        "gm_program": 121,
+    },
+    "seashore": {
+        "family": "seashore",
+        "gm_program": 122,
+    },
+    "bird tweet": {
+        "family": "sfx",
+        "gm_program": 123,
+    },
+    "telephone ring": {
+        "family": "sfx",
+        "gm_program": 124,
+    },
+    "helicopter": {
+        "family": "helicopter",
+        "gm_program": 125,
+    },
+    "applause": {
+        "family": "applause",
+        "gm_program": 126,
+    },
+    "gunshot": {
+        "family": "gunshot",
+        "gm_program": 127,
+    },
+}
+
 FUSION_GM_HINTS = {}
 
 for names, family, gm_program in FUSION_GM_DATA:

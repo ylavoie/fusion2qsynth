@@ -3,7 +3,10 @@
 import re
 from difflib import SequenceMatcher
 
-from fusion_gm_map import FUSION_GM_HINTS
+from fusion_gm_map import (
+    FUSION_GM_HINTS,
+    GM_PROGRAMS
+)
 
 FAMILIES = {
     "piano": [
@@ -297,6 +300,26 @@ FUSION_FAMILY_OVERRIDES = {
 	},
 }
 
+def detect_gm_program(
+    name
+):
+
+    normalized_name = normalize_name(
+        name
+    )
+
+    entry = GM_PROGRAMS.get(
+        normalized_name
+    )
+
+    if entry is None:
+
+        return None
+
+    return dict(
+        entry
+    )
+
 def normalize_name(name):
 
     name = name.lower()
@@ -360,6 +383,14 @@ def contains_term(
 def detect_gm_hint(
     name
 ):
+
+    gm_program = detect_gm_program(
+        name
+    )
+
+    if gm_program is not None:
+
+        return gm_program
 
     normalized_name = normalize_name(
         name
