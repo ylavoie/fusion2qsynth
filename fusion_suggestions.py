@@ -138,6 +138,15 @@ FUSION_FAMILY_OVERRIDES = {
     "big classical brass": {
         "french_horn",
         "trombone"
+    },
+    "low rosin section": {
+        "strings"
+    },
+    "standard set": {
+        "drums"
+    },
+    "fat cab 2": {
+        "guitar"
     }
 }
 
@@ -454,9 +463,21 @@ def suggest_instruments(
         fusion_program["name"]
     )
 
-    gm_hint = detect_gm_hint(
+    normalized_name = normalize_name(
         fusion_program["name"]
     )
+
+    override = FUSION_FAMILY_OVERRIDES.get(
+        normalized_name
+    )
+
+    gm_hint = None
+
+    if override is None:
+
+        gm_hint = detect_gm_hint(
+            fusion_program["name"]
+        )
 
     if (
         gm_hint
