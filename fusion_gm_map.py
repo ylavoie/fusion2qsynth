@@ -193,6 +193,40 @@ FUSION_GM_DATA = [
         "guitar",
         31,
     ),
+    (
+        (
+            "steel string acoustic",
+            "12 string folk",
+            "acoustic layer",
+        ),
+        "guitar",
+        25
+    ),
+
+    (
+        (
+            "nylon solo",
+            "flamenco rasgueo",
+            "requinto night",
+        ),
+        "guitar",
+        24
+    ),
+    (
+        (
+            "resonator slide",
+        ),
+        "guitar",
+        26,
+    ),
+
+    (
+        (
+            "mandolin pluck",
+        ),
+        "guitar",
+        104,
+    ),
     #
     # Basses
     #
@@ -257,6 +291,13 @@ FUSION_GM_DATA = [
         "bass",
         38,
     ),
+    (
+        (
+            "Aggro",
+        ),
+        "bass",
+        39
+    ),
     #
     # Cordes et ensembles
     #
@@ -285,6 +326,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
+            "marcato power",
             "orchestral strings",
             "string ensemble",
             "strings",
@@ -429,6 +471,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
+            "We Are Electronic Friends",
             "calliope lead",
             "caliope lead",
         ),
@@ -450,6 +493,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
+            "silver screen",
             "warm pad",
             "analog pad",
         ),
@@ -540,6 +584,491 @@ FUSION_GM_DATA = [
         ),
         "orchestra_hit",
         57,
+    ),
+    #
+    # ROM:ELECTRONICA
+    #
+    (
+        (
+            "aggro",
+        ),
+        "bass",
+        38,      # Prog 39 - Synth Bass 1
+    ),
+    (
+        (
+            "electronica lead",
+        ),
+        "lead",
+        87,      # Prog 88 - Bass + Lead
+    ),
+    (
+        (
+            "hoover",
+            "dominator",
+        ),
+        "lead",
+        81,      # Prog 82 - Sawtooth Lead
+    ),
+    (
+        (
+            "screamer",
+            "sync or swim",
+        ),
+        "lead",
+        84,      # Prog 85 - Charang Lead
+    ),
+    (
+        (
+            "bitcrushed",
+        ),
+        "square_lead",
+        80,      # Prog 81 - Square Lead
+    ),
+
+    #
+    # Basses Electronica
+    #
+    (
+        (
+            "industrial bass",
+        ),
+        "bass",
+        38,      # Prog 39 - Synth Bass 1
+    ),
+    (
+        (
+            "acid line",
+        ),
+        "bass",
+        39,      # Prog 40 - Synth Bass 2
+    ),
+
+    #
+    # Pads Electronica
+    #
+    (
+        (
+            "cyberdrone",
+        ),
+        "pad",
+        89,      # Prog 90 - Warm Pad
+    ),
+    (
+        (
+            "anode pad",
+        ),
+        "pad",
+        90,      # Prog 91 - Polysynth
+    ),
+    (
+        (
+            "toxic wave",
+        ),
+        "pad",
+        95,      # Prog 96 - Sweep Pad
+    ),
+
+    #
+    # Arp / séquences
+    #
+    (
+        (
+            "techno arp",
+        ),
+        "lead",
+        81,      # Prog 82 - Sawtooth Lead
+    ),
+    #
+    # ROM:PRESET 3 - Guitares électriques
+    #
+    (
+        (
+            "strat clean",
+            "chorus clean",
+            "tele twang",
+            "country pick",
+            "clean layer",
+        ),
+        "guitar",
+        27,
+    ),
+
+    (
+        (
+            "jazz hollow",
+            "warm jazz",
+        ),
+        "guitar",
+        26,
+    ),
+
+    (
+        (
+            "funk wah",
+        ),
+        "guitar",
+        28,
+    ),
+    #
+    # ROM:PRESET 3 - Guitares saturées
+    #
+    (
+        (
+            "classic crunch",
+            "british stack",
+            "blues drive",
+        ),
+        "guitar",
+        29,
+    ),
+
+    (
+        (
+            "heavy stack",
+            "metal wall",
+            "distorted layer",
+        ),
+        "guitar",
+        30,
+    ),
+
+    (
+        (
+            "harmonic lead",
+        ),
+        "guitar",
+        31,
+    ),
+    #
+    # ROM:PRESET 3 - Basses
+    #
+    (
+        (
+            "upright acoustic",
+        ),
+        "contrabass",
+        32,
+    ),
+
+    (
+        (
+            "finger bass",
+        ),
+        "bass",
+        33,
+    ),
+
+    (
+        (
+            "precision pick",
+        ),
+        "bass",
+        34,
+    ),
+
+    (
+        (
+            "fretless smooth",
+        ),
+        "bass",
+        35,
+    ),
+
+    (
+        (
+            "slap funk",
+        ),
+        "bass",
+        36,
+    ),
+
+    (
+        (
+            "slap pop",
+        ),
+        "bass",
+        37,
+    ),
+
+    (
+        (
+            "synth bass analog",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "synth bass digital",
+        ),
+        "bass",
+        39,
+    ),
+    #
+    # ROM:PRESET 3 - Cordes ethniques
+    #
+    (
+        (
+            "sitar india",
+        ),
+        "sitar",
+        104,
+    ),
+
+    (
+        (
+            "banjo folk",
+        ),
+        "banjo",
+        105,
+    ),
+
+    (
+        (
+            "shamisen japan",
+        ),
+        "shamisen",
+        106,
+    ),
+
+    (
+        (
+            "koto japan",
+        ),
+        "koto",
+        107,
+    ),
+
+    (
+        (
+            "kalimba africa",
+        ),
+        "kalimba",
+        108,
+    ),
+
+    (
+        (
+            "harp celtic",
+        ),
+        "harp",
+        46,
+    ),
+
+    (
+        (
+            "dulcimer hammered",
+        ),
+        "dulcimer",
+        15,
+    ),
+
+    (
+        (
+            "ethnic pluck layer",
+        ),
+        "sitar",
+        104,
+    ),
+    #
+    # ROM:PRESET 3 - Vents traditionnels
+    #
+    (
+        (
+            "shakuhachi breath",
+        ),
+        "shakuhachi",
+        77,
+    ),
+
+    (
+        (
+            "pan flute airy",
+        ),
+        "pan_flute",
+        75,
+    ),
+
+    (
+        (
+            "bagpipes scotland",
+        ),
+        "bagpipe",
+        109,
+    ),
+
+    (
+        (
+            "shanai india",
+        ),
+        "shanai",
+        111,
+    ),
+
+    (
+        (
+            "tin whistle",
+        ),
+        "whistle",
+        78,
+    ),
+
+    (
+        (
+            "ocarina",
+        ),
+        "ocarina",
+        79,
+    ),
+
+    (
+        (
+            "native flute",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "kalimba keys",
+        ),
+        "kalimba",
+        108,
+    ),
+    #
+    # ROM:PRESET 3 - Textures mixtes / cinématiques
+    #
+    (
+        (
+            "world unison",
+        ),
+        "sitar",
+        104,
+    ),
+
+    (
+        (
+            "celtic air",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "desert drone",
+        ),
+        "shanai",
+        111,
+    ),
+
+    (
+        (
+            "orient express",
+        ),
+        "koto",
+        107,
+    ),
+
+    (
+        (
+            "taj mahal",
+        ),
+        "sitar",
+        104,
+    ),
+
+    (
+        (
+            "mystic pluck",
+        ),
+        "fx",
+        98,
+    ),
+
+    (
+        (
+            "shaman dance",
+        ),
+        "drums",
+        116,
+    ),
+
+    (
+        (
+            "mediteranean",
+        ),
+        "guitar",
+        24,
+    ),
+    #
+    # ROM:PRESET 3 - Percussions du monde
+    #
+    (
+        (
+            "steel drums",
+        ),
+        "steel_drums",
+        114,
+    ),
+
+    (
+        (
+            "taiko drums",
+        ),
+        "taiko",
+        116,
+    ),
+
+    (
+        (
+            "agogo bells",
+        ),
+        "agogo",
+        113,
+    ),
+
+    (
+        (
+            "log drum",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "marimba world",
+        ),
+        "marimba",
+        12,
+    ),
+
+    (
+        (
+            "berimbau arc",
+        ),
+        "sitar",
+        104,
+    ),
+
+    (
+        (
+            "shaker tambourine",
+        ),
+        "percussion",
+        112,
+    ),
+
+    (
+        (
+            "tabla session",
+        ),
+        "percussion",
+        116,
     ),
 ]
 
