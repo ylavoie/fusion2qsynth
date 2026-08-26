@@ -126,6 +126,81 @@ FAMILIES = {
     ]
 }
 
+FUSION_GM_HINTS = {
+    "holy grail": {
+        "family": "piano",
+        "gm_program": 0
+    },
+    "concert grand": {
+        "family": "piano",
+        "gm_program": 0
+    },
+    "pop piano": {
+        "family": "piano",
+        "gm_program": 0
+    },
+    "bright piano": {
+        "family": "piano",
+        "gm_program": 1
+    },
+    "rock piano": {
+        "family": "piano",
+        "gm_program": 1
+    },
+    "honky tonk": {
+        "family": "piano",
+        "gm_program": 3
+    },
+    "detuned piano": {
+        "family": "piano",
+        "gm_program": 3
+    },
+    "suitcase": {
+        "family": "piano",
+        "gm_program": 4
+    },
+    "mark i": {
+        "family": "piano",
+        "gm_program": 4
+    },
+    "wurlitzer": {
+        "family": "piano",
+        "gm_program": 5
+    },
+    "fm piano": {
+        "family": "piano",
+        "gm_program": 5
+    },
+    "big fat upright bass": {
+        "family": "contrabass",
+        "gm_program": 43
+    },
+    "upright bass": {
+        "family": "contrabass",
+        "gm_program": 32
+    },
+    "fingered bass": {
+        "family": "bass",
+        "gm_program": 33
+    },
+    "picked bass": {
+        "family": "bass",
+        "gm_program": 34
+    },
+    "square lead": {
+        "family": "square_lead",
+        "gm_program": 80
+    },
+    "sawtooth lead": {
+        "family": "lead",
+        "gm_program": 81
+    },
+    "waterchimes": {
+        "family": "pad",
+        "gm_program": 88
+    }
+}
+
 FUSION_FAMILY_OVERRIDES = {
     "arco marcato strings": {
         "violin"
@@ -198,6 +273,44 @@ def contains_term(
             return True
 
     return False
+
+def detect_gm_hint(
+    name
+):
+
+    normalized_name = normalize_name(
+        name
+    )
+
+    best_match = None
+
+    for term, hint in FUSION_GM_HINTS.items():
+
+        if not contains_term(
+            normalized_name,
+            term
+        ):
+
+            continue
+
+        if (
+            best_match is None
+            or
+            len(term) > len(best_match[0])
+        ):
+
+            best_match = (
+                term,
+                hint
+            )
+
+    if best_match is None:
+
+        return None
+
+    return dict(
+        best_match[1]
+    )
 
 def detect_families(name):
 
@@ -323,6 +436,10 @@ def matches_for_family(
     limit=3
 ):
 
+    gm_hint = detect_gm_hint(
+        fusion_program["name"]
+    )
+
     candidates = []
 
     for preset in sf2_presets:
@@ -331,7 +448,22 @@ def matches_for_family(
             preset["name"]
         )
 
-        if family not in preset_families:
+        gm_match = (
+            gm_hint
+            and
+            gm_hint.get("family") == family
+            and
+            gm_hint.get("gm_program")
+            == preset["program"]
+            and
+            preset["bank"] == 0
+        )
+
+        if (
+            family not in preset_families
+            and
+            not gm_match
+        ):
 
             continue
 
@@ -344,6 +476,16 @@ def matches_for_family(
                 preset["name"]
             )
         ).ratio()
+
+        if (
+            gm_hint
+            and
+            gm_hint.get("gm_program")
+            ==
+            preset["program"]
+        ):
+
+            score += 0.40
 
         if (
             fusion_program["program"]
@@ -384,6 +526,20 @@ def suggest_instruments(
     families = detect_families(
         fusion_program["name"]
     )
+
+    gm_hint = detect_gm_hint(
+        fusion_program["name"]
+    )
+
+    if (
+        gm_hint
+        and
+        gm_hint.get("family")
+    ):
+
+        families.add(
+            gm_hint["family"]
+        )
 
     suggestions = {}
 
