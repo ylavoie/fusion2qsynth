@@ -232,13 +232,6 @@ FUSION_GM_DATA = [
     #
     (
         (
-            "big fat upright bass",
-        ),
-        "contrabass",
-        43
-    ),
-    (
-        (
             "acoustic bass",
         ),
         "bass",
@@ -678,6 +671,420 @@ FUSION_GM_DATA = [
         ),
         "lead",
         81,      # Prog 82 - Sawtooth Lead
+    ),
+    #
+    # ROM:PRESET 1 - Pianos acoustiques & électriques
+    #
+    (
+        (
+            "holy grail grand piano",
+            "studio upright",
+            "concert piano choir",
+        ),
+        "piano",
+        0,
+    ),
+
+    (
+        (
+            "fusion suitcase",
+            "jam wurly",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "acoustilectric piano",
+            "click piano",
+            "supervamp",
+        ),
+        "electric_piano",
+        5,
+    ),
+    #
+    # ROM:PRESET 1 - Claviers, Mallets & Cloches
+    #
+    (
+        (
+            "fusion punch clav",
+            "analog clav 1",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "pluckermann harpsi",
+        ),
+        "harpsichord",
+        6,
+    ),
+
+    (
+        (
+            "dream vibes",
+        ),
+        "vibraphone",
+        11,
+    ),
+
+    (
+        (
+            "concert marimba",
+        ),
+        "marimba",
+        12,
+    ),
+
+    (
+        (
+            "handy bell",
+        ),
+        "bells",
+        14,
+    ),
+
+    (
+        (
+            "chimey",
+        ),
+        "fx",
+        98,
+    ),
+
+    (
+        (
+            "weird bells",
+        ),
+        "fx",
+        101,
+    ),
+    #
+    # ROM:PRESET 1 - Orgues
+    #
+    (
+        (
+            "jazz click organ",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "3 drawbars organ",
+            "ballad organ 1",
+            "60s conti organ",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "martial organ",
+            "full stops",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "gospel organ",
+        ),
+        "organ",
+        18,
+    ),
+
+    (
+        (
+            "les rues de paris",
+        ),
+        "accordion",
+        21,
+    ),
+    #
+    # ROM:PRESET 1 - Guitares acoustiques & électriques
+    #
+    (
+        (
+            "acoustic 6 string harm",
+        ),
+        "guitar",
+        25,
+    ),
+
+    (
+        (
+            "nylon acoustic 1 velo",
+        ),
+        "guitar",
+        24,
+    ),
+
+    (
+        (
+            "big body electric",
+        ),
+        "guitar",
+        26,
+    ),
+
+    (
+        (
+            "single coil dirt mute",
+        ),
+        "guitar",
+        28,
+    ),
+
+    (
+        (
+            "dist rhythm gtr 1",
+        ),
+        "guitar",
+        29,
+    ),
+
+    (
+        (
+            "lead guitar mw at",
+        ),
+        "guitar",
+        30,
+    ),
+    #
+    # ROM:PRESET 1 - Basses acoustiques & électriques
+    #
+    (
+        (
+            "big fat upright bass",
+        ),
+        "contrabass",
+        32,
+    ),
+
+    (
+        (
+            "g fretless bass",
+        ),
+        "bass",
+        35,
+    ),
+
+    (
+        (
+            "bass harmonix",
+        ),
+        "bass",
+        33,
+    ),
+
+    (
+        (
+            "dyna pull bass",
+        ),
+        "bass",
+        36,
+    ),
+
+    (
+        (
+            "stik bass",
+        ),
+        "bass",
+        34,
+    ),
+
+    (
+        (
+            "emmie bass",
+            "drum n bass square",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "reso acid bass",
+        ),
+        "bass",
+        39,
+    ),
+    #
+    # ROM:PRESET 1 - Cordes & Orchestre
+    #
+    (
+        (
+            "hybrid strings section",
+            "marcato strings",
+            "octave strings",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "concert violoncelle",
+        ),
+        "cello",
+        42,
+    ),
+
+    (
+        (
+            "pizzicato section",
+        ),
+        "strings",
+        45,
+    ),
+
+    (
+        (
+            "slow session strings",
+        ),
+        "strings",
+        49,
+    ),
+
+    (
+        (
+            "orchestral timpani",
+        ),
+        "timpani",
+        47,
+    ),
+
+    (
+        (
+            "harp glissando",
+        ),
+        "harp",
+        46,
+    ),
+    #
+    # ROM:PRESET 1 - Chœurs & Ensembles de Vents
+    #
+    (
+        (
+            "mixed large choir",
+        ),
+        "choir",
+        52,
+    ),
+
+    (
+        (
+            "soft pop choir",
+        ),
+        "voice",
+        53,
+    ),
+
+    (
+        (
+            "synth voice soft",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "orchestral woodwinds",
+            "air flute solo",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "clarinet soft",
+        ),
+        "clarinet",
+        71,
+    ),
+
+    (
+        (
+            "oboe d amore",
+        ),
+        "oboe",
+        68,
+    ),
+
+    (
+        (
+            "french horn section",
+        ),
+        "french_horn",
+        60,
+    ),
+    #
+    # ROM:PRESET 1 - Cuivres, Leads Rétro & Synthés Poly
+    #
+    (
+        (
+            "pop trumpet solo",
+        ),
+        "trumpet",
+        56,
+    ),
+
+    (
+        (
+            "fusion brass section",
+        ),
+        "brass",
+        61,
+    ),
+
+    (
+        (
+            "synth brass jupiter",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "pim s may trix",
+            "reso poly synth",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "charge pwm",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "sine liquid solo",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "deep space sweep",
+        ),
+        "pad",
+        95,
     ),
     #
     # ROM:PRESET 3 - Guitares électriques
