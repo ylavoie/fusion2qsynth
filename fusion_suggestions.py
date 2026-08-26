@@ -147,7 +147,25 @@ FUSION_FAMILY_OVERRIDES = {
     },
     "fat cab 2": {
         "guitar"
-    }
+    },
+    "retro 808 beats": {
+        "drums"
+    },
+    "electro 909 kit": {
+        "drums"
+    },
+    "synth toms section": {
+        "drums"
+    },
+    "space drum kit": {
+        "drums"
+    },
+    "white noise snare": {
+        "drums"
+    },
+    "industrial beat box": {
+        "drums"
+    },
 }
 
 def normalize_name(name):

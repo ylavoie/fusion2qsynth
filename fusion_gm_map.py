@@ -1070,6 +1070,380 @@ FUSION_GM_DATA = [
         "percussion",
         116,
     ),
+    #
+    # ROM:PRESET 4 - Cuivres Solo & Ensembles Classiques
+    #
+    (
+        (
+            "fanfare trumpets",
+        ),
+        "trumpet",
+        56,
+    ),
+
+    (
+        (
+            "orchestral brass section",
+            "staccato brass",
+        ),
+        "brass",
+        61,
+    ),
+
+    (
+        (
+            "french horn duo",
+        ),
+        "french_horn",
+        60,
+    ),
+
+    (
+        (
+            "solo trombone",
+        ),
+        "trombone",
+        57,
+    ),
+
+    (
+        (
+            "muted trumpet",
+        ),
+        "trumpet",
+        59,
+    ),
+
+    (
+        (
+            "tuba low end",
+        ),
+        "tuba",
+        58,
+    ),
+    #
+    # ROM:PRESET 4 - Cuivres Pop, Funk & Synthétiques
+    #
+    (
+        (
+            "pop brass section",
+            "tight horn section",
+        ),
+        "brass",
+        61,
+    ),
+
+    (
+        (
+            "synth brass 84",
+            "matrix brass",
+            "octave synth horns",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "analog horns",
+            "poly reso horns",
+        ),
+        "brass",
+        63,
+    ),
+
+    (
+        (
+            "sax brass layer",
+        ),
+        "brass",
+        61,
+    ),
+    #
+    # ROM:PRESET 4 - Saxophones & Bois
+    #
+    (
+        (
+            "alto sax expressive",
+        ),
+        "sax",
+        65,
+    ),
+
+    (
+        (
+            "tenor sax growl",
+        ),
+        "sax",
+        66,
+    ),
+
+    (
+        (
+            "baritone sax low",
+        ),
+        "sax",
+        67,
+    ),
+
+    (
+        (
+            "soprano wind",
+        ),
+        "sax",
+        64,
+    ),
+
+    (
+        (
+            "solo flute",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "orchestral oboe",
+        ),
+        "oboe",
+        68,
+    ),
+
+    (
+        (
+            "clarinet solo",
+        ),
+        "clarinet",
+        71,
+    ),
+
+    (
+        (
+            "bassoon solo",
+        ),
+        "bassoon",
+        70,
+    ),
+    #
+    # ROM:PRESET 4 - Ensembles de Vents & Flûtes
+    #
+    (
+        (
+            "woodwind ensemble",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "jazz flute trio",
+            "breathy flute",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "orchestral piccolo",
+        ),
+        "piccolo",
+        72,
+    ),
+
+    (
+        (
+            "recorder trio",
+        ),
+        "recorder",
+        74,
+    ),
+
+    (
+        (
+            "chamber winds",
+        ),
+        "clarinet",
+        71,
+    ),
+
+    (
+        (
+            "whistling wind",
+        ),
+        "whistle",
+        78,
+    ),
+
+    (
+        (
+            "breath reed",
+        ),
+        "flute",
+        73,
+    ),
+    #
+    # ROM:PRESET 4 - Synth Leads Rétro
+    #
+    (
+        (
+            "mini lead",
+            "pulse width lead",
+            "5th lead",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "lucky lead",
+            "triangle solo",
+            "sine wave solo",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "distorted lead",
+        ),
+        "guitar",
+        30,
+    ),
+
+    (
+        (
+            "space whistle",
+        ),
+        "lead",
+        87,
+    ),
+    #
+    # ROM:PRESET 4 - Claviers & Synthés Polyphoniques Vintage
+    #
+    (
+        (
+            "prophet poly",
+            "2 pole poly",
+            "poly detune",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "oberheim strings",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "jupiter brass",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "reso clav synth",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "sweeper poly",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "analog bell",
+        ),
+        "fx",
+        98,
+    ),
+    #
+    # ROM:PRESET 4 - Textures d'Ambiance, SFX & Balayages
+    #
+    (
+        (
+            "jet stream",
+            "analog noise drop",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "modular chaos",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "reso rise",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "cosmic wind",
+        ),
+        "fx",
+        97,
+    ),
+
+    (
+        (
+            "cyber chirp",
+        ),
+        "helicopter",
+        124,
+    ),
+
+    (
+        (
+            "modded sirens",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "retro explosion",
+        ),
+        "gunshot",
+        127,
+    ),
+    #
+    # ROM:PRESET 4 - Percussions synthétiques
+    #
+    (
+        (
+            "analogue percs",
+            "kraft click kit",
+        ),
+        "woodblock",
+        114,
+    ),
 ]
 
 FUSION_GM_HINTS = {}
