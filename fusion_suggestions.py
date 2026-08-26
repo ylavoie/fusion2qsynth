@@ -5,7 +5,8 @@ from difflib import SequenceMatcher
 
 from fusion_gm_map import (
     FUSION_GM_HINTS,
-    GM_PROGRAMS
+    GM_PROGRAMS,
+    GM_DRUM_KITS
 )
 
 FAMILIES = {
@@ -298,6 +299,33 @@ FUSION_FAMILY_OVERRIDES = {
     "vintage drum machine sd": {
 		"drums"
 	},
+    #
+    # ROM:GM - Drum Kits
+    #
+    "standard kit": {
+        "drums"
+    },
+    "room kit": {
+        "drums"
+    },
+    "power kit": {
+        "drums"
+    },
+    "electronic kit": {
+        "drums"
+    },
+    "tr 808 kit": {
+        "drums"
+    },
+    "jazz kit": {
+        "drums"
+    },
+    "brush kit": {
+        "drums"
+    },
+    "orchestra kit": {
+        "drums"
+    },
 }
 
 def detect_gm_program(
@@ -318,6 +346,26 @@ def detect_gm_program(
 
     return dict(
         entry
+    )
+
+def detect_gm_drum_kit(
+    name
+):
+
+    normalized_name = normalize_name(
+        name
+    )
+
+    kit = GM_DRUM_KITS.get(
+        normalized_name
+    )
+
+    if kit is None:
+
+        return None
+
+    return dict(
+        kit
     )
 
 def normalize_name(name):
@@ -636,6 +684,37 @@ def suggest_instruments(
     sf2_presets,
     limit=3
 ):
+
+    drum_kit = detect_gm_drum_kit(
+        fusion_program["name"]
+    )
+
+    if drum_kit is not None:
+
+        matches = []
+
+        for preset in sf2_presets:
+
+            if (
+                preset["bank"]
+                == drum_kit["sf2_bank"]
+                and
+                preset["program"]
+                == drum_kit["sf2_program"]
+            ):
+
+                matches.append(
+                    (
+                        1.0,
+                        preset
+                    )
+                )
+
+        if matches:
+
+            return {
+                "drums": matches[:limit]
+            }
 
     families = detect_families(
         fusion_program["name"]

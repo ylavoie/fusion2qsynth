@@ -2411,6 +2411,41 @@ GM_PROGRAMS = {
     },
 }
 
+GM_DRUM_KITS = {
+    "standard kit": {
+        "sf2_bank": 128,
+        "sf2_program": 0,
+    },
+    "room kit": {
+        "sf2_bank": 128,
+        "sf2_program": 8,
+    },
+    "power kit": {
+        "sf2_bank": 128,
+        "sf2_program": 16,
+    },
+    "electronic kit": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "tr 808 kit": {
+        "sf2_bank": 128,
+        "sf2_program": 25,
+    },
+    "jazz kit": {
+        "sf2_bank": 128,
+        "sf2_program": 32,
+    },
+    "brush kit": {
+        "sf2_bank": 128,
+        "sf2_program": 40,
+    },
+    "orchestra kit": {
+        "sf2_bank": 128,
+        "sf2_program": 48,
+    },
+}
+
 FUSION_GM_HINTS = {}
 
 for names, family, gm_program in FUSION_GM_DATA:
