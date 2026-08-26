@@ -1444,6 +1444,449 @@ FUSION_GM_DATA = [
         "woodblock",
         114,
     ),
+    #
+    # ROM:SYNTH DRUM - Kicks
+    #
+    (
+        (
+            "808 sub kick",
+            "sine drop kick",
+            "d b sub punch",
+            "long decay sub",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "hardcore dist kick",
+        ),
+        "guitar",
+        30,
+    ),
+    #
+    # ROM:SYNTH DRUM - Snares / Claps / Shakers
+    #
+    (
+        (
+            "white noise snare",
+            "noise shaker hit",
+            "crackle snare",
+            "analog noise rim",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "kraftwerk click",
+            "fm metallic rim",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "distorted snare",
+        ),
+        "guitar",
+        30,
+    ),
+
+    (
+        (
+            "trash can hit",
+        ),
+        "tinkle_bell",
+        112,
+    ),
+    #
+    # ROM:SYNTH DRUM - Toms
+    #
+    (
+        (
+            "space tom drop",
+            "fm perco tom",
+            "deep sub tom",
+            "analog sine tom",
+            "industrial tom",
+            "reso tom va",
+            "square wave tom",
+            "pitch mod tom",
+            "808 tom clone",
+            "909 tom attack",
+            "polyphonic tom",
+            "noise burst tom",
+            "decay sweep tom",
+        ),
+        "synth_drum",
+        118,
+    ),
+
+    (
+        (
+            "techno tom high",
+        ),
+        "melodic_tom",
+        117,
+    ),
+    #
+    # ROM:SYNTH DRUM - Hi-Hats / Cymbals / FX Percussions
+    #
+    (
+        (
+            "reverse cym synth",
+        ),
+        "reverse_cymbal",
+        119,
+    ),
+
+    (
+        (
+            "metallic zap hat",
+        ),
+        "fx",
+        100,
+    ),
+
+    (
+        (
+            "cyber block shaker",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "white noise shaker",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "fm chime hat",
+        ),
+        "fx",
+        98,
+    ),
+    #
+    # ROM:SYNTH DRUM - SFX / impacts / alertes
+    #
+    (
+        (
+            "laser trigger",
+            "space alert",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "metal scrap impact",
+            "metal clang",
+        ),
+        "tinkle_bell",
+        112,
+    ),
+
+    (
+        (
+            "industrial machine",
+        ),
+        "applause",
+        125,
+    ),
+
+    (
+        (
+            "sci fi chirp",
+            "alien perc",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "digital alarm drop",
+        ),
+        "helicopter",
+        124,
+    ),
+
+    (
+        (
+            "sub octave zap",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "vinyl crackle loop",
+            "noise riser",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "cyber click",
+            "electro woodblock",
+            "fm beep block",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "digital drop",
+        ),
+        "fx",
+        100,
+    ),
+    #
+    # ROM:SYNTH DRUM - 81 à 96
+    #
+    (
+        (
+            "hard reso bd",
+            "sub bass click",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "modular snap",
+            "glitch click",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "sub riser tom",
+            "ring tom",
+        ),
+        "synth_drum",
+        118,
+    ),
+
+    (
+        (
+            "ping fm perc",
+        ),
+        "fx",
+        98,
+    ),
+
+    (
+        (
+            "static crackle",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "metallic hit fx",
+        ),
+        "tinkle_bell",
+        112,
+    ),
+
+    (
+        (
+            "space riser loop",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "industrial crushed",
+        ),
+        "guitar",
+        30,
+    ),
+    #
+    # ROM:SYNTH DRUM - 97 à 112
+    #
+    (
+        (
+            "sync tom lead",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "chirp laser perc",
+            "industrial drone perc",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "rusty metal plate",
+        ),
+        "tinkle_bell",
+        112,
+    ),
+
+    (
+        (
+            "blowing air fx",
+            "noise tail snare",
+            "vinyl scratch hit",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "fm sine sub",
+            "sub octave thud",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "digital alarm high",
+        ),
+        "helicopter",
+        124,
+    ),
+
+    (
+        (
+            "reso tom burst",
+        ),
+        "synth_drum",
+        118,
+    ),
+
+    (
+        (
+            "cyber clock tick",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "space siren drop",
+        ),
+        "fx",
+        102,
+    ),
+    #
+    # ROM:SYNTH DRUM - 113 à 128
+    #
+    (
+        (
+            "white noise sweep",
+            "radio static noise",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "electronic cowbell",
+        ),
+        "agogo",
+        113,
+    ),
+
+    (
+        (
+            "metal pipe impact",
+        ),
+        "tinkle_bell",
+        112,
+    ),
+
+    (
+        (
+            "alien zap gun",
+            "end matrix sfx",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "digital sine drop",
+        ),
+        "fx",
+        100,
+    ),
+
+    (
+        (
+            "fm clink perc",
+            "fm metallic bell",
+        ),
+        "fx",
+        98,
+    ),
+
+    (
+        (
+            "overdriven kick",
+        ),
+        "guitar",
+        30,
+    ),
+
+    (
+        (
+            "glitch artifact",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "deep sub sweep tom",
+        ),
+        "synth_drum",
+        118,
+    ),
+
+    (
+        (
+            "industrial drive bd",
+        ),
+        "bass",
+        38,
+    ),
 ]
 
 FUSION_GM_HINTS = {}

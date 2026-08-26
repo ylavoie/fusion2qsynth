@@ -166,6 +166,135 @@ FUSION_FAMILY_OVERRIDES = {
     "industrial beat box": {
         "drums"
     },
+    "909 power kick": {
+        "drums"
+    },
+    "plastic snap kick": {
+        "drums"
+    },
+    "industrial thud": {
+        "drums"
+    },
+    "fat va bass drum": {
+        "drums"
+    },
+    "clicky dance kick": {
+        "drums"
+    },
+    "rubber kick": {
+        "drums"
+    },
+    "soft analog bd": {
+        "drums"
+    },
+    "tekno attack kick": {
+        "drums"
+    },
+    "gated bd retro": {
+        "drums"
+    },
+    "metal core kick": {
+        "drums"
+    },
+    "lo fi 8 bit bd": {
+        "drums"
+    },
+    "808 snare classic": {
+		"drums"
+	},
+    "909 house snare": {
+		"drums"
+	},
+    "analog clap master": {
+		"drums"
+	},
+    "metal rim shot": {
+		"drums"
+	},
+    "reso snare va": {
+		"drums"
+	},
+    "gated snare 80s": {
+		"drums"
+	},
+    "industrial clap": {
+		"drums"
+	},
+    "tiny synth pop sd": {
+		"drums"
+	},
+    "simmons saw tom": {
+		"drums"
+	},
+    "gated tom retro": {
+		"drums"
+	},
+    "808 open hat": {
+		"drums"
+	},
+    "909 closed hat": {
+		"drums"
+	},
+    "analog cymbal": {
+		"drums"
+	},
+    "noise ride cymbal": {
+		"drums"
+	},
+    "lo fi retro choke": {
+		"drums"
+	},
+    "short tight hat": {
+		"drums"
+	},
+    "long open hat": {
+		"drums"
+	},
+    "phase mod hat": {
+		"drums"
+	},
+    "ring modulated hat": {
+		"drums"
+	},
+    "distorted cymbal": {
+		"drums"
+	},
+    "cr78 vintage hat": {
+		"drums"
+	},
+    "heavy gate clap": {
+		"drums"
+	},
+    "lo fi snare hit": {
+		"drums"
+	},
+    "bipolar kick": {
+		"drums"
+	},
+    "modulated snare": {
+		"drums"
+	},
+    "comb filter hat": {
+		"drums"
+	},
+    "analog rim va": {
+		"drums"
+	},
+    "bitcrushed hat": {
+		"drums"
+	},
+    "phase shift hat": {
+		"drums"
+	},
+    "modular click snare": {
+		"drums"
+	},
+    "gated reverb clap": {
+		"drums"
+	},
+    "vintage drum machine sd": {
+		"drums"
+	},
 }
 
 def normalize_name(name):
