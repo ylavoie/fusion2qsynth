@@ -3846,6 +3846,221 @@ FUSION_GM_DATA = [
         "pad",
         91,
     ),
+    #
+    # HD:Hollow Sun 08
+    #
+    (
+        (
+            "destroyer",
+        ),
+        "lead",
+        87,
+    ),
+
+    (
+        (
+            "duckbass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "galactic",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "laz harp",
+        ),
+        "harpsichord",
+        6,
+    ),
+
+    (
+        (
+            "monobass",
+            "rubber bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "pipe",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "syncage",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "vibes",
+        ),
+        "vibraphone",
+        11,
+    ),
+
+    (
+        (
+            "benshimr",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "harmonovox",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "toto horn",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "galactovox",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "majesty",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "octave sync",
+            "fat detune",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "pibes",
+        ),
+        "flute",
+        75,
+    ),
+
+    (
+        (
+            "caverns",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "europe brass",
+        ),
+        "brass",
+        63,
+    ),
+
+    (
+        (
+            "fat lead",
+            "sweet lead",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "fooled organ",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "howelling wind",
+        ),
+        "fx",
+        122,
+    ),
+
+    (
+        (
+            "jx pad",
+            "smoothie",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "mw there a min",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "kitchen sink",
+            "random formant",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "kojoi",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "phantom",
+        ),
+        "pad",
+        94,
+    ),
+
+    (
+        (
+            "to meet a soprano",
+        ),
+        "choir",
+        52,
+    ),
 ]
 
 GM_PROGRAMS = {
