@@ -579,98 +579,532 @@ FUSION_GM_DATA = [
         57,
     ),
     #
-    # ROM:ELECTRONICA
+    # ROM:ELECTRONICA - 001 à 008
     #
     (
         (
-            "aggro",
+            "mister twister",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "aggresso lead",
+        ),
+        "lead",
+        85,
+    ),
+
+    (
+        (
+            "fm decimator lead",
+        ),
+        "lead",
+        87,
+    ),
+
+    (
+        (
+            "acid trax bass",
         ),
         "bass",
-        38,      # Prog 39 - Synth Bass 1
+        38,
     ),
+
     (
         (
-            "electronica lead",
+            "automation seq",
         ),
         "lead",
-        87,      # Prog 88 - Bass + Lead
+        83,
     ),
+
     (
         (
-            "hoover",
-            "dominator",
+            "big pwm poly",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "bipolar pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "bit chopper",
+        ),
+        "fx",
+        101,
+    ),
+    #
+    # ROM:ELECTRONICA - 009 à 016
+    #
+    (
+        (
+            "breathe air",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "c64 arp machine",
         ),
         "lead",
-        81,      # Prog 82 - Sawtooth Lead
+        82,
     ),
+
     (
         (
-            "screamer",
+            "chemical bass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "classic phased pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "computational bell",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "cyber dance poly",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "deep house sub",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "defective junk",
+        ),
+        "fx",
+        101,
+    ),
+    #
+    # ROM:ELECTRONICA - 017 à 024
+    #
+    (
+        (
+            "digital chaos",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "dirty sync solo",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "distorted mono lead",
+        ),
+        "lead",
+        87,
+    ),
+
+    (
+        (
+            "drone zone",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "electro comp",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "epic trance saw",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "euro synth brass",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "fm metallic pluck",
+        ),
+        "pad",
+        93,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 025 à 032
+    #
+    (
+        (
+            "filter sweep pad",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "formant vox",
+        ),
+        "fx",
+        100,
+    ),
+
+    (
+        (
+            "gated dream",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "glitch machine",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "hardcore rave pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "industrial punch",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "liquid lead",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "lo fi playground",
+        ),
+        "fx",
+        103,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 033 à 040
+    #
+    (
+        (
+            "modular sequence",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "moogish sub",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "neo retro pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "noise industrial",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "overdrive bass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "phase distortion",
+        ),
+        "pad",
+        94,
+    ),
+
+    (
+        (
+            "pixelated",
+        ),
+        "lead",
+        82,
+    ),
+
+    (
+        (
+            "plastic poly",
+        ),
+        "pad",
+        90,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 041 à 048
+    #
+    (
+        (
+            "psy trance arp",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "pulse width mod",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "reso line bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "ring mod havoc",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "robotic speech",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "s h filter sweep",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "screamer sync",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "space drone",
+        ),
+        "fx",
+        103,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 049 à 056
+    #
+    (
+        (
+            "square drop",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "sub destroyer",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "super saw strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
             "sync or swim",
         ),
         "lead",
-        84,      # Prog 85 - Charang Lead
+        81,
     ),
+
     (
         (
-            "bitcrushed",
+            "techno stabs",
         ),
-        "square_lead",
-        80,      # Prog 81 - Square Lead
+        "brass",
+        63,
+    ),
+
+    (
+        (
+            "the matrix pad",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "thermal noise",
+        ),
+        "seashore",
+        122,
+    ),
+
+    (
+        (
+            "trance gate",
+        ),
+        "pad",
+        92,
     ),
 
     #
-    # Basses Electronica
+    # ROM:ELECTRONICA - 057 à 062
     #
     (
         (
-            "industrial bass",
-        ),
-        "bass",
-        38,      # Prog 39 - Synth Bass 1
-    ),
-    (
-        (
-            "acid line",
-        ),
-        "bass",
-        39,      # Prog 40 - Synth Bass 2
-    ),
-
-    #
-    # Pads Electronica
-    #
-    (
-        (
-            "cyberdrone",
-        ),
-        "pad",
-        89,      # Prog 90 - Warm Pad
-    ),
-    (
-        (
-            "anode pad",
-        ),
-        "pad",
-        90,      # Prog 91 - Polysynth
-    ),
-    (
-        (
-            "toxic wave",
-        ),
-        "pad",
-        95,      # Prog 96 - Sweep Pad
-    ),
-
-    #
-    # Arp / séquences
-    #
-    (
-        (
-            "techno arp",
+            "unison detune",
         ),
         "lead",
-        81,      # Prog 82 - Sawtooth Lead
+        81,
+    ),
+
+    (
+        (
+            "vocaloid air",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "vox humana",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "warm sweeper",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "wobble grid",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "x modulation",
+        ),
+        "fx",
+        103,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 064
+    #
+    (
+        (
+            "80s retro stabs",
+        ),
+        "brass",
+        62,
     ),
     #
     # ROM:PRESET 1 - Pianos acoustiques & électriques
@@ -3241,6 +3675,10 @@ GM_DRUM_KITS = {
     "orchestra kit": {
         "sf2_bank": 128,
         "sf2_program": 48,
+    },
+    "909ish kit": {
+        "sf2_bank": 128,
+        "sf2_program": 25,
     },
 }
 
