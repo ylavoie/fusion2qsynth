@@ -3723,6 +3723,129 @@ FUSION_GM_DATA = [
         "pad",
         88,
     ),
+    #
+    # HD:Hollow Sun 07
+    #
+    (
+        (
+            "warm e piano",
+        ),
+        "electric_piano",
+        5,
+    ),
+
+    (
+        (
+            "digi bells",
+        ),
+        "bells",
+        14,
+    ),
+
+    (
+        (
+            "digi symph strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "b3 1 2",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "digichoir",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "digicord",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "the dream",
+            "the dream 2",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "drawstortion",
+        ),
+        "organ",
+        18,
+    ),
+
+    (
+        (
+            "soul bass",
+        ),
+        "bass",
+        33,
+    ),
+
+    (
+        (
+            "plastic bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "alpha 2",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "ethercord",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "ep strings",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "digi fretless",
+        ),
+        "bass",
+        35,
+    ),
+
+    (
+        (
+            "chime vox swirl",
+        ),
+        "pad",
+        91,
+    ),
 ]
 
 GM_PROGRAMS = {
