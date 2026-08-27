@@ -20,6 +20,7 @@ last_performance.json
 
 # Sauvegardes locales
 fusion.json.bak*
+backups/*
 
 # Fichiers de configuration
 .markdownlint.json

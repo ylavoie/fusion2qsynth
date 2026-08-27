@@ -15,11 +15,11 @@ FUSION_FILE = "fusion.json"
 
 # Sauvegarde
 _BACKUP_COUNT = 3
-_TMP_SUFFIX = ".tmp"
+ARCHIVE_DIR = "backups"
+ARCHIVE_COUNT = 30
 
 # Journal
 _RECOVERY_LOG = "fusion_recovery.log"
-
 
 class ProjectRecoveryError(RuntimeError):
     pass
@@ -247,6 +247,136 @@ class FusionProject:
 
         return backups
 
+    def archive(self):
+
+        if not os.path.exists(
+            self.filename
+        ):
+
+            return False
+
+        os.makedirs(
+            ARCHIVE_DIR,
+            exist_ok=True
+        )
+
+        timestamp = time.strftime(
+            "%Y-%m-%d_%H%M%S"
+        )
+
+        basename = os.path.splitext(
+            os.path.basename(
+                self.filename
+            )
+        )[0]
+
+        archive_file = os.path.join(
+            ARCHIVE_DIR,
+            f"{basename}-{timestamp}.json"
+        )
+
+        try:
+
+            shutil.copy(
+                self.filename,
+                archive_file
+            )
+
+            self._rotate_archives()
+
+            return True
+
+        except Exception as e:
+
+            print(
+                f"Archivage impossible : {e}"
+            )
+
+            return False
+
+    def _rotate_archives(self):
+
+        if ARCHIVE_COUNT < 1:
+
+            return
+
+        if not os.path.isdir(
+            ARCHIVE_DIR
+        ):
+
+            return
+
+        prefix = (
+            os.path.splitext(
+                os.path.basename(
+                    self.filename
+                )
+            )[0]
+            + "-"
+        )
+
+        archives = []
+
+        for filename in os.listdir(
+            ARCHIVE_DIR
+        ):
+
+            if (
+                filename.startswith(prefix)
+                and
+                filename.endswith(".json")
+            ):
+
+                archives.append(
+                    filename
+                )
+
+        archives.sort(
+            reverse=True
+        )
+
+        for filename in archives[
+            ARCHIVE_COUNT:
+        ]:
+
+            try:
+
+                os.remove(
+                    os.path.join(
+                        ARCHIVE_DIR,
+                        filename
+                    )
+                )
+
+            except OSError:
+
+                pass
+
+    def _file_hash(
+        self,
+        filename
+    ):
+
+        import hashlib
+
+        hasher = hashlib.sha256()
+
+        with open(
+            filename,
+            "rb"
+        ) as f:
+
+            for chunk in iter(
+                lambda: f.read(65536),
+                b""
+            ):
+
+                hasher.update(
+                    chunk
+                )
+
+        return hasher.hexdigest()
+
     def format_size(size):
 
         if size < 1024:
@@ -309,13 +439,6 @@ class FusionProject:
 
         self._rotate_backups()
 
-        if os.path.exists(self.filename):
-
-            shutil.copy2(
-                self.filename,
-                self.filename + ".bak"
-            )
-
         temp_file = self.filename + ".tmp"
 
         try:
@@ -353,6 +476,73 @@ class FusionProject:
             if os.path.exists(temp_file):
 
                 os.remove(temp_file)
+
+    def archive_if_changed(self):
+
+        if not os.path.exists(
+            self.filename
+        ):
+
+            return False
+
+        if not os.path.isdir(
+            ARCHIVE_DIR
+        ):
+
+            return self.archive()
+
+        prefix = (
+            os.path.splitext(
+                os.path.basename(
+                    self.filename
+                )
+            )[0]
+            + "-"
+        )
+
+        archives = sorted(
+            (
+                filename
+                for filename in os.listdir(
+                    ARCHIVE_DIR
+                )
+                if (
+                    filename.startswith(prefix)
+                    and
+                    filename.endswith(".json")
+                )
+            ),
+            reverse=True
+        )
+
+        if not archives:
+
+            return self.archive()
+
+        latest = os.path.join(
+            ARCHIVE_DIR,
+            archives[0]
+        )
+
+        try:
+
+            if (
+                self._file_hash(
+                    self.filename
+                )
+                ==
+                self._file_hash(
+                    latest
+                )
+            ):
+
+                return False
+
+        except OSError:
+
+            pass
+
+        return self.archive()
 
     def _rotate_backups(self):
 

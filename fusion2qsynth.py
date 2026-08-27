@@ -183,6 +183,7 @@ def main():
         print("2 - Éditeur")
         print("3 - Contrôleur Live")
         print("4 - Monitor MIDI")
+        print("5 - Sauvegarder une archive")
         print("Q - Quitter")
 
         choix = input("> ")
@@ -203,7 +204,23 @@ def main():
 
             fusion_monitor.main()
 
+        elif choix == "5":
+
+            if project.archive():
+
+                print(
+                    "Archive créée."
+                )
+
+            else:
+
+                print(
+                    "Échec de l'archivage."
+                )
+
         elif choix.lower() == "q":
+
+            project.archive_if_changed()
 
             break
 
