@@ -3245,6 +3245,133 @@ FUSION_GM_DATA = [
         "pad",
         93,
     ),
+    #
+    # HD:Hollow Sun 02
+    #
+    (
+        (
+            "tape choir",
+            "gothic chorale",
+        ),
+        "choir",
+        52,
+    ),
+
+    (
+        (
+            "omniglobe",
+        ),
+        "fx",
+        100,
+    ),
+
+    (
+        (
+            "pianette dream",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "ultra lush strings",
+            "jp strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "b3 888 8888 888",
+            "b3 888 8888 888vib",
+            "b3 jazz",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "iix swanee",
+        ),
+        "lead",
+        82,
+    ),
+
+    (
+        (
+            "vocks conti",
+            "farcheeza",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "tape violins",
+        ),
+        "strings",
+        51,
+    ),
+
+    (
+        (
+            "iix pitzwang bass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "pianette",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "vp coder choir",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "b3 gospel",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "iix marblock",
+        ),
+        "marimba",
+        12,
+    ),
+
+    (
+        (
+            "iix violsus",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "scrapey strings",
+        ),
+        "viola",
+        41,
+    ),
 ]
 
 GM_PROGRAMS = {
