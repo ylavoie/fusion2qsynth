@@ -4175,6 +4175,57 @@ GM_DRUM_KITS = {
         "sf2_bank": 128,
         "sf2_program": 25,
     },
+    #
+    # HD:Hollow Sun 05
+    #
+    "iix drumps perc": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "el em one": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "el em two": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "akai xr10": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "drum u l8r": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "obie dzx": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "kraftperk": {
+        "sf2_bank": 128,
+        "sf2_program": 25,
+    },
+    "sakata dpm48": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "sdsv kits": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "hs 8 oh 8": {
+        "sf2_bank": 128,
+        "sf2_program": 25,
+    },
+    "hs 9 oh 9": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
+    "see our 78": {
+        "sf2_bank": 128,
+        "sf2_program": 24,
+    },
 }
 
 FUSION_GM_HINTS = {}
