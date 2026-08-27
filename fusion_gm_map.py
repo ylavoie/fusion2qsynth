@@ -4061,6 +4061,152 @@ FUSION_GM_DATA = [
         "choir",
         52,
     ),
+    #
+    # HD:Hollow Sun 09
+    #
+    (
+        (
+            "tape boys choir",
+        ),
+        "choir",
+        52,
+    ),
+
+    (
+        (
+            "tape mix strings",
+            "p5 strings 1",
+            "d you know strings1",
+            "d you know strings3",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "tape phaedra",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "tape brass",
+            "d you know brass",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "p5 strings 2",
+            "d you know strings2",
+        ),
+        "strings",
+        51,
+    ),
+
+    (
+        (
+            "v ger",
+            "cross mod k1",
+            "ring mod k1",
+            "sci fi descent",
+            "ring mod ascent",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "p5 bass",
+            "d you know bass1",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "d you know smooth1",
+            "d you know smooth2",
+            "d you know pwm",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "d you know sweep",
+            "d you know env sweep",
+            "sawfilt sweep",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "d you know square",
+            "sine wave osc k1 2",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "d you know swell",
+            "d you know thick",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "d you know organ",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "d you know bass2",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "d you know arp1",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "sci fi arpeggios",
+        ),
+        "lead",
+        83,
+    ),
+
+    (
+        (
+            "classic s h",
+        ),
+        "fx",
+        102,
+    ),
 ]
 
 GM_PROGRAMS = {
