@@ -1087,6 +1087,405 @@ FUSION_GM_DATA = [
         95,
     ),
     #
+    # ROM:PRESET 2 - Pianos électroniques & synthétisés
+    #
+    (
+        (
+            "dyno rhodes",
+            "hybrid ep layer",
+            "phase wurly",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "fm tine piano",
+            "bell ep combo",
+        ),
+        "electric_piano",
+        5,
+    ),
+
+    (
+        (
+            "digital clav",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "cp80 stage piano",
+        ),
+        "piano",
+        2,
+    ),
+
+    (
+        (
+            "toy synth keys",
+        ),
+        "fx",
+        98,
+    ),
+    #
+    # ROM:PRESET 2 - Claviers hybrides & mallets électroniques
+    #
+    (
+        (
+            "space vibraphone",
+        ),
+        "vibraphone",
+        11,
+    ),
+
+    (
+        (
+            "fm marimba",
+        ),
+        "marimba",
+        12,
+    ),
+
+    (
+        (
+            "digital harpsi",
+        ),
+        "harpsichord",
+        6,
+    ),
+
+    (
+        (
+            "music box dream",
+        ),
+        "music_box",
+        10,
+    ),
+
+    (
+        (
+            "tubular layer",
+        ),
+        "bells",
+        14,
+    ),
+
+    (
+        (
+            "glocken synth",
+        ),
+        "glockenspiel",
+        9,
+    ),
+
+    (
+        (
+            "log drum synth",
+        ),
+        "woodblock",
+        115,
+    ),
+
+    (
+        (
+            "crystal chimes",
+        ),
+        "fx",
+        98,
+    ),
+    #
+    # ROM:PRESET 2 - Orgues électroniques, Combo & Jazz
+    #
+    (
+        (
+            "b3 percussion organ",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "full drawbars rock",
+        ),
+        "organ",
+        18,
+    ),
+
+    (
+        (
+            "mellow b3 organ",
+            "vox transistor",
+            "farfisa combo",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "pipe principal",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "reed harmonium",
+        ),
+        "organ",
+        20,
+    ),
+
+    (
+        (
+            "musette accordion",
+        ),
+        "accordion",
+        21,
+    ),
+    #
+    # ROM:PRESET 2 - Basses synthétiques
+    #
+    (
+        (
+            "fat moog bass",
+            "fm solid bass",
+            "sub bass drop",
+            "clicky electro bass",
+            "detuned saw bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "acid reso bass",
+            "dark drone bass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "slap synth bass",
+        ),
+        "bass",
+        37,
+    ),
+    #
+    # ROM:PRESET 2 - Nappes chaleureuses & analogiques
+    #
+    (
+        (
+            "matrix warm pad",
+            "soft silk pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "jupiter strings pad",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "slow evolution",
+            "organic waves",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "analog choir pad",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "deep space pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "phase evolution",
+        ),
+        "pad",
+        95,
+    ),
+    #
+    # ROM:PRESET 2 - Nappes évolutives & textures brillantes
+    #
+    (
+        (
+            "glass nebula",
+        ),
+        "fx",
+        98,
+    ),
+
+    (
+        (
+            "reso sweep pad",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "cine magic pad",
+        ),
+        "fx",
+        97,
+    ),
+
+    (
+        (
+            "ice castle",
+        ),
+        "fx",
+        100,
+    ),
+
+    (
+        (
+            "metallic halo",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "cosmic wind",
+        ),
+        "fx",
+        99,
+    ),
+
+    (
+        (
+            "shimmering waves",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "dark industrial drone",
+        ),
+        "fx",
+        103,
+    ),
+    #
+    # ROM:PRESET 2 - Synthétiseurs polyphoniques
+    #
+    (
+        (
+            "prophet poly brass",
+            "oberheim brass",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "juno power chord",
+            "poly detune lead",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "digital poly stab",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "soft poly synth",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "rave stab accord",
+        ),
+        "brass",
+        63,
+    ),
+    #
+    # ROM:PRESET 2 - Synth Leads
+    #
+    (
+        (
+            "mini moog saw lead",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "lucky square lead",
+            "triangle liquid solo",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "hard sync screamer",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "distorted synth solo",
+        ),
+        "guitar",
+        30,
+    ),
+
+    (
+        (
+            "space whistle mw",
+        ),
+        "lead",
+        87,
+    ),
+    #
     # ROM:PRESET 3 - Guitares électriques
     #
     (
@@ -1807,14 +2206,6 @@ FUSION_GM_DATA = [
         ),
         "pad",
         95,
-    ),
-
-    (
-        (
-            "cosmic wind",
-        ),
-        "fx",
-        97,
     ),
 
     (
