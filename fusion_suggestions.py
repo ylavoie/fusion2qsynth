@@ -299,6 +299,15 @@ FUSION_FAMILY_OVERRIDES = {
     "vintage drum machine sd": {
 		"drums"
 	},
+    "acoustilectric piano": {
+        "electric_piano"
+    },
+    "log drum": {
+        "woodblock"
+    },
+    "weird bells": {
+        "fx"
+    },
     #
     # ROM:GM - Drum Kits
     #
