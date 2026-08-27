@@ -3119,6 +3119,132 @@ FUSION_GM_DATA = [
         "bass",
         38,
     ),
+    #
+    # HD:Hollow Sun 01
+    #
+    (
+        (
+            "fusion string ens",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "nebulae",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "chorus elgrand",
+            "electric grand",
+        ),
+        "piano",
+        2,
+    ),
+
+    (
+        (
+            "equigene strings",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "very tiney",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "fusion choir ens",
+        ),
+        "choir",
+        52,
+    ),
+
+    (
+        (
+            "wurlie 200",
+            "wurlie 200 chorus",
+            "wurlie 200 tremolo",
+        ),
+        "electric_piano",
+        5,
+    ),
+
+    (
+        (
+            "phase off",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "big octave strings",
+        ),
+        "strings",
+        51,
+    ),
+
+    (
+        (
+            "road to glory",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "rp string ensemble",
+            "jmj eminent strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "high aptitude strings",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "fusion choir pad",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "fusion string pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "electrode pan",
+        ),
+        "pad",
+        93,
+    ),
 ]
 
 GM_PROGRAMS = {
