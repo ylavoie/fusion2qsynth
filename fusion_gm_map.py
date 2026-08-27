@@ -3614,6 +3614,115 @@ FUSION_GM_DATA = [
         "piano",
         2,
     ),
+    #
+    # HD:Hollow Sun 06
+    #
+    (
+        (
+            "superstrings",
+            "superstrings 2",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "mutrono",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "hollow ice",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "birdland bass",
+        ),
+        "bass",
+        35,
+    ),
+
+    (
+        (
+            "mini",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "obxa",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "syn box",
+        ),
+        "lead",
+        82,
+    ),
+
+    (
+        (
+            "prophet",
+            "hollow prophet",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "solosync",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "jm jar",
+            "jm jar 2",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "power ob",
+        ),
+        "brass",
+        63,
+    ),
+
+    (
+        (
+            "obiecord",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "superpad",
+        ),
+        "pad",
+        88,
+    ),
 ]
 
 GM_PROGRAMS = {
