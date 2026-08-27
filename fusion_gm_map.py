@@ -4207,6 +4207,137 @@ FUSION_GM_DATA = [
         "fx",
         102,
     ),
+    #
+    # HD:Hollow Sun 10
+    #
+    (
+        (
+            "ancestral",
+            "ancestral shores",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "prologue",
+            "velopad",
+            "memmogue pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "dream synth",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "on your shore",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "kling ep",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "velovoxbel",
+            "glass pad",
+            "frosted glass",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "mighty mogue",
+            "mogue tourist bass",
+            "mightier mogue",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "minimogue strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "mogue 3osc rez",
+            "mogue 3osc 5ths",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "mogue jump",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "mogue trilead1",
+            "mogue trilead2",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "mogue squlead",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "mogue opus 1",
+        ),
+        "strings",
+        51,
+    ),
+
+    (
+        (
+            "mogue opus 2",
+        ),
+        "brass",
+        63,
+    ),
+
+    (
+        (
+            "mysts of time",
+        ),
+        "fx",
+        103,
+    ),
 ]
 
 GM_PROGRAMS = {
