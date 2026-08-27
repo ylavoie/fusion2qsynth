@@ -3513,6 +3513,107 @@ FUSION_GM_DATA = [
         "piano",
         2,
     ),
+    #
+    # HD:Hollow Sun 04
+    #
+    (
+        (
+            "mighty pipes",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "spacestation",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "andalucian strings",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "unimogue bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "sweet tines",
+            "dream tines",
+            "krystal rode",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "ruff organ",
+        ),
+        "organ",
+        18,
+    ),
+
+    (
+        (
+            "piano strings",
+            "smooth piano",
+        ),
+        "piano",
+        0,
+    ),
+
+    (
+        (
+            "night organ",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "krystal strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "bar room joanna",
+        ),
+        "piano",
+        3,
+    ),
+
+    (
+        (
+            "ether pad",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "arr am i piano",
+        ),
+        "piano",
+        2,
+    ),
 ]
 
 GM_PROGRAMS = {
