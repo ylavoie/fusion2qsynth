@@ -3372,6 +3372,147 @@ FUSION_GM_DATA = [
         "viola",
         41,
     ),
+    #
+    # HD:Hollow Sun 03
+    #
+    (
+        (
+            "new dawn",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "tape flutes",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "arco strings",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "metal digi",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "sea of haze",
+            "pea pg delicate sweep",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "tape watcher",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "dee 6 klav",
+            "dee 6 klav chorus",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "digi bass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "analog e piano",
+        ),
+        "electric_piano",
+        5,
+    ),
+
+    (
+        (
+            "glockenspiel",
+        ),
+        "glockenspiel",
+        9,
+    ),
+
+    (
+        (
+            "pea pg vox",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "pea pg bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "lesly klav",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "pea pg throatwave",
+            "pea pg throatperc",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "pea pg slur bell",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "pea pg vox chime",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "pea pg classic",
+        ),
+        "piano",
+        2,
+    ),
 ]
 
 GM_PROGRAMS = {
