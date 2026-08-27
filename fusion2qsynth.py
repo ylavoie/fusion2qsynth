@@ -114,6 +114,60 @@ def choose_backup_restore():
 
         return None
 
+def choose_archive_restore():
+
+    archives = FusionProject.list_archives()
+
+    if not archives:
+
+        print(
+            "Aucune archive disponible."
+        )
+
+        return None
+
+    print()
+    print(
+        "Archives disponibles :"
+    )
+    print()
+
+    for index, archive in enumerate(
+        archives,
+        start=1
+    ):
+
+        print(
+            index,
+            "-",
+            archive["name"]
+        )
+
+    print()
+    print(
+        "q - Annuler"
+    )
+
+    choix = input("> ")
+
+    if choix.lower() == "q":
+
+        return None
+
+    try:
+
+        index = int(choix) - 1
+
+        return archives[index]
+
+    except (ValueError, IndexError):
+
+        print(
+            "Choix invalide."
+        )
+
+        return None
+
 def main():
 
     try:
@@ -184,6 +238,7 @@ def main():
         print("3 - Contrôleur Live")
         print("4 - Monitor MIDI")
         print("5 - Sauvegarder une archive")
+        print("6 - Restaurer une archive")
         print("Q - Quitter")
 
         choix = input("> ")
@@ -217,6 +272,32 @@ def main():
                 print(
                     "Échec de l'archivage."
                 )
+
+        elif choix == "6":
+
+            archive = choose_archive_restore()
+
+            if archive is None:
+
+                continue
+
+            restored = FusionProject.restore_from_archive(
+                archive["filename"]
+            )
+
+            if restored is None:
+
+                print(
+                    "Restauration impossible."
+                )
+
+                continue
+
+            project = restored
+
+            print(
+                "Archive restaurée."
+            )
 
         elif choix.lower() == "q":
 

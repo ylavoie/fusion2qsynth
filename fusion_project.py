@@ -519,30 +519,206 @@ class FusionProject:
 
             return self.archive()
 
-        latest = os.path.join(
-            ARCHIVE_DIR,
-            archives[0]
-        )
-
         try:
 
-            if (
-                self._file_hash(
-                    self.filename
-                )
-                ==
-                self._file_hash(
-                    latest
-                )
-            ):
+            current_hash = self._file_hash(
+                self.filename
+            )
 
-                return False
+            for filename in archives:
+
+                archive_file = os.path.join(
+                    ARCHIVE_DIR,
+                    filename
+                )
+
+                try:
+
+                    if (
+                        current_hash
+                        ==
+                        self._file_hash(
+                            archive_file
+                        )
+                    ):
+
+                        return False
+
+                except OSError:
+
+                    continue
 
         except OSError:
 
             pass
 
         return self.archive()
+
+    @classmethod
+    def list_archives(cls):
+
+        if not os.path.isdir(
+            ARCHIVE_DIR
+        ):
+
+            return []
+
+        archives = []
+
+        for filename in os.listdir(
+            ARCHIVE_DIR
+        ):
+
+            if (
+                filename.startswith("fusion-")
+                and
+                filename.endswith(".json")
+            ):
+
+                full_path = os.path.join(
+                    ARCHIVE_DIR,
+                    filename
+                )
+
+                if not cls.archive_is_valid(
+                    full_path
+                ):
+
+                    continue
+
+                archives.append(
+                    {
+                        "filename": full_path,
+                        "name": filename,
+                        "mtime": os.path.getmtime(
+                            full_path
+                        ),
+                    }
+                )
+
+        archives.sort(
+            key=lambda item: item["mtime"],
+            reverse=True
+        )
+
+        return archives
+
+    @classmethod
+    def archive_is_valid(
+        cls,
+        filename
+    ):
+
+        if not os.path.isfile(
+            filename
+        ):
+
+            return False
+
+        try:
+
+            with open(
+                filename,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
+                data = json.load(
+                    f
+                )
+
+            project = cls.__new__(
+                cls
+            )
+
+            project.filename = filename
+            project.data = data
+            project.file_time = 0
+
+            errors = project.validate()
+
+            blocking_errors = (
+                project.get_blocking_errors(
+                    errors
+                )
+            )
+
+            return not blocking_errors
+
+        except (
+            OSError,
+            json.JSONDecodeError,
+            TypeError,
+            ValueError
+        ):
+
+            return False
+
+    @classmethod
+    def restore_from_archive(
+        cls,
+        archive
+    ):
+
+        if not os.path.exists(
+            archive
+        ):
+
+            return None
+
+        project = cls.__new__(
+            cls
+        )
+
+        project.filename = FUSION_FILE
+        project.data = {}
+        project.file_time = 0
+
+        try:
+
+            with open(
+                archive,
+                "r",
+                encoding="utf-8"
+            ) as f:
+
+                data = json.load(
+                    f
+                )
+
+            project.data = data
+
+            errors = project.validate()
+
+            blocking_errors = project.get_blocking_errors(
+                errors
+            )
+
+            if blocking_errors:
+
+                return None
+
+            #
+            # Protéger le fichier actuel avant restauration
+            #
+            if os.path.exists(
+                project.filename
+            ):
+
+                project.archive_if_changed()
+
+            shutil.copy(
+                archive,
+                project.filename
+            )
+
+            project.load()
+
+            return project
+
+        except Exception:
+
+            return None
 
     def _rotate_backups(self):
 
