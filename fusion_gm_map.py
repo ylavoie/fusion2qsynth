@@ -188,13 +188,6 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "heavenly harmonics",
-        ),
-        "guitar",
-        31,
-    ),
-    (
-        (
             "steel string acoustic",
             "12 string folk",
             "acoustic layer",
@@ -594,7 +587,7 @@ FUSION_GM_DATA = [
             "aggresso lead",
         ),
         "lead",
-        85,
+        81,
     ),
 
     (
@@ -607,31 +600,23 @@ FUSION_GM_DATA = [
 
     (
         (
-            "acid trax bass",
+            "rasty",
         ),
         "bass",
-        38,
+        84,
     ),
 
     (
         (
-            "automation seq",
+            "xenocide",
         ),
-        "lead",
-        83,
+        "fx",
+        103,
     ),
 
     (
         (
-            "big pwm poly",
-        ),
-        "pad",
-        88,
-    ),
-
-    (
-        (
-            "bipolar pad",
+            "we are electric friends",
         ),
         "pad",
         90,
@@ -639,33 +624,25 @@ FUSION_GM_DATA = [
 
     (
         (
-            "bit chopper",
+            "doctor m bass",
         ),
-        "fx",
-        101,
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "bite bass",
+        ),
+        "bass",
+        39,
     ),
     #
     # ROM:ELECTRONICA - 009 à 016
     #
     (
         (
-            "breathe air",
-        ),
-        "pad",
-        91,
-    ),
-
-    (
-        (
-            "c64 arp machine",
-        ),
-        "lead",
-        82,
-    ),
-
-    (
-        (
-            "chemical bass",
+            "kissy bass",
         ),
         "bass",
         39,
@@ -673,23 +650,23 @@ FUSION_GM_DATA = [
 
     (
         (
-            "classic phased pad",
+            "fm thumbed bass",
         ),
-        "pad",
-        89,
+        "bass",
+        38,
     ),
 
     (
         (
-            "computational bell",
+            "fissure",
         ),
-        "pad",
-        93,
+        "fx",
+        103,
     ),
 
     (
         (
-            "cyber dance poly",
+            "hoov lead",
         ),
         "lead",
         81,
@@ -697,25 +674,49 @@ FUSION_GM_DATA = [
 
     (
         (
-            "deep house sub",
+            "sucka",
         ),
-        "bass",
-        38,
+        "fx",
+        103,
     ),
 
     (
         (
-            "defective junk",
+            "as it is",
         ),
-        "fx",
-        101,
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "aggro",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "alas",
+        ),
+        "pad",
+        89,
     ),
     #
     # ROM:ELECTRONICA - 017 à 024
     #
     (
         (
-            "digital chaos",
+            "counter intelligence",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "frog army",
         ),
         "fx",
         101,
@@ -723,7 +724,23 @@ FUSION_GM_DATA = [
 
     (
         (
-            "dirty sync solo",
+            "kenobi",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "q-time",
+        ),
+        "lead",
+        80,
+    ),
+
+    (
+        (
+            "sinka",
         ),
         "lead",
         84,
@@ -731,15 +748,41 @@ FUSION_GM_DATA = [
 
     (
         (
-            "distorted mono lead",
+            "maniac",
         ),
         "lead",
-        87,
+        81,
     ),
 
     (
         (
-            "drone zone",
+            "fm mini lead",
+        ),
+        "lead",
+        80,
+    ),
+
+    (
+        (
+            "bad boy lead",
+        ),
+        "lead",
+        87,
+    ),
+    #
+    # ROM:ELECTRONICA - 025 à 032
+    #
+    (
+        (
+            "rubbery bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "clouds appear",
         ),
         "pad",
         95,
@@ -747,7 +790,39 @@ FUSION_GM_DATA = [
 
     (
         (
-            "electro comp",
+            "modern hyptronic",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "classic intro",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "annie bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "solid comper",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "erik's komp",
         ),
         "clavinet",
         7,
@@ -755,93 +830,10 @@ FUSION_GM_DATA = [
 
     (
         (
-            "epic trance saw",
+            "with style",
         ),
         "pad",
         90,
-    ),
-
-    (
-        (
-            "euro synth brass",
-        ),
-        "brass",
-        62,
-    ),
-
-    (
-        (
-            "fm metallic pluck",
-        ),
-        "pad",
-        93,
-    ),
-
-    #
-    # ROM:ELECTRONICA - 025 à 032
-    #
-    (
-        (
-            "filter sweep pad",
-        ),
-        "pad",
-        95,
-    ),
-
-    (
-        (
-            "formant vox",
-        ),
-        "fx",
-        100,
-    ),
-
-    (
-        (
-            "gated dream",
-        ),
-        "pad",
-        92,
-    ),
-
-    (
-        (
-            "glitch machine",
-        ),
-        "fx",
-        102,
-    ),
-
-    (
-        (
-            "hardcore rave pad",
-        ),
-        "pad",
-        90,
-    ),
-
-    (
-        (
-            "industrial punch",
-        ),
-        "bass",
-        39,
-    ),
-
-    (
-        (
-            "liquid lead",
-        ),
-        "square_lead",
-        80,
-    ),
-
-    (
-        (
-            "lo fi playground",
-        ),
-        "fx",
-        103,
     ),
 
     #
@@ -849,39 +841,7 @@ FUSION_GM_DATA = [
     #
     (
         (
-            "modular sequence",
-        ),
-        "lead",
-        81,
-    ),
-
-    (
-        (
-            "moogish sub",
-        ),
-        "bass",
-        38,
-    ),
-
-    (
-        (
-            "neo retro pad",
-        ),
-        "pad",
-        89,
-    ),
-
-    (
-        (
-            "noise industrial",
-        ),
-        "fx",
-        103,
-    ),
-
-    (
-        (
-            "overdrive bass",
+            "6-pole q bass",
         ),
         "bass",
         39,
@@ -889,26 +849,58 @@ FUSION_GM_DATA = [
 
     (
         (
-            "phase distortion",
+            "fat sequencer bass",
         ),
-        "pad",
-        94,
+        "bass",
+        38,
     ),
 
     (
         (
-            "pixelated",
+            "snappy bass",
         ),
-        "lead",
-        82,
+        "bass",
+        39,
     ),
 
     (
         (
-            "plastic poly",
+            "mongo bass",
         ),
-        "pad",
-        90,
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "big square bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "faux 101",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "holo bass",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "rough fm bass",
+        ),
+        "bass",
+        38,
     ),
 
     #
@@ -916,7 +908,7 @@ FUSION_GM_DATA = [
     #
     (
         (
-            "psy trance arp",
+            "fifth style lead",
         ),
         "lead",
         81,
@@ -924,47 +916,39 @@ FUSION_GM_DATA = [
 
     (
         (
-            "pulse width mod",
+            "seattle lead",
         ),
-        "pad",
-        89,
+        "lead",
+        87,
     ),
 
     (
         (
-            "reso line bass",
+            "analog 5th lead",
         ),
-        "bass",
-        38,
+        "lead",
+        81,
     ),
 
     (
         (
-            "ring mod havoc",
+            "silver 3 saw",
         ),
-        "fx",
-        103,
+        "lead",
+        81,
     ),
 
     (
         (
-            "robotic speech",
+            "silver 3 square",
         ),
-        "fx",
-        101,
+        "lead",
+        80,
     ),
 
     (
         (
-            "s h filter sweep",
-        ),
-        "pad",
-        95,
-    ),
-
-    (
-        (
-            "screamer sync",
+            "intervalead",
         ),
         "lead",
         84,
@@ -972,10 +956,18 @@ FUSION_GM_DATA = [
 
     (
         (
-            "space drone",
+            "cryin' leadsynth",
         ),
-        "fx",
-        103,
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "super sync",
+        ),
+        "lead",
+        84,
     ),
 
     #
@@ -983,47 +975,15 @@ FUSION_GM_DATA = [
     #
     (
         (
-            "square drop",
+            "bright 5th synth",
         ),
-        "square_lead",
-        80,
+        "pad",
+        90,
     ),
 
     (
         (
-            "sub destroyer",
-        ),
-        "bass",
-        38,
-    ),
-
-    (
-        (
-            "super saw strings",
-        ),
-        "strings",
-        50,
-    ),
-
-    (
-        (
-            "sync or swim",
-        ),
-        "lead",
-        81,
-    ),
-
-    (
-        (
-            "techno stabs",
-        ),
-        "brass",
-        63,
-    ),
-
-    (
-        (
-            "the matrix pad",
+            "khan dynasty",
         ),
         "pad",
         88,
@@ -1031,50 +991,15 @@ FUSION_GM_DATA = [
 
     (
         (
-            "thermal noise",
+            "astroliner",
         ),
-        "seashore",
-        122,
+        "fx",
+        103,
     ),
 
     (
         (
-            "trance gate",
-        ),
-        "pad",
-        92,
-    ),
-
-    #
-    # ROM:ELECTRONICA - 057 à 062
-    #
-    (
-        (
-            "unison detune",
-        ),
-        "lead",
-        81,
-    ),
-
-    (
-        (
-            "vocaloid air",
-        ),
-        "pad",
-        91,
-    ),
-
-    (
-        (
-            "vox humana",
-        ),
-        "voice",
-        54,
-    ),
-
-    (
-        (
-            "warm sweeper",
+            "apropos",
         ),
         "pad",
         89,
@@ -1082,126 +1007,285 @@ FUSION_GM_DATA = [
 
     (
         (
-            "wobble grid",
+            "analogue 5ths",
         ),
-        "bass",
-        39,
+        "pad",
+        90,
     ),
 
     (
         (
-            "x modulation",
+            "new rosalie",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "classic 5th pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "silent pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 057 à 064
+    #
+    (
+        (
+            "viking sawtooth lead",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "machine saw lead",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "scandia square lead",
+        ),
+        "lead",
+        80,
+    ),
+
+    (
+        (
+            "square monosynth",
+        ),
+        "lead",
+        80,
+    ),
+
+    (
+        (
+            "stockholm pwm lead 1",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "stockholm pwm lead 2",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "classic leadsynth",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "prog portasynth",
+        ),
+        "lead",
+        84,
+    ),
+
+    #
+    # ROM:ELECTRONICA - 065 - 073
+    #
+    (
+        (
+            "slead",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "grinder lead",
+        ),
+        "lead",
+        87,
+    ),
+
+    (
+        (
+            "like an eagle",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "= depth lead =",
+        ),
+        "lead",
+        87,
+    ),
+
+    (
+        (
+            "dark classic square",
+        ),
+        "lead",
+        80,
+    ),
+
+    (
+        (
+            "crushing steel",
         ),
         "fx",
         103,
     ),
 
-    #
-    # ROM:ELECTRONICA - 064
-    #
     (
         (
-            "80s retro stabs",
+            "play school",
         ),
-        "brass",
-        62,
-    ),
-    #
-    # ROM:PRESET 1 - Pianos acoustiques & électriques
-    #
-    (
-        (
-            "holy grail grand piano",
-            "studio upright",
-            "concert piano choir",
-        ),
-        "piano",
-        0,
+        "lead",
+        82,
     ),
 
     (
         (
-            "fusion suitcase",
-            "jam wurly",
-        ),
-        "electric_piano",
-        4,
-    ),
-
-    (
-        (
-            "acoustilectric piano",
-            "click piano",
-            "supervamp",
-        ),
-        "electric_piano",
-        5,
-    ),
-    #
-    # ROM:PRESET 1 - Claviers, Mallets & Cloches
-    #
-    (
-        (
-            "fusion punch clav",
-            "analog clav 1",
-        ),
-        "clavinet",
-        7,
-    ),
-
-    (
-        (
-            "pluckermann harpsi",
-        ),
-        "harpsichord",
-        6,
-    ),
-
-    (
-        (
-            "dream vibes",
-        ),
-        "vibraphone",
-        11,
-    ),
-
-    (
-        (
-            "concert marimba",
-        ),
-        "marimba",
-        12,
-    ),
-
-    (
-        (
-            "handy bell",
-        ),
-        "bells",
-        14,
-    ),
-
-    (
-        (
-            "chimey",
+            "reality check",
         ),
         "fx",
-        98,
+        103,
     ),
 
     (
         (
-            "weird bells",
+            "versatilayer",
         ),
-        "fx",
-        101,
+        "pad",
+        90,
     ),
-    #
-    # ROM:PRESET 1 - Orgues
-    #
+
     (
         (
-            "jazz click organ",
+            "fm pulse synth",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "digital stabs",
+        ),
+        "synth brass",
+        63,
+    ),
+
+    (
+        (
+            "caramel comp",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "digisequencer 1",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "digisequencer 2",
+        ),
+        "lead",
+        80,
+    ),
+
+    (
+        (
+            "space bounce",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "handy",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "fm structure 1",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "fm structure 2",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "gentle convocation",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "sensory deprivation",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "hybrids",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "filter games",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "fm jazzy",
         ),
         "organ",
         17,
@@ -1209,140 +1293,347 @@ FUSION_GM_DATA = [
 
     (
         (
-            "3 drawbars organ",
-            "ballad organ 1",
-            "60s conti organ",
+            "wood eye!",
         ),
-        "organ",
-        16,
+        "chromatic perc.",
+        114,
     ),
 
     (
         (
-            "martial organ",
+            "sunrise",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "landscapes",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "soundtrack mw",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "freya pad",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "surface tension",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "smooth pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "emmie pad",
+        ),
+        "ensembles",
+        50,
+    ),
+
+    (
+        (
+            "vangelianesque",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "super titan",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "jarrism",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "razorpad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "aquarini",
+        ),
+        "pad",
+        87,
+    ),
+
+    (
+        (
+            "cumulus swirl",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "sticky pad",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "analog sweep pad",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "watch your step",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "desolation",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "morse signals pad",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "pulse strings",
+        ),
+        "ensembles",
+        50,
+    ),
+
+    (
+        (
+            "viscosity",
+        ),
+        "pad",
+        92,
+    ),
+
+    (
+        (
+            "elf pad",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "reso glass pad 1",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "reso glass pad 2",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "reso glass pad 3",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "galaxy atmos",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "wisp pad",
+        ),
+        "pad",
+        94,
+    ),
+
+    (
+        (
+            "sine strings",
+        ),
+        "ensembles",
+        51,
+    ),
+
+    (
+        (
+            "summer strings",
+        ),
+        "ensembles",
+        50,
+    ),
+
+    (
+        (
+            "winter pads",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "phasor pad",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "aggamemnon",
+        ),
+        "synth brass",
+        62,
+    ),
+
+    (
+        (
+            "starkstrom",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "space race",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "space probe",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "liquid textures",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "overtone evolver",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "eminate",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "garden state",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "ocean strings fm",
+        ),
+        "ensembles",
+        51,
+    ),
+
+    (
+        (
+            "swell synth fx",
+        ),
+        "fx",
+        103,
+    ),
+
+    # Ancien PRESET1
+    #
+    # ROM:PRESET 1 - Orgues
+    #
+    (
+        (
             "full stops",
         ),
         "organ",
         19,
     ),
 
-    (
-        (
-            "gospel organ",
-        ),
-        "organ",
-        18,
-    ),
-
-    (
-        (
-            "les rues de paris",
-        ),
-        "accordion",
-        21,
-    ),
-    #
-    # ROM:PRESET 1 - Guitares acoustiques & électriques
-    #
-    (
-        (
-            "acoustic 6 string harm",
-        ),
-        "guitar",
-        25,
-    ),
-
-    (
-        (
-            "nylon acoustic 1 velo",
-        ),
-        "guitar",
-        24,
-    ),
-
-    (
-        (
-            "big body electric",
-        ),
-        "guitar",
-        26,
-    ),
-
-    (
-        (
-            "single coil dirt mute",
-        ),
-        "guitar",
-        28,
-    ),
-
-    (
-        (
-            "dist rhythm gtr 1",
-        ),
-        "guitar",
-        29,
-    ),
-
-    (
-        (
-            "lead guitar mw at",
-        ),
-        "guitar",
-        30,
-    ),
     #
     # ROM:PRESET 1 - Basses acoustiques & électriques
     #
-    (
-        (
-            "big fat upright bass",
-        ),
-        "contrabass",
-        32,
-    ),
-
-    (
-        (
-            "g fretless bass",
-        ),
-        "bass",
-        35,
-    ),
-
-    (
-        (
-            "bass harmonix",
-        ),
-        "bass",
-        33,
-    ),
-
-    (
-        (
-            "dyna pull bass",
-        ),
-        "bass",
-        36,
-    ),
-
-    (
-        (
-            "stik bass",
-        ),
-        "bass",
-        34,
-    ),
-
-    (
-        (
-            "emmie bass",
-            "drum n bass square",
-        ),
-        "bass",
-        38,
-    ),
-
     (
         (
             "reso acid bass",
@@ -1490,19 +1781,10 @@ FUSION_GM_DATA = [
 
     (
         (
-            "pim s may trix",
             "reso poly synth",
         ),
         "pad",
         90,
-    ),
-
-    (
-        (
-            "charge pwm",
-        ),
-        "lead",
-        81,
     ),
 
     (
@@ -1519,6 +1801,806 @@ FUSION_GM_DATA = [
         ),
         "pad",
         95,
+    ),
+
+    # Nouveau Preset1
+    #
+    # ROM:PRESET 1
+    #
+
+    # A — Pianos
+    (
+        (
+            "holy grail grand piano",
+        ),
+        "piano",
+        0,
+    ),
+
+    (
+        (
+            "studio upright",
+        ),
+        "piano",
+        1,
+    ),
+
+    (
+        (
+            "concert piano choir",
+        ),
+        "piano",
+        0,
+    ),
+
+    (
+        (
+            "fusion suitcase",
+            "click piano",
+            "supervamp",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "acoustilectric piano",
+        ),
+        "electric_piano",
+        2,
+    ),
+
+    (
+        (
+            "jam wurly",
+        ),
+        "electric_piano",
+        5,
+    ),
+
+    # B — Claviers / percussions chromatiques
+    (
+        (
+            "fusion punch clav",
+            "analog clav 1",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "pluckermann harpsi",
+        ),
+        "harpsichord",
+        6,
+    ),
+
+    (
+        (
+            "dream vibes",
+        ),
+        "vibraphone",
+        11,
+    ),
+
+    (
+        (
+            "concert marimba",
+        ),
+        "marimba",
+        12,
+    ),
+
+    (
+        (
+            "handy bell",
+        ),
+        "bells",
+        9,
+    ),
+
+    (
+        (
+            "chimey",
+        ),
+        "celesta",
+        8,
+    ),
+
+    (
+        (
+            "weird bells",
+        ),
+        "pad",
+        93,
+    ),
+
+    # C — Orgues / accordéon
+    (
+        (
+            "jazz click organ",
+            "3 drawbars organ",
+            "gospel organ",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "martial organ",
+            "glass pipe organ",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "ballad organ 1",
+            "60s conti organ",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "les rues de paris",
+        ),
+        "accordion",
+        21,
+    ),
+
+    # D — Guitares
+    (
+        (
+            "acoustic 6 string harm",
+        ),
+        "guitar",
+        25,
+    ),
+
+    (
+        (
+            "heavenly harmonics",
+        ),
+        "guitar",
+        46,
+    ),
+
+    (
+        (
+            "nylon acoustic 1 velo",
+        ),
+        "guitar",
+        24,
+    ),
+
+    (
+        (
+            "big body electric",
+        ),
+        "guitar",
+        27,
+    ),
+
+    (
+        (
+            "single coil dirt mute",
+        ),
+        "guitar",
+        28,
+    ),
+
+    (
+        (
+            "dist rhythm gtr 1",
+        ),
+        "guitar",
+        29,
+    ),
+
+    (
+        (
+            "lead guitar mw at",
+        ),
+        "guitar",
+        30,
+    ),
+
+    # E — Basses
+    (
+        (
+            "big fat upright bass",
+        ),
+        "contrabass",
+        32,
+    ),
+
+    (
+        (
+            "g fretless bass",
+        ),
+        "bass",
+        35,
+    ),
+
+    (
+        (
+            "bass harmonix",
+        ),
+        "bass",
+        33,
+    ),
+
+    (
+        (
+            "dyna pull bass",
+        ),
+        "bass",
+        36,
+    ),
+
+    (
+        (
+            "stik bass",
+            "emmie bass",
+            "growler bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "drum n bass square",
+        ),
+        "bass",
+        39,
+    ),
+
+    # F — Cordes
+    (
+        (
+            "arco marcato strings",
+            "symphonos",
+        ),
+        "strings",
+        48,
+    ),
+
+    (
+        (
+            "bright contrabass",
+        ),
+        "contrabass",
+        43,
+    ),
+
+    (
+        (
+            "concert harp",
+        ),
+        "harp",
+        46,
+    ),
+
+    (
+        (
+            "pizzicato symphonique",
+        ),
+        "strings",
+        45,
+    ),
+
+    (
+        (
+            "high mello strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "euro strings",
+        ),
+        "strings",
+        51,
+    ),
+
+    # G — Voix / pads
+    (
+        (
+            "ooh meets oz",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "boys choir on tape",
+            "babylon choir",
+            "roman choir",
+        ),
+        "choir",
+        52,
+    ),
+
+    (
+        (
+            "fragile spacechoir",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "zipper pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "cloud formations",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "saturn seven",
+        ),
+        "fx",
+        103,
+    ),
+
+    # H — Cuivres
+    (
+        (
+            "big stereo brass",
+        ),
+        "brass",
+        61,
+    ),
+
+    (
+        (
+            "big classical brass",
+            "2 pole saw2thbrass",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "harmon mute trumpet",
+        ),
+        "trumpet",
+        59,
+    ),
+
+    (
+        (
+            "trombone",
+        ),
+        "trombone",
+        57,
+    ),
+
+    (
+        (
+            "brassalog",
+        ),
+        "brass",
+        63,
+    ),
+
+    # I — Bois / saxophones
+    (
+        (
+            "1st clarinet",
+        ),
+        "clarinet",
+        71,
+    ),
+
+    (
+        (
+            "lyrical english horn",
+        ),
+        "english_horn",
+        69,
+    ),
+
+    (
+        (
+            "oboe soloist",
+        ),
+        "oboe",
+        68,
+    ),
+
+    (
+        (
+            "sultry alto sax",
+        ),
+        "sax",
+        65,
+    ),
+
+    (
+        (
+            "expressive sax",
+        ),
+        "sax",
+        66,
+    ),
+
+    (
+        (
+            "woodwind ensemble",
+        ),
+        "woodwind",
+        72,
+    ),
+
+    # J — Flûtes / leads
+    (
+        (
+            "ebony flute",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "irish pipe",
+            "tongue of pan",
+        ),
+        "flute",
+        75,
+    ),
+
+    (
+        (
+            "shaku jack",
+        ),
+        "flute",
+        111,
+    ),
+
+    (
+        (
+            "rainforest recorder",
+        ),
+        "flute",
+        74,
+    ),
+
+    (
+        (
+            "modeling lead",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "bottled light",
+        ),
+        "fx",
+        103,
+    ),
+
+    # K — Leads
+    (
+        (
+            "sawtooth lead 1",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "pwm lead 1",
+            "sine lead",
+        ),
+        "square_lead",
+        80,
+    ),
+
+    (
+        (
+            "70s lead",
+            "prophetic sync lead",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "someday soon",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "baked beings",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "super synth",
+        ),
+        "pad",
+        90,
+    ),
+
+    # L — Pads / FX
+    (
+        (
+            "pim s may trix",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "charge pwm",
+            "dark moon side",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "super euro synth",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "staircase",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "metorgan",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "oxide",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "little lost crows",
+        ),
+        "fx",
+        101,
+    ),
+
+    # M — Pads
+    (
+        (
+            "devine strings",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "padmover mw",
+            "sweeper pad 1",
+            "sync the hp filter",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "soft pad",
+            "solid pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "compleat pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "drama",
+        ),
+        "pad",
+        92,
+    ),
+
+    # N — Ethniques
+    (
+        (
+            "koto mood",
+            "exotic zither",
+        ),
+        "koto",
+        107,
+    ),
+
+    (
+        (
+            "dynamic dulcimer",
+        ),
+        "ethnic",
+        106,
+    ),
+
+    (
+        (
+            "celtic harp",
+        ),
+        "harp",
+        46,
+    ),
+
+    (
+        (
+            "thai bell ensemble",
+        ),
+        "woodblock",
+        114,
+    ),
+
+    (
+        (
+            "imperial opiates",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "casbah minstrel",
+        ),
+        "sitar",
+        104,
+    ),
+
+    (
+        (
+            "uillean pipes",
+        ),
+        "bagpipe",
+        109,
+    ),
+
+    # O — Drum Kits
+    (
+        (
+            "standard set",
+            "r b kit",
+            "ethnic percussion kit",
+        ),
+        "drums",
+        0,
+    ),
+
+    (
+        (
+            "8 oh 8 kit",
+        ),
+        "drums",
+        25,
+    ),
+
+    (
+        (
+            "timber kit",
+        ),
+        "drums",
+        8,
+    ),
+
+    (
+        (
+            "big bad kit",
+        ),
+        "drums",
+        16,
+    ),
+
+    (
+        (
+            "glitch kit",
+            "house kit",
+        ),
+        "drums",
+        24,
+    ),
+
+    # P — FX
+    (
+        (
+            "fm mothership",
+            "unterwasser",
+            "fm universe",
+            "offworld",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "trancin",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "alien lnsects",
+        ),
+        "fx",
+        101,
+    ),
+
+    (
+        (
+            "gamelan dreamer",
+        ),
+        "woodblock",
+        114,
+    ),
+
+    (
+        (
+            "pinwheels",
+        ),
+        "fx",
+        102,
     ),
     #
     # ROM:PRESET 2 - Pianos électroniques & synthétisés
@@ -2468,14 +3550,6 @@ FUSION_GM_DATA = [
     #
     # ROM:PRESET 4 - Ensembles de Vents & Flûtes
     #
-    (
-        (
-            "woodwind ensemble",
-        ),
-        "flute",
-        73,
-    ),
-
     (
         (
             "jazz flute trio",
