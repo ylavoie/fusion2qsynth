@@ -170,6 +170,9 @@ conflicts = []
 hint_program_mismatches = []
 hint_top_mismatches = []
 family_only_mismatches = []
+invalid_suggestions = []
+duplicate_suggestions = []
+missing_fields = []
 
 for name in sorted(names):
 
@@ -188,6 +191,89 @@ for name in sorted(names):
         },
         presets
     )
+
+    required_fields = {
+        "name",
+        "bank",
+        "program",
+    }
+
+    for family, matches in suggestions.items():
+
+        for score, preset in matches:
+
+            missing = (
+                required_fields
+                - preset.keys()
+            )
+
+            if missing:
+
+                missing_fields.append(
+                    (
+                        name,
+                        family,
+                        sorted(missing),
+                        preset,
+                    )
+                )
+
+    for family, matches in suggestions.items():
+
+        seen = set()
+
+        for score, preset in matches:
+
+            key = (
+                preset.get("bank"),
+                preset.get("program"),
+            )
+
+            if key in seen:
+
+                duplicate_suggestions.append(
+                    (
+                        name,
+                        family,
+                        key,
+                        preset.get("name"),
+                    )
+                )
+
+            seen.add(
+                key
+            )
+
+    for family, matches in suggestions.items():
+
+        for score, preset in matches:
+
+            bank = preset.get(
+                "bank"
+            )
+
+            program = preset.get(
+                "program"
+            )
+
+            if (
+                not isinstance(bank, int)
+                or bank < 0
+                or bank > 16383
+                or not isinstance(program, int)
+                or program < 0
+                or program > 127
+            ):
+
+                invalid_suggestions.append(
+                    (
+                        name,
+                        family,
+                        bank,
+                        program,
+                        preset.get("name"),
+                    )
+                )
 
     if (
         not hint
@@ -500,6 +586,70 @@ for (
 
 print()
 print("====================")
+print("SUGGESTIONS INVALIDES")
+print("====================")
+
+for (
+    name,
+    family,
+    bank,
+    program,
+    preset_name,
+) in invalid_suggestions:
+
+    print(
+        name,
+        family,
+        "→",
+        (
+            bank,
+            program,
+            preset_name,
+        )
+    )
+
+print()
+print("====================")
+print("SUGGESTIONS EN DOUBLON")
+print("====================")
+
+for (
+    name,
+    family,
+    key,
+    preset_name,
+) in duplicate_suggestions:
+
+    print(
+        name,
+        family,
+        "→",
+        key,
+        preset_name,
+    )
+
+print()
+print("====================")
+print("CHAMPS MANQUANTS")
+print("====================")
+
+for (
+    name,
+    family,
+    missing,
+    preset,
+) in missing_fields:
+
+    print(
+        name,
+        family,
+        "→",
+        missing,
+        preset,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -546,4 +696,19 @@ print(
 print(
     "Familles seules incorrectes:",
     len(family_only_mismatches)
+)
+
+print(
+    "Suggestions invalides:",
+    len(invalid_suggestions)
+)
+
+print(
+    "Suggestions en doublon:",
+    len(duplicate_suggestions)
+)
+
+print(
+    "Presets avec champs manquants:",
+    len(missing_fields)
 )
