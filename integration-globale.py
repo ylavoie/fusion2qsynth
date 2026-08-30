@@ -6,8 +6,8 @@ from fusion_suggestions import (
 )
 from sf2_library import list_presets
 
-
 project = FusionProject()
+hint_program_mismatch = []
 
 presets = [
     {
@@ -167,7 +167,8 @@ family_only = []
 unknown = []
 empty_suggestions = []
 conflicts = []
-
+hint_program_mismatches = []
+hint_top_mismatches = []
 
 for name in sorted(names):
 
@@ -186,6 +187,71 @@ for name in sorted(names):
         },
         presets
     )
+
+    if hint and suggestions:
+
+        expected_program = hint.get(
+            "gm_program"
+        )
+
+        found_program = False
+
+        for matches in suggestions.values():
+
+            for score, preset in matches:
+
+                if (
+                    preset["program"]
+                    == expected_program
+                ):
+                    found_program = True
+                    break
+
+            if found_program:
+                break
+
+        if not found_program:
+
+            hint_program_mismatches.append(
+                (
+                    name,
+                    hint,
+                    suggestions,
+                )
+            )
+
+    if hint and suggestions:
+
+        hint_family = hint.get(
+            "family"
+        )
+
+        expected_program = hint.get(
+            "gm_program"
+        )
+
+        matches = suggestions.get(
+            hint_family,
+            []
+        )
+
+        if matches:
+
+            score, preset = matches[0]
+
+            if (
+                preset["program"]
+                != expected_program
+            ):
+
+                hint_top_mismatches.append(
+                    (
+                        name,
+                        hint,
+                        score,
+                        preset,
+                    )
+                )
 
     #
     # Classification
@@ -312,6 +378,61 @@ for name, hint, families in conflicts:
         families
     )
 
+print()
+print("====================")
+print("HINT GM NON RESPECTÉ")
+print("====================")
+
+for (
+    name,
+    gm_hint,
+    suggestions,
+) in hint_program_mismatches:
+
+    print(
+        name,
+        gm_hint,
+    )
+
+    for family, matches in suggestions.items():
+
+        print(
+            "   ",
+            family,
+            [
+                (
+                    preset["bank"],
+                    preset["program"],
+                    preset["name"],
+                )
+                for score, preset in matches
+            ]
+        )
+
+print()
+print("====================")
+print("MEILLEUR HINT GM INCORRECT")
+print("====================")
+
+for (
+    name,
+    gm_hint,
+    score,
+    preset,
+) in hint_top_mismatches:
+
+    print(
+        name,
+        gm_hint,
+        "→",
+        (
+            preset["bank"],
+            preset["program"],
+            preset["name"],
+        ),
+        "score:",
+        round(score, 3),
+    )
 
 print()
 print("====================")
@@ -346,4 +467,14 @@ print(
 print(
     "Conflits apparents:",
     len(conflicts)
+)
+
+print(
+    "Hints non respectés:",
+    len(hint_program_mismatches)
+)
+
+print(
+    "Meilleurs hints incorrects:",
+    len(hint_top_mismatches)
 )

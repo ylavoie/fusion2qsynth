@@ -286,6 +286,11 @@ def matches_for_family(
     )
 
     candidates = []
+    expected_bank = (
+        128
+        if family == "drums"
+        else 0
+    )
 
     for preset in sf2_presets:
 
@@ -301,7 +306,7 @@ def matches_for_family(
             gm_hint.get("gm_program")
             == preset["program"]
             and
-            preset["bank"] == 0
+            preset["bank"] == expected_bank
         )
 
         if (
@@ -322,13 +327,7 @@ def matches_for_family(
             )
         ).ratio()
 
-        if (
-            gm_hint
-            and
-            gm_hint.get("gm_program")
-            ==
-            preset["program"]
-        ):
+        if gm_match:
 
             score += 0.40
 
