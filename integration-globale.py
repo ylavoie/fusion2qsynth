@@ -169,6 +169,7 @@ empty_suggestions = []
 conflicts = []
 hint_program_mismatches = []
 hint_top_mismatches = []
+family_only_mismatches = []
 
 for name in sorted(names):
 
@@ -187,6 +188,51 @@ for name in sorted(names):
         },
         presets
     )
+
+    if (
+        not hint
+        and families
+    ):
+
+        for family in families:
+
+            matches = suggestions.get(
+                family,
+                []
+            )
+
+            if not matches:
+
+                family_only_mismatches.append(
+                    (
+                        name,
+                        family,
+                        "aucune suggestion",
+                    )
+                )
+
+                continue
+
+            score, preset = matches[0]
+
+            preset_families = detect_families(
+                preset["name"]
+            )
+
+            if family not in preset_families:
+
+                family_only_mismatches.append(
+                    (
+                        name,
+                        family,
+                        (
+                            preset["bank"],
+                            preset["program"],
+                            preset["name"],
+                            preset_families,
+                        ),
+                    )
+                )
 
     if hint and suggestions:
 
@@ -436,6 +482,24 @@ for (
 
 print()
 print("====================")
+print("FAMILLE SEULEMENT À VÉRIFIER")
+print("====================")
+
+for (
+    name,
+    family,
+    detail,
+) in family_only_mismatches:
+
+    print(
+        name,
+        family,
+        "→",
+        detail,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -477,4 +541,9 @@ print(
 print(
     "Meilleurs hints incorrects:",
     len(hint_top_mismatches)
+)
+
+print(
+    "Familles seules incorrectes:",
+    len(family_only_mismatches)
 )
