@@ -478,7 +478,6 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "silver screen",
             "warm pad",
             "analog pad",
         ),
@@ -4163,6 +4162,757 @@ FUSION_GM_DATA = [
         "percussion",
         116,
     ),
+
+    # Nouveau PRESET 3
+    #
+    # ROM:PRESET 3
+    #
+
+    # A — Pianos
+    (
+        (
+            "holy grail dark classical",
+            "octave drama piano",
+            "grand piano pad",
+        ),
+        "piano",
+        0,
+    ),
+
+    (
+        (
+            "elektrik suitcase",
+            "suitcase strings",
+            "old faithful",
+            "bright stage ep",
+        ),
+        "electric_piano",
+        4,
+    ),
+
+    (
+        (
+            "friendly tramp",
+        ),
+        "electric_piano",
+        5,
+    ),
+
+    # B — Claviers / percussions chromatiques
+    (
+        (
+            "bright clav auto wah",
+            "fm clavinet",
+        ),
+        "clavinet",
+        7,
+    ),
+
+    (
+        (
+            "harpsi 8",
+        ),
+        "harpsichord",
+        6,
+    ),
+
+    (
+        (
+            "rel trem vibes",
+        ),
+        "vibraphone",
+        11,
+    ),
+
+    (
+        (
+            "glocky",
+        ),
+        "bells",
+        9,
+    ),
+
+    (
+        (
+            "metal keys",
+        ),
+        "celesta",
+        8,
+    ),
+
+    (
+        (
+            "st mary s",
+        ),
+        "bells",
+        14,
+    ),
+
+    # C — Orgues / harmonica
+    (
+        (
+            "soul organ",
+            "full drawbars",
+        ),
+        "organ",
+        16,
+    ),
+
+    (
+        (
+            "rock organ",
+        ),
+        "organ",
+        18,
+    ),
+
+    (
+        (
+            "major vib organ",
+            "tape organ",
+        ),
+        "organ",
+        20,
+    ),
+
+    (
+        (
+            "ballad organ 2",
+        ),
+        "organ",
+        17,
+    ),
+
+    (
+        (
+            "scharf pipe organ",
+        ),
+        "organ",
+        19,
+    ),
+
+    (
+        (
+            "morricone blues harp",
+        ),
+        "harmonica",
+        22,
+    ),
+
+    # D — Guitares
+    (
+        (
+            "stereo miked acoustic",
+            "vintage 12 string elec",
+            "picking dreams",
+        ),
+        "guitar",
+        25,
+    ),
+
+    (
+        (
+            "flamenco guitar",
+        ),
+        "guitar",
+        24,
+    ),
+
+    (
+        (
+            "clean chords",
+        ),
+        "guitar",
+        27,
+    ),
+
+    (
+        (
+            "ostinato mute electric",
+        ),
+        "guitar",
+        28,
+    ),
+
+    (
+        (
+            "dist rhythm gtr 3",
+        ),
+        "guitar",
+        29,
+    ),
+
+    (
+        (
+            "monster truck",
+        ),
+        "guitar",
+        30,
+    ),
+
+    # E — Basses
+    (
+        (
+            "alemsic bass",
+            "fingered fretted bass",
+        ),
+        "bass",
+        33,
+    ),
+
+    (
+        (
+            "muted pick bass",
+        ),
+        "bass",
+        34,
+    ),
+
+    (
+        (
+            "taurus the bull",
+            "porta bass",
+            "thupz bass",
+        ),
+        "bass",
+        38,
+    ),
+
+    (
+        (
+            "rez pluck",
+        ),
+        "bass",
+        39,
+    ),
+
+    # F — Cordes
+    (
+        (
+            "low rosin section",
+            "cello soloist",
+        ),
+        "cello",
+        42,
+    ),
+
+    (
+        (
+            "bluegrass fiddle",
+        ),
+        "violin",
+        110,
+    ),
+
+    (
+        (
+            "happy harp",
+        ),
+        "harp",
+        46,
+    ),
+
+    (
+        (
+            "moodzart",
+        ),
+        "strings",
+        49,
+    ),
+
+    (
+        (
+            "analog orchestra",
+            "fat vintage stringer",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "pulsar orchestra",
+        ),
+        "strings",
+        51,
+    ),
+
+    # G — Voix / pads / FX
+    (
+        (
+            "soft backings",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "silver screen",
+            "space odyssey",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "velocity hummer",
+            "fairly lite voice",
+        ),
+        "voice",
+        54,
+    ),
+
+    (
+        (
+            "spacey voices",
+        ),
+        "pad",
+        91,
+    ),
+
+    (
+        (
+            "velocity oohs 2",
+        ),
+        "voice",
+        53,
+    ),
+
+    (
+        (
+            "voyager",
+        ),
+        "fx",
+        103,
+    ),
+
+    # H — Cuivres
+    (
+        (
+            "trumpets",
+            "smokey jazz trumpet",
+            "flugelhorn",
+        ),
+        "trumpet",
+        56,
+    ),
+
+    (
+        (
+            "the horns",
+            "dark horn",
+        ),
+        "french_horn",
+        60,
+    ),
+
+    (
+        (
+            "warm fm horns",
+        ),
+        "brass",
+        62,
+    ),
+
+    (
+        (
+            "low synth brass",
+        ),
+        "brass",
+        63,
+    ),
+
+    # I — Bois / saxophones
+    (
+        (
+            "double double reeds",
+        ),
+        "oboe",
+        68,
+    ),
+
+    (
+        (
+            "breathoon",
+        ),
+        "bassoon",
+        70,
+    ),
+
+    (
+        (
+            "hard alto sax",
+        ),
+        "sax",
+        65,
+    ),
+
+    (
+        (
+            "soprano sax 2",
+        ),
+        "sax",
+        64,
+    ),
+
+    (
+        (
+            "sax section",
+        ),
+        "sax",
+        67,
+    ),
+
+    (
+        (
+            "fields of strawberries",
+        ),
+        "flute",
+        73,
+    ),
+
+    # J — Flûtes / pads / lead
+    (
+        (
+            "mellow ebony flute",
+            "morning flute",
+        ),
+        "flute",
+        73,
+    ),
+
+    (
+        (
+            "slide flute",
+        ),
+        "flute",
+        74,
+    ),
+
+    (
+        (
+            "breathless",
+        ),
+        "flute",
+        75,
+    ),
+
+    (
+        (
+            "chop suey",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "reflections",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "fairytale",
+        ),
+        "celesta",
+        8,
+    ),
+
+    (
+        (
+            "bottled calliope",
+        ),
+        "lead",
+        82,
+    ),
+
+    # K — Leads / pads / FX
+    (
+        (
+            "slick lead",
+            "the other lead",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "wild whistle",
+        ),
+        "flute",
+        78,
+    ),
+
+    (
+        (
+            "wild analog lead",
+        ),
+        "lead",
+        84,
+    ),
+
+    (
+        (
+            "chicky lead",
+        ),
+        "lead",
+        83,
+    ),
+
+    (
+        (
+            "angry spit monkey",
+        ),
+        "fx",
+        101,
+    ),
+
+    # L — Pads / leads / FX
+    (
+        (
+            "media pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "filter runner",
+        ),
+        "lead",
+        81,
+    ),
+
+    (
+        (
+            "gloss ensemble",
+            "operator 99",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "dirty bp sequencer",
+        ),
+        "bass",
+        39,
+    ),
+
+    (
+        (
+            "filter poly",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "mar tranquilium",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "itchie",
+        ),
+        "fx",
+        102,
+    ),
+
+    # M — Pads / FX
+    (
+        (
+            "vj pad",
+        ),
+        "pad",
+        89,
+    ),
+
+    (
+        (
+            "emmie pad 2",
+        ),
+        "strings",
+        50,
+    ),
+
+    (
+        (
+            "fusion pad",
+        ),
+        "pad",
+        90,
+    ),
+
+    (
+        (
+            "dream land",
+        ),
+        "pad",
+        88,
+    ),
+
+    (
+        (
+            "resonizer",
+            "outer space",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "resonic pad",
+            "reso pad 2",
+        ),
+        "pad",
+        95,
+    ),
+
+    # N — Ethniques
+    (
+        (
+            "billy berimbau",
+            "bombay layer",
+        ),
+        "sitar",
+        104,
+    ),
+
+    (
+        (
+            "dulcitronics",
+        ),
+        "ethnic",
+        106,
+    ),
+
+    (
+        (
+            "band joe",
+        ),
+        "banjo",
+        105,
+    ),
+
+    (
+        (
+            "quickly clouds",
+        ),
+        "pad",
+        95,
+    ),
+
+    (
+        (
+            "missouri territory",
+        ),
+        "violin",
+        110,
+    ),
+
+    (
+        (
+            "americana",
+        ),
+        "guitar",
+        25,
+    ),
+
+    # O — Drum Kits
+    (
+        (
+            "power set",
+        ),
+        "drums",
+        16,
+    ),
+
+    (
+        (
+            "see our 78 kit",
+        ),
+        "drums",
+        25,
+    ),
+
+    (
+        (
+            "hiphop kit 2",
+            "rock kit",
+            "snare menu",
+        ),
+        "drums",
+        0,
+    ),
+
+    (
+        (
+            "electro kit",
+            "techno kit",
+        ),
+        "drums",
+        24,
+    ),
+
+    (
+        (
+            "brush set",
+        ),
+        "drums",
+        32,
+    ),
+
+    # P — FX / pads
+    (
+        (
+            "cyberbent",
+            "martian rover",
+            "noise synth",
+        ),
+        "fx",
+        103,
+    ),
+
+    (
+        (
+            "intromotion",
+            "push da t buttons",
+        ),
+        "fx",
+        102,
+    ),
+
+    (
+        (
+            "simmers",
+        ),
+        "pad",
+        93,
+    ),
+
+    (
+        (
+            "wobbly synth",
+            "heebie jeebies",
+        ),
+        "fx",
+        101,
+    ),
+
     #
     # ROM:PRESET 4 - Cuivres Solo & Ensembles Classiques
     #
