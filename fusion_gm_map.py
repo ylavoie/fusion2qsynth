@@ -4913,6 +4913,7 @@ FUSION_GM_DATA = [
         101,
     ),
 
+    # Ancien PRESET 4
     #
     # ROM:PRESET 4 - Cuivres Solo & Ensembles Classiques
     #
@@ -5270,6 +5271,799 @@ FUSION_GM_DATA = [
         "woodblock",
         114,
     ),
+
+    # Nouveau PRESET 4
+#
+# ROM:PRESET 4
+#
+
+# A — Pianos
+(
+    (
+        "rock roll piano",
+    ),
+    "piano",
+    1,
+),
+
+(
+    (
+        "nightclub piano",
+        "mellow mood pno s2",
+    ),
+    "piano",
+    0,
+),
+
+(
+    (
+        "suitcase pan",
+        "fm worldly",
+        "fm expressive ep",
+        "fm crystal ep",
+    ),
+    "electric_piano",
+    4,
+),
+
+(
+    (
+        "back in the day",
+    ),
+    "electric_piano",
+    5,
+),
+
+# B — Claviers / percussions chromatiques
+(
+    (
+        "clavinet three",
+        "wondrous clavinet",
+    ),
+    "clavinet",
+    7,
+),
+
+(
+    (
+        "punchy harpsi three",
+    ),
+    "harpsichord",
+    6,
+),
+
+(
+    (
+        "orchestral glockenspiel",
+    ),
+    "glockenspiel",
+    9,
+),
+
+(
+    (
+        "xylo velo",
+    ),
+    "woodblock",
+    13,
+),
+
+(
+    (
+        "tubular fm wave",
+        "sawblade bell",
+    ),
+    "bells",
+    14,
+),
+
+(
+    (
+        "fm pvc pipe",
+    ),
+    "marimba",
+    12,
+),
+
+# C — Orgues
+(
+    (
+        "really full drawbars",
+        "warm toasty b",
+    ),
+    "organ",
+    16,
+),
+
+(
+    (
+        "rock organ click",
+    ),
+    "organ",
+    18,
+),
+
+(
+    (
+        "q perc organ",
+    ),
+    "organ",
+    17,
+),
+
+(
+    (
+        "pulling ranks",
+        "principale pipe organ",
+        "positiv pipe organ",
+        "trompette pipe organ",
+    ),
+    "organ",
+    19,
+),
+
+# D — Guitares
+(
+    (
+        "velo switch acoustic",
+        "vel switch slide acoustic",
+    ),
+    "guitar",
+    25,
+),
+
+(
+    (
+        "andalusia",
+        "nylon harmonics",
+    ),
+    "guitar",
+    24,
+),
+
+(
+    (
+        "soft jazz guitar",
+    ),
+    "guitar",
+    26,
+),
+
+(
+    (
+        "single coil multi velo",
+    ),
+    "guitar",
+    27,
+),
+
+(
+    (
+        "rock harm guitar vsw",
+    ),
+    "guitar",
+    29,
+),
+
+(
+    (
+        "shredder lead",
+    ),
+    "guitar",
+    30,
+),
+
+# E — Basses
+(
+    (
+        "warm bass harmonic",
+    ),
+    "bass",
+    33,
+),
+
+(
+    (
+        "big fretless tone",
+        "fat wave fretless",
+        "fm fretless bass",
+    ),
+    "bass",
+    35,
+),
+
+(
+    (
+        "bass popper",
+    ),
+    "bass",
+    37,
+),
+
+(
+    (
+        "funk synth bass",
+        "mikro pluck bass",
+    ),
+    "bass",
+    38,
+),
+
+(
+    (
+        "punchy wave bass",
+    ),
+    "bass",
+    39,
+),
+
+# F — Cordes
+(
+    (
+        "sorrowful legato",
+    ),
+    "strings",
+    48,
+),
+
+(
+    (
+        "espressivo celloviola",
+    ),
+    "cello",
+    42,
+),
+
+(
+    (
+        "sweet violincello",
+    ),
+    "violin",
+    40,
+),
+
+(
+    (
+        "britannia harp",
+    ),
+    "harp",
+    46,
+),
+
+(
+    (
+        "molto marcato",
+    ),
+    "strings",
+    45,
+),
+
+(
+    (
+        "watcher strings",
+        "string machine",
+    ),
+    "strings",
+    50,
+),
+
+(
+    (
+        "tangerine strings",
+    ),
+    "strings",
+    51,
+),
+
+# G — Voix / pads
+(
+    (
+        "breathy choir",
+    ),
+    "pad",
+    91,
+),
+
+(
+    (
+        "binsonized vox",
+        "refurbished f light",
+    ),
+    "voice",
+    54,
+),
+
+(
+    (
+        "murmuring choir",
+    ),
+    "voice",
+    53,
+),
+
+(
+    (
+        "the singers",
+        "subtle ensemble",
+    ),
+    "choir",
+    52,
+),
+
+(
+    (
+        "movie tragedy scene",
+    ),
+    "pad",
+    92,
+),
+
+(
+    (
+        "mythodea ensemble",
+    ),
+    "pad",
+    88,
+),
+
+# H — Cuivres
+(
+    (
+        "sfz brass to mod",
+    ),
+    "brass",
+    61,
+),
+
+(
+    (
+        "orch brass mf mw",
+        "brite stab brass",
+    ),
+    "brass",
+    62,
+),
+
+(
+    (
+        "solo trumpet mf at",
+        "lead trumpet",
+    ),
+    "trumpet",
+    56,
+),
+
+(
+    (
+        "velo trombone",
+    ),
+    "trombone",
+    57,
+),
+
+(
+    (
+        "tuba solo",
+    ),
+    "brass",
+    58,
+),
+
+(
+    (
+        "the synthbrass at",
+    ),
+    "brass",
+    63,
+),
+
+# I — Bois / saxophones
+(
+    (
+        "blackwood reed",
+    ),
+    "clarinet",
+    71,
+),
+
+(
+    (
+        "treehouse reed",
+    ),
+    "oboe",
+    68,
+),
+
+(
+    (
+        "reed lead 2",
+    ),
+    "sax",
+    64,
+),
+
+(
+    (
+        "whisper reed",
+    ),
+    "english_horn",
+    69,
+),
+
+(
+    (
+        "alto sax velo",
+    ),
+    "sax",
+    65,
+),
+
+(
+    (
+        "breathy tenor sax",
+    ),
+    "sax",
+    66,
+),
+
+(
+    (
+        "sax and brass",
+    ),
+    "brass",
+    61,
+),
+
+(
+    (
+        "bassoon celli",
+    ),
+    "bassoon",
+    70,
+),
+
+# J — Flûtes / vents
+(
+    (
+        "reedy flute",
+        "woody flute",
+    ),
+    "flute",
+    73,
+),
+
+(
+    (
+        "windvoxmix reel",
+    ),
+    "voice",
+    54,
+),
+
+(
+    (
+        "traveling flute",
+        "flute of lotos",
+    ),
+    "flute",
+    75,
+),
+
+(
+    (
+        "4 recorders",
+    ),
+    "flute",
+    74,
+),
+
+(
+    (
+        "highland ensemble",
+    ),
+    "bagpipe",
+    109,
+),
+
+(
+    (
+        "wood metal",
+    ),
+    "marimba",
+    12,
+),
+
+# K — Leads
+(
+    (
+        "favorite lead",
+        "filter lfo lead",
+    ),
+    "lead",
+    81,
+),
+
+(
+    (
+        "finger on the pulse",
+        "highpass fun",
+    ),
+    "square_lead",
+    80,
+),
+
+(
+    (
+        "triangle lead 4",
+        "orbital leads",
+    ),
+    "lead",
+    84,
+),
+
+(
+    (
+        "lunar lead 1",
+    ),
+    "fx",
+    103,
+),
+
+(
+    (
+        "fm heavy lead",
+    ),
+    "lead",
+    87,
+),
+
+# L — Pads
+(
+    (
+        "syn attack pad",
+        "draw the waveform",
+    ),
+    "pad",
+    90,
+),
+
+(
+    (
+        "fantastique",
+    ),
+    "pad",
+    88,
+),
+
+(
+    (
+        "icy snowflakes",
+        "additive wavechime",
+    ),
+    "pad",
+    93,
+),
+
+(
+    (
+        "x pad motion",
+        "cognitive sweeper",
+    ),
+    "pad",
+    95,
+),
+
+(
+    (
+        "vienna tram",
+    ),
+    "pad",
+    92,
+),
+
+# M — Pads / FX / Brass
+(
+    (
+        "fm worlds",
+        "polar calm",
+    ),
+    "pad",
+    93,
+),
+
+(
+    (
+        "soft evolver",
+    ),
+    "pad",
+    89,
+),
+
+(
+    (
+        "moonset in enoland",
+    ),
+    "pad",
+    88,
+),
+
+(
+    (
+        "spurl",
+        "men on mars",
+    ),
+    "fx",
+    103,
+),
+
+(
+    (
+        "behemoth",
+    ),
+    "brass",
+    62,
+),
+
+(
+    (
+        "wave swirls",
+    ),
+    "pad",
+    95,
+),
+
+# N — Ethniques
+(
+    (
+        "khatmandu heights",
+        "dynaslide sitar",
+    ),
+    "sitar",
+    104,
+),
+
+(
+    (
+        "steel drum 3",
+    ),
+    "woodblock",
+    114,
+),
+
+(
+    (
+        "la dulcinea",
+    ),
+    "ethnic",
+    106,
+),
+
+(
+    (
+        "banjo player",
+    ),
+    "banjo",
+    105,
+),
+
+(
+    (
+        "dulcimer ray",
+    ),
+    "koto",
+    107,
+),
+
+(
+    (
+        "gizeh",
+    ),
+    "pad",
+    88,
+),
+
+(
+    (
+        "bluesy harmonica",
+    ),
+    "harmonica",
+    22,
+),
+
+# O — Drum Kits
+(
+    (
+        "bang theory kit",
+    ),
+    "drums",
+    25,
+),
+
+(
+    (
+        "electrolove kit",
+        "perc kit experimental",
+        "12 bit is it kit",
+    ),
+    "drums",
+    24,
+),
+
+(
+    (
+        "perc kit ethnics",
+        "funky kit",
+    ),
+    "drums",
+    0,
+),
+
+(
+    (
+        "modern hard rock kit",
+    ),
+    "drums",
+    16,
+),
+
+(
+    (
+        "orchestra set",
+    ),
+    "drums",
+    48,
+),
+
+# P — FX
+(
+    (
+        "sound fx kit gs gm2",
+        "sound fx kit movie",
+        "sound fx kit noise",
+    ),
+    "drums",
+    56,
+),
+
+(
+    (
+        "guitar fx kit",
+    ),
+    "fx",
+    120,
+),
+
+(
+    (
+        "amazonas atmo",
+    ),
+    "fx",
+    122,
+),
+
+(
+    (
+        "tappy glass atmo",
+    ),
+    "fx",
+    102,
+),
+
+(
+    (
+        "orbital launch",
+    ),
+    "fx",
+    125,
+),
+
+(
+    (
+        "martian modulation",
+    ),
+    "fx",
+    103,
+),
     #
     # ROM:SYNTH DRUM - Kicks
     #
