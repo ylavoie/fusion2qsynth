@@ -157,7 +157,7 @@ FUSION_GM_DATA = [
             "steel acoustic",
             "stereo 12 string",
             "12 strings",
-            "12-string",
+            "12 string",
         ),
         "guitar",
         25,
@@ -276,13 +276,6 @@ FUSION_GM_DATA = [
         ),
         "bass",
         38,
-    ),
-    (
-        (
-            "Aggro",
-        ),
-        "bass",
-        39
     ),
     #
     # Cordes et ensembles
@@ -457,7 +450,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "We Are Electronic Friends",
+            "we are electronic friends",
             "calliope lead",
             "caliope lead",
         ),
@@ -567,7 +560,7 @@ FUSION_GM_DATA = [
             "orchestral hit",
         ),
         "orchestra_hit",
-        57,
+        55,
     ),
     #
     # ROM:ELECTRONICA - 001 à 008
@@ -730,7 +723,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "q-time",
+            "q time",
         ),
         "lead",
         80,
@@ -820,7 +813,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "erik's komp",
+            "erik s komp",
         ),
         "clavinet",
         7,
@@ -839,7 +832,7 @@ FUSION_GM_DATA = [
     #
     (
         (
-            "6-pole q bass",
+            "6 pole q bass",
         ),
         "bass",
         39,
@@ -954,7 +947,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "cryin' leadsynth",
+            "cryin leadsynth",
         ),
         "lead",
         84,
@@ -1131,7 +1124,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "= depth lead =",
+            "depth lead",
         ),
         "lead",
         87,
@@ -1291,7 +1284,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "wood eye!",
+            "wood eye",
         ),
         "chromatic perc.",
         114,
@@ -7859,7 +7852,7 @@ GM_PROGRAMS = {
         "gm_program": 31,
     },
     "acoustic bass": {
-        "family": "contrabass",
+        "family": "bass",
         "gm_program": 32,
     },
     "electric bass finger": {
@@ -8338,6 +8331,17 @@ GM_DRUM_KITS = {
         "sf2_bank": 128,
         "sf2_program": 24,
     },
+}
+
+GM_DRUM_KIT_PROGRAMS = {
+    0,
+    8,
+    16,
+    24,
+    25,
+    32,
+    48,
+    56,
 }
 
 FAMILIES = {

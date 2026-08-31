@@ -7,6 +7,7 @@ from fusion_gm_map import (
     FUSION_GM_HINTS,
     GM_PROGRAMS,
     GM_DRUM_KITS,
+    GM_DRUM_KIT_PROGRAMS,
     FAMILIES,
     FUSION_FAMILY_OVERRIDES
 )
@@ -35,21 +36,27 @@ def detect_gm_drum_kit(
     name
 ):
 
-    normalized_name = normalize_name(
+    hint = detect_gm_hint(
         name
     )
 
-    kit = GM_DRUM_KITS.get(
-        normalized_name
-    )
-
-    if kit is None:
-
+    if hint is None:
         return None
 
-    return dict(
-        kit
+    if hint.get("family") != "drums":
+        return None
+
+    program = hint.get(
+        "gm_program"
     )
+
+    if program not in GM_DRUM_KIT_PROGRAMS:
+        return None
+
+    return {
+        "sf2_bank": 128,
+        "sf2_program": program,
+    }
 
 def normalize_name(name):
 
@@ -286,11 +293,7 @@ def matches_for_family(
     )
 
     candidates = []
-    expected_bank = (
-        128
-        if family == "drums"
-        else 0
-    )
+    expected_bank = 0
 
     for preset in sf2_presets:
 
@@ -349,17 +352,28 @@ def matches_for_family(
 
         candidates.append(
             (
+                gm_match,
                 score,
                 preset
             )
         )
 
     candidates.sort(
-        key=lambda item: item[0],
+        key=lambda item: (
+            item[0],
+            item[1],
+        ),
         reverse=True
     )
 
-    return candidates[:limit]
+    return [
+        (
+            score,
+            preset,
+        )
+        for gm_match, score, preset
+        in candidates[:limit]
+    ]
 
 def suggest_instruments(
     fusion_program,

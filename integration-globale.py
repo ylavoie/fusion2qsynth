@@ -2,8 +2,10 @@ from fusion_project import FusionProject
 from fusion_suggestions import (
     detect_families,
     detect_gm_hint,
+    detect_gm_drum_kit,
     suggest_instruments,
 )
+from fusion_gm_map import FUSION_GM_DATA
 from sf2_library import list_presets
 
 project = FusionProject()
@@ -179,6 +181,8 @@ limit_violations = []
 limit_test_failures = []
 unstable_top_suggestions = []
 unstable_top_n = []
+all_hint_failures = []
+all_hint_count = 0
 
 for name in sorted(names):
 
@@ -382,21 +386,43 @@ for name in sorted(names):
 
     for family, matches in suggestions.items():
 
-        scores = [
-            score
-            for score, preset in matches
-        ]
+        ranking = []
+        expected_bank = (
+            128
+            if family == "drums"
+            else 0
+        )
 
-        if scores != sorted(
-            scores,
-            reverse=True
+        for score, preset in matches:
+
+            gm_match = (
+                hint
+                and
+                hint.get("family") == family
+                and
+                preset["bank"] == expected_bank
+                and
+                preset["program"]
+                == hint.get("gm_program")
+            )
+
+            ranking.append(
+                (
+                    gm_match,
+                    score,
+                )
+            )
+
+        if ranking != sorted(
+            ranking,
+            reverse=True,
         ):
 
             unsorted_suggestions.append(
                 (
                     name,
                     family,
-                    scores,
+                    ranking,
                 )
             )
 
@@ -536,7 +562,7 @@ for name in sorted(names):
 
         expected_bank = (
             128
-            if hint.get("family") == "drums"
+            if family == "drums"
             else 0
         )
 
@@ -663,6 +689,100 @@ for name in sorted(names):
                 families
             )
         )
+
+for aliases, family, gm_program in FUSION_GM_DATA:
+
+    expected_bank = 0
+
+    for alias in aliases:
+
+        all_hint_count += 1
+
+        hint = detect_gm_hint(
+            alias
+        )
+
+        drum_kit = detect_gm_drum_kit(
+            alias
+        )
+
+        expected_bank = (
+            drum_kit["sf2_bank"]
+            if drum_kit is not None
+            else 0
+        )
+
+        if (
+            hint is None
+            or hint.get("family") != family
+            or hint.get("gm_program") != gm_program
+        ):
+
+            all_hint_failures.append(
+                (
+                    alias,
+                    "hint",
+                    {
+                        "family": family,
+                        "gm_program": gm_program,
+                    },
+                    hint,
+                )
+            )
+
+            continue
+
+        suggestions = suggest_instruments(
+            {
+                "name": alias,
+                "program": gm_program,
+            },
+            presets,
+        )
+
+        matches = suggestions.get(
+            family,
+            []
+        )
+
+        if not matches:
+
+            all_hint_failures.append(
+                (
+                    alias,
+                    "aucune suggestion",
+                    (
+                        expected_bank,
+                        gm_program,
+                    ),
+                    None,
+                )
+            )
+
+            continue
+
+        score, preset = matches[0]
+
+        if (
+            preset["bank"] != expected_bank
+            or preset["program"] != gm_program
+        ):
+
+            all_hint_failures.append(
+                (
+                    alias,
+                    "top incorrect",
+                    (
+                        expected_bank,
+                        gm_program,
+                    ),
+                    (
+                        preset["bank"],
+                        preset["program"],
+                        preset["name"],
+                    ),
+                )
+            )
 
 print()
 print("====================")
@@ -977,6 +1097,34 @@ for (
 
 print()
 print("====================")
+print("VALIDATION FUSION_GM_DATA")
+print("====================")
+
+for (
+    alias,
+    error_type,
+    expected,
+    actual,
+) in all_hint_failures:
+
+    print(
+        alias,
+        "→",
+        error_type,
+    )
+
+    print(
+        "   attendu:",
+        expected,
+    )
+
+    print(
+        "   obtenu :",
+        actual,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -1068,4 +1216,14 @@ print(
 print(
     "Top N instables:",
     len(unstable_top_n)
+)
+
+print(
+    "Aliases GM testés:",
+    all_hint_count
+)
+
+print(
+    "Erreurs FUSION_GM_DATA:",
+    len(all_hint_failures)
 )
