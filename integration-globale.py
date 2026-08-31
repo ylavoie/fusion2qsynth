@@ -175,6 +175,8 @@ duplicate_suggestions = []
 missing_fields = []
 unsorted_suggestions = []
 abnormal_scores = []
+limit_violations = []
+limit_test_failures = []
 
 for name in sorted(names):
 
@@ -193,6 +195,46 @@ for name in sorted(names):
         },
         presets
     )
+
+    for test_limit in (
+        1,
+        2,
+        3,
+    ):
+
+        limited = suggest_instruments(
+            {
+                "name": name,
+                "program": program,
+            },
+            presets,
+            limit=test_limit,
+        )
+
+        for family, matches in limited.items():
+
+            if len(matches) > test_limit:
+
+                limit_test_failures.append(
+                    (
+                        name,
+                        family,
+                        test_limit,
+                        len(matches),
+                    )
+                )
+
+    for family, matches in suggestions.items():
+
+        if len(matches) > 3:
+
+            limit_violations.append(
+                (
+                    name,
+                    family,
+                    len(matches),
+                )
+            )
 
     for family, matches in suggestions.items():
 
@@ -723,6 +765,46 @@ for (
 
 print()
 print("====================")
+print("LIMIT DÉPASSÉE")
+print("====================")
+
+for (
+    name,
+    family,
+    count,
+) in limit_violations:
+
+    print(
+        name,
+        family,
+        "→",
+        count,
+        "suggestions",
+    )
+
+print()
+print("====================")
+print("LIMIT PARAMÈTRE INCORRECT")
+print("====================")
+
+for (
+    name,
+    family,
+    expected_limit,
+    actual_count,
+) in limit_test_failures:
+
+    print(
+        name,
+        family,
+        "→ limit",
+        expected_limit,
+        "retourne",
+        actual_count,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -794,4 +876,14 @@ print(
 print(
     "Scores aberrants:",
     len(abnormal_scores)
+)
+
+print(
+    "Limites dépassées:",
+    len(limit_violations)
+)
+
+print(
+    "Erreurs paramètre limit:",
+    len(limit_test_failures)
 )
