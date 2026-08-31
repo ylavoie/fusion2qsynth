@@ -178,6 +178,7 @@ abnormal_scores = []
 limit_violations = []
 limit_test_failures = []
 unstable_top_suggestions = []
+unstable_top_n = []
 
 for name in sorted(names):
 
@@ -273,6 +274,51 @@ for name in sorted(names):
                     name,
                     family,
                     top_results,
+                )
+            )
+
+    for family in families_to_check:
+
+        matches_2 = results_by_limit[
+            2
+        ].get(
+            family,
+            []
+        )
+
+        matches_3 = results_by_limit[
+            3
+        ].get(
+            family,
+            []
+        )
+
+        top_2 = [
+            (
+                preset["bank"],
+                preset["program"],
+                preset["name"],
+            )
+            for score, preset in matches_2
+        ]
+
+        first_2_of_3 = [
+            (
+                preset["bank"],
+                preset["program"],
+                preset["name"],
+            )
+            for score, preset in matches_3[:2]
+        ]
+
+        if top_2 != first_2_of_3:
+
+            unstable_top_n.append(
+                (
+                    name,
+                    family,
+                    top_2,
+                    first_2_of_3,
                 )
             )
 
@@ -903,6 +949,27 @@ for (
 
 print()
 print("====================")
+print("TOP N INSTABLE")
+print("====================")
+
+for (
+    name,
+    family,
+    top_2,
+    first_2_of_3,
+) in unstable_top_n:
+
+    print(
+        name,
+        family,
+        "→ limit=2:",
+        top_2,
+        "limit=3:",
+        first_2_of_3,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -989,4 +1056,9 @@ print(
 print(
     "Top 1 instables:",
     len(unstable_top_suggestions)
+)
+
+print(
+    "Top N instables:",
+    len(unstable_top_n)
 )
