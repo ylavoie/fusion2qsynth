@@ -534,6 +534,12 @@ for name in sorted(names):
             "gm_program"
         )
 
+        expected_bank = (
+            128
+            if hint.get("family") == "drums"
+            else 0
+        )
+
         found_program = False
 
         for matches in suggestions.values():
@@ -541,8 +547,9 @@ for name in sorted(names):
             for score, preset in matches:
 
                 if (
-                    preset["program"]
-                    == expected_program
+                    preset["bank"] == expected_bank
+                    and
+                    preset["program"] == expected_program
                 ):
                     found_program = True
                     break
