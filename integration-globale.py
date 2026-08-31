@@ -177,6 +177,7 @@ unsorted_suggestions = []
 abnormal_scores = []
 limit_violations = []
 limit_test_failures = []
+unstable_top_suggestions = []
 
 for name in sorted(names):
 
@@ -195,6 +196,85 @@ for name in sorted(names):
         },
         presets
     )
+
+    results_by_limit = {}
+
+    for test_limit in (
+        1,
+        2,
+        3,
+    ):
+
+        results_by_limit[test_limit] = suggest_instruments(
+            {
+                "name": name,
+                "program": program,
+            },
+            presets,
+            limit=test_limit,
+        )
+
+    families_to_check = set()
+
+    for result in results_by_limit.values():
+
+        families_to_check.update(
+            result.keys()
+        )
+
+    for family in families_to_check:
+
+        top_results = []
+
+        for test_limit in (
+            1,
+            2,
+            3,
+        ):
+
+            matches = results_by_limit[
+                test_limit
+            ].get(
+                family,
+                []
+            )
+
+            if matches:
+
+                score, preset = matches[0]
+
+                top_results.append(
+                    (
+                        test_limit,
+                        preset["bank"],
+                        preset["program"],
+                        preset["name"],
+                    )
+                )
+
+        identities = {
+            (
+                bank,
+                preset_program,
+                preset_name,
+            )
+            for (
+                test_limit,
+                bank,
+                preset_program,
+                preset_name,
+            ) in top_results
+        }
+
+        if len(identities) > 1:
+
+            unstable_top_suggestions.append(
+                (
+                    name,
+                    family,
+                    top_results,
+                )
+            )
 
     for test_limit in (
         1,
@@ -805,6 +885,24 @@ for (
 
 print()
 print("====================")
+print("TOP 1 INSTABLE")
+print("====================")
+
+for (
+    name,
+    family,
+    results,
+) in unstable_top_suggestions:
+
+    print(
+        name,
+        family,
+        "→",
+        results,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -886,4 +984,9 @@ print(
 print(
     "Erreurs paramètre limit:",
     len(limit_test_failures)
+)
+
+print(
+    "Top 1 instables:",
+    len(unstable_top_suggestions)
 )
