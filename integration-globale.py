@@ -173,6 +173,8 @@ family_only_mismatches = []
 invalid_suggestions = []
 duplicate_suggestions = []
 missing_fields = []
+unsorted_suggestions = []
+abnormal_scores = []
 
 for name in sorted(names):
 
@@ -191,6 +193,44 @@ for name in sorted(names):
         },
         presets
     )
+
+    for family, matches in suggestions.items():
+
+        for score, preset in matches:
+
+            if (
+                score < -0.05
+                or score > 1.50
+            ):
+
+                abnormal_scores.append(
+                    (
+                        name,
+                        family,
+                        score,
+                        preset.get("name"),
+                    )
+                )
+
+    for family, matches in suggestions.items():
+
+        scores = [
+            score
+            for score, preset in matches
+        ]
+
+        if scores != sorted(
+            scores,
+            reverse=True
+        ):
+
+            unsorted_suggestions.append(
+                (
+                    name,
+                    family,
+                    scores,
+                )
+            )
 
     required_fields = {
         "name",
@@ -449,7 +489,6 @@ for name in sorted(names):
             )
         )
 
-
 print()
 print("====================")
 print("HINT GM")
@@ -463,7 +502,6 @@ for name, hint, families in with_hint:
         families
     )
 
-
 print()
 print("====================")
 print("FAMILLE SEULEMENT")
@@ -476,7 +514,6 @@ for name, families in family_only:
         families
     )
 
-
 print()
 print("====================")
 print("INCONNUS")
@@ -486,7 +523,6 @@ for name in unknown:
 
     print(name)
 
-
 print()
 print("====================")
 print("AUCUNE SUGGESTION")
@@ -495,7 +531,6 @@ print("====================")
 for name in empty_suggestions:
 
     print(name)
-
 
 print()
 print("====================")
@@ -650,6 +685,44 @@ for (
 
 print()
 print("====================")
+print("SCORES MAL ORDONNÉS")
+print("====================")
+
+for (
+    name,
+    family,
+    scores,
+) in unsorted_suggestions:
+
+    print(
+        name,
+        family,
+        "→",
+        scores,
+    )
+
+print()
+print("====================")
+print("SCORES ABERRANTS")
+print("====================")
+
+for (
+    name,
+    family,
+    score,
+    preset_name,
+) in abnormal_scores:
+
+    print(
+        name,
+        family,
+        "→",
+        score,
+        preset_name,
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -711,4 +784,14 @@ print(
 print(
     "Presets avec champs manquants:",
     len(missing_fields)
+)
+
+print(
+    "Scores mal ordonnés:",
+    len(unsorted_suggestions)
+)
+
+print(
+    "Scores aberrants:",
+    len(abnormal_scores)
 )
