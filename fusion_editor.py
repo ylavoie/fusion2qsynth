@@ -449,14 +449,22 @@ def compare_instrument(
         old_instrument["name"]
     )
 
-    input(
-        "Entrée pour écouter A..."
-    )
+    if old_instrument["name"] != "Non configuré":
 
-    play_preview(
-        part,
-        old_instrument
-    )
+        input(
+            "Entrée pour écouter A..."
+        )
+
+        play_preview(
+            part,
+            old_instrument
+        )
+
+    else:
+
+        print(
+            "Aucun instrument à écouter."
+        )
 
     print()
 
@@ -497,12 +505,26 @@ def play_preview(part, instrument, duration=5):
 
     with mido.open_output(port_name) as out:
 
+        bank = instrument["sf2_bank"]
+
+        bank_msb = bank // 128
+        bank_lsb = bank % 128
+
         out.send(
             mido.Message(
                 "control_change",
                 channel=channel,
                 control=0,
-                value=instrument["sf2_bank"]
+                value=bank_msb
+            )
+        )
+
+        out.send(
+            mido.Message(
+                "control_change",
+                channel=channel,
+                control=32,
+                value=bank_lsb
             )
         )
 
@@ -1576,24 +1598,36 @@ def test_mix_all(project, mix):
                 0
             )
 
-            if not 0 <= bank <= 127:
+            if not 0 <= bank <= 16383:
 
                 print(
                     "PART",
                     part_id,
                     "bank SF2",
                     bank,
-                    "non testable directement en MIDI"
+                    "invalide"
                 )
 
                 continue
+
+            bank_msb = bank // 128
+            bank_lsb = bank % 128
 
             out.send(
                 mido.Message(
                     "control_change",
                     channel=ch,
                     control=0,
-                    value=bank
+                    value=bank_msb
+                )
+            )
+
+            out.send(
+                mido.Message(
+                    "control_change",
+                    channel=ch,
+                    control=32,
+                    value=bank_lsb
                 )
             )
 
