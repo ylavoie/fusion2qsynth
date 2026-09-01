@@ -1015,8 +1015,8 @@ def main():
         print("Capture Fusion")
         print("====================")
         print()
-        print("1 - PROGRAM")
-        print("2 - MIX")
+        print("1 - MIX")
+        print("2 - PROGRAM")
         print("3 - SONG")
         print("q - Retour")
         print()
@@ -1027,14 +1027,14 @@ def main():
 
         if choice == "1":
 
-            capture_program(
+            capture_mix(
                 project,
                 port_name
             )
 
         elif choice == "2":
 
-            capture_mix(
+            capture_program(
                 project,
                 port_name
             )
