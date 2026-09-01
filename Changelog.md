@@ -1051,3 +1051,107 @@ Date : 2026-08-21
   * chargement des performances ;
   * traitement MIDI Live.
 * Conservation d'un comportement fonctionnel identique après chaque étape de restructuration.
+
+---
+
+## Version 2.5 - Suggestions d'instruments et validation fonctionnelle
+
+Date : 2026-09-01
+
+### Ajouté
+
+#### Correspondance des sons Fusion vers General MIDI
+
+* Ajout d'une table de correspondance entre les noms de sons du Fusion et les programmes General MIDI.
+* Prise en charge des aliases et variantes de noms provenant des différentes banques du Fusion.
+* Normalisation des noms afin de reconnaître les variations de ponctuation, d'espacement et de typographie.
+* Association des sons reconnus à une famille d'instruments et, lorsque possible, à un programme GM précis.
+* Validation exhaustive de la table de correspondance et de ses aliases.
+
+#### Suggestions d'instruments
+
+* Ajout de suggestions automatiques dans l'Éditeur à partir du nom du son Fusion.
+* Priorité donnée à une correspondance GM exacte lorsqu'elle existe.
+* Recherche par famille d'instruments lorsqu'aucune correspondance exacte n'est disponible.
+* Classement des suggestions selon leur pertinence.
+* Possibilité d'afficher tous les instruments lorsque les suggestions proposées ne conviennent pas.
+* Conservation du comportement existant pour les sons Fusion inconnus.
+
+#### Kits de batterie
+
+* Identification spécifique des véritables kits de batterie General MIDI.
+* Distinction entre kits de batterie et instruments de percussion mélodiques.
+* Association des kits GM à la banque SoundFont 128 appropriée.
+
+### Amélioré
+
+#### Gestion des banques SoundFont
+
+* Prise en charge des banques SoundFont sur 14 bits.
+* Conversion des numéros de banque en Bank Select MSB et LSB.
+* Compatibilité avec le mode MIDI Bank Select `mma` de FluidSynth.
+* Prise en charge correcte des banques de percussion telles que la banque 128.
+* Correction de la sélection des banques lors :
+
+  * du test d'un instrument ;
+  * du test complet d'un MIX ;
+  * du chargement des performances dans le Contrôleur Live.
+
+#### Éditeur
+
+* Correction du test d'un instrument utilisant une banque SoundFont supérieure à 127.
+* Correction de la comparaison A/B lorsqu'une PART ne possède encore aucun instrument configuré.
+* Validation réelle des suggestions avec :
+
+  * correspondance GM exacte ;
+  * correspondance par famille ;
+  * kit de batterie ;
+  * son Fusion inconnu.
+
+### Validation
+
+#### Tests fonctionnels
+
+* Validation complète de la capture :
+
+  * MIX existant et nouveau ;
+  * remplacement d'un MIX ;
+  * PROGRAM ;
+  * SONG ;
+  * retour propre par `Ctrl+C`.
+* Validation des fonctions essentielles de l'Éditeur :
+
+  * MIX ;
+  * PROGRAM ;
+  * SONG ;
+  * gestion de la bibliothèque d'instruments.
+* Validation du Contrôleur Live en modes :
+
+  * PROGRAM ;
+  * MIX ;
+  * SONG.
+* Validation du Monitor MIDI.
+* Confirmation du comportement des zones clavier du Fusion lors du routage des PARTS.
+
+#### Validation des suggestions
+
+* Validation exhaustive des aliases de la table GM.
+* Vérification de la stabilité et du classement des suggestions.
+* Vérification des limites et des paramètres des instruments proposés.
+* Validation réelle dans l'Éditeur des sons :
+
+  * `Chimey` ;
+  * `French Horn` ;
+  * `Ethnic Percussion Kit` ;
+  * `TransForce` ;
+  * `Velo Pulls` ;
+  * `We Are Electric Friends`.
+
+### Nettoyage des données
+
+* Validation de la structure de `fusion.json`.
+* Migration d'anciennes PARTS utilisant directement `name`, `sf2_bank` et `sf2_program` vers le schéma actuel basé sur la bibliothèque d'instruments.
+* Vérification des références d'instruments des MIX, PROGRAM et SONG.
+* Vérification des plages MIDI et des banques SoundFont.
+* Confirmation de la représentation 14 bits des banques MIDI dans les SONG.
+* Suppression du doublon historique `drawbarorgan` au profit de l'identifiant canonique `drawbar_organ`.
