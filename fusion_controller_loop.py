@@ -24,6 +24,11 @@ from fusion_performance import (
     load_song
 )
 
+from fusion_gm_map import (
+    fusion_program_bank_name,
+    fusion_mix_bank_name
+)
+
 fusion_default_channel = FUSION_DEFAULT_CHANNEL - 1
 
 def execute_pending_reload(
@@ -342,6 +347,18 @@ def run_controller_loop(
                     f"PERFORMANCE détectée {performance_id}"
                 )
 
+                if selected_mode == "mix":
+
+                    bank_name = fusion_mix_bank_name(
+                        bank
+                    )
+
+                else:
+
+                    bank_name = fusion_program_bank_name(
+                        bank
+                    )
+
                 print()
                 print(
                     "===================="
@@ -353,7 +370,7 @@ def run_controller_loop(
 
                 print(
                     "Bank:",
-                    bank
+                    f"{bank_name} ({bank})"
                 )
 
                 print(

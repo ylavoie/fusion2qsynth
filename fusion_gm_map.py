@@ -1,3 +1,70 @@
+FUSION_PROGRAM_BANK_NAMES = {
+    0:  "ROM:PRESET 1",
+    1:  "ROM:PRESET 2",
+    2:  "ROM:PRESET 3",
+    3:  "ROM:PRESET 4",
+    4:  "ROM:ELECTRONICA",
+    5:  "ROM:SYNTH DRUM",
+    6:  "ROM:MORE",
+    7:  "ROM:GM",
+    8:  "HD:USER",
+    9:  "ROM:Hollow Sun 01",
+    10: "ROM:Hollow Sun 02",
+    11: "ROM:Hollow Sun 03",
+    12: "ROM:Hollow Sun 04",
+    13: "ROM:Hollow Sun 05",
+    14: "ROM:Hollow Sun 07",
+    15: "ROM:Hollow Sun 08",
+    16: "ROM:Hollow Sun 09",
+    17: "ROM:Hollow Sun 10",
+    18: "ROM:Hollow Sun 06",
+}
+
+FUSION_MIX_BANK_NAMES = {
+    0: "ROM:GROOVE MIX",
+    1: "ROM:SPLIT LAYER",
+    2: "HD:User",
+    3: "HD:My Bank1",
+}
+
+def fusion_program_bank_name(bank):
+
+    return FUSION_PROGRAM_BANK_NAMES.get(
+        bank,
+        f"BANK {bank}"
+    )
+
+def fusion_mix_bank_name(bank):
+
+    return FUSION_MIX_BANK_NAMES.get(
+        bank,
+        f"BANK {bank}"
+    )
+
+def fusion_song_bank_name(
+    bank
+):
+
+    if bank is None:
+
+        return "?"
+
+    bank_msb = bank // 128
+    bank_lsb = bank % 128
+
+    name = fusion_program_bank_name(
+        bank_msb
+    )
+
+    if bank_lsb:
+
+        return (
+            f"{name} "
+            f"(LSB {bank_lsb})"
+        )
+
+    return name
+
 FUSION_GM_DATA = [
     #
     # Pianos

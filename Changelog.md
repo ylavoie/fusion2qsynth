@@ -1155,3 +1155,102 @@ Date : 2026-09-01
 * Vérification des plages MIDI et des banques SoundFont.
 * Confirmation de la représentation 14 bits des banques MIDI dans les SONG.
 * Suppression du doublon historique `drawbarorgan` au profit de l'identifiant canonique `drawbar_organ`.
+
+---
+
+## Version 2.6 — Harmonisation des banques Fusion et de l’édition
+
+Date : 2026-09-02
+
+### Banques Fusion
+
+* Ajout des noms des banques PROGRAM du Fusion :
+
+  * `ROM:PRESET 1` à `ROM:PRESET 4` ;
+  * `ROM:ELECTRONICA` ;
+  * `ROM:SYNTH DRUM` ;
+  * `ROM:MORE` ;
+  * `ROM:GM` ;
+  * `HD:USER` ;
+  * banques `ROM:Hollow Sun`.
+* Ajout des noms des banques MIX :
+
+  * `ROM:GROOVE MIX` ;
+  * `ROM:SPLIT LAYER` ;
+  * `HD:User` ;
+  * `HD:My Bank1`.
+* Affichage des noms de banques dans les listes et les écrans d'édition.
+* Ajout d'un sélecteur de banque Fusion par nom dans les éditeurs.
+* Affichage des noms de banques dans le Contrôleur Live, selon le type de performance PROGRAM ou MIX.
+* Conservation des identifiants numériques `bank:program` pour le stockage et le traitement interne.
+
+### Capture SONG
+
+* Correction de l'interprétation du `Bank Select` reçu lors de la capture d'une SONG.
+* Le `CC0` reçu du Fusion est maintenant conservé directement comme numéro de banque Fusion.
+* Suppression de la conversion erronée du couple MSB/LSB en banque MIDI 14 bits pour le champ `bank` d'un canal SONG.
+* Validation réelle d'une banque `HD:USER` transmise par `CC0 = 8`.
+* Conservation de la détection du `CC32` pour permettre l'analyse ultérieure d'éventuelles banques utilisant un LSB.
+
+### Capture MIX
+
+* Distinction entre l'identifiant du MIX transmis lors de sa sélection et les PARTS réellement jouées.
+* La détection des PARTS d'un MIX repose maintenant sur leurs canaux MIDI actifs.
+* Suppression de l'attribution artificielle d'une banque et d'un programme aux PARTS lorsque ces informations ne sont pas transmises par le Fusion.
+* Conservation des informations connues des PARTS des MIX ROM lors d'une nouvelle capture, par correspondance de canal MIDI.
+* Prévention de la réutilisation silencieuse d'informations potentiellement périmées pour les MIX utilisateur modifiables.
+
+### Éditeur
+
+* Harmonisation de l'édition des PROGRAM, MIX et SONG.
+* Affichage uniforme :
+
+  * du nom Fusion ;
+  * de la banque Fusion ;
+  * du programme Fusion ;
+  * de l'instrument associé ;
+  * des paramètres MIDI pertinents.
+* Ajout de boucles d'édition imbriquées :
+
+  * une PART MIX reste sélectionnée pendant plusieurs modifications ;
+  * un canal SONG reste sélectionné pendant plusieurs modifications ;
+  * `q` retourne uniquement au niveau d'édition précédent.
+* Amélioration de l'affichage des plages de notes, incluant les limites MIDI par défaut.
+* Ajout et modification du nom Fusion directement depuis les éditeurs.
+* Utilisation des suggestions d'instruments à partir du nom Fusion dans les différents types de performances.
+
+### Validation et réparation progressive
+
+* Amélioration de `save_safe()` pour permettre explicitement la conservation d'erreurs préexistantes pendant une réparation progressive.
+* Une modification est acceptée lorsqu'elle corrige ou conserve l'état existant sans introduire de nouvelle erreur bloquante.
+* Annulation en mémoire des modifications lorsqu'une sauvegarde est refusée.
+* Application de cette logique aux PARTS, PROGRAM et canaux SONG.
+
+### Listes
+
+* Amélioration de la liste PROGRAM avec affichage des noms de banques Fusion.
+* Amélioration de la liste SONG avec :
+
+  * état de configuration ;
+  * instrument associé ;
+  * nom de banque Fusion ;
+  * couple `bank:program`.
+* Distinction visuelle correcte des banques ROM et utilisateur.
+
+### Validation
+
+* Validation de la capture réelle des PROGRAM, MIX et SONG.
+* Validation de l'édition des PROGRAM, MIX et SONG.
+* Validation des nouvelles boucles d'édition imbriquées.
+* Validation d'une SONG utilisant la banque `HD:USER`.
+* Validation du Contrôleur Live avec affichage des banques nommées en modes PROGRAM et MIX.
+* Validation de `integration-globale.py` :
+
+  * aucune suggestion invalide ;
+  * aucun doublon de suggestion ;
+  * aucun champ manquant ;
+  * aucun score mal ordonné ou aberrant ;
+  * aucune limite dépassée ;
+  * aucune instabilité du classement ;
+  * 1209 aliases GM testés ;
+  * aucune erreur dans `FUSION_GM_DATA`.

@@ -13,7 +13,13 @@ from fusion_diagnostic import (
 )
 
 from fusion_constants import (
-    FUSION_DEFAULT_CHANNEL
+    FUSION_DEFAULT_CHANNEL,
+    DEBUG
+)
+
+from fusion_gm_map import (
+    fusion_mix_bank_name,
+    fusion_program_bank_name,
 )
 
 fusion_default_channel = FUSION_DEFAULT_CHANNEL - 1
@@ -207,7 +213,7 @@ def capture_program(
                         )
                         print(
                             "Bank           :",
-                            bank
+                            fusion_program_bank_name(bank)
                         )
                         print(
                             "Program        :",
@@ -309,7 +315,6 @@ def capture_mix(
 
     # mémoire MIDI permanente
     banks = {}
-    programs = {}
 
     current_mix = None
 
@@ -335,17 +340,22 @@ def capture_mix(
                         CAPTURE_TIME - (now - capture_start)
                     )
 
-                    print(
-                        f"\rCapture : {remaining}s | PARTS : {len(parts_seen)}\r",
-                        end="",
-                        flush=True
-                    )
+                    if DEBUG:
+
+                        print(
+                            f"\rCapture : {remaining}s | "
+                            f"PARTS : {len(parts_seen)}",
+                            end="",
+                            flush=True
+                        )
 
                     if now - capture_start >= CAPTURE_TIME:
 
                         capture_active = False
 
-                        print("\r" + " " * 45)
+                        if DEBUG:
+                            print()
+
                         print("====================")
                         print("Fin de capture")
                         print("====================")
@@ -377,61 +387,73 @@ def capture_mix(
                                     len(parts_seen)
                                 )
 
-                                print(
-                                    "CH   BANK   PROGRAM"
-                                )
+                            print(
+                                "CH"
+                            )
+
+                            print(
+                                "--"
+                            )
+
+                            for part in sorted(
+                                parts_seen.values(),
+                                key=lambda p: p["midi_channel"]
+                            ):
 
                                 print(
-                                    "-------------------"
+                                    part["midi_channel"]
                                 )
 
-                                for ch, part in parts_seen.items():
+                            if project.mix_has_parts(
+                                current_mix
+                            ):
 
-                                    print(
-                                        f"{part['midi_channel']:<5}"
-                                        f"{part['bank']:<7}"
-                                        f"{part['program']}"
-                                    )
-
-                                if project.mix_has_parts(
-                                    current_mix
-                                ):
-
-                                    print(
-                                        "Mix déjà existant."
-                                    )
-
-                                    rep = input(
-                                        "Remplacer ? (o/n) : "
-                                    )
-
-                                    if rep.lower() != "o":
-
-                                        continue
-
-                                old_parts = {}
-
-                                existing_mix = project.get_mix(
-                                    current_mix
+                                print(
+                                    "Mix déjà existant."
                                 )
 
-                                if existing_mix:
+                                rep = input(
+                                    "Remplacer ? (o/n) : "
+                                )
 
-                                    old_parts = existing_mix.get(
-                                        "parts",
-                                        {}
-                                    )
+                                if rep.lower() != "o":
 
-                                parts = {}
+                                    continue
 
-                                for i, part in enumerate(
+                            old_parts = {}
+
+                            existing_mix = project.get_mix(
+                                current_mix
+                            )
+
+                            if existing_mix:
+
+                                old_parts = existing_mix.get(
+                                    "parts",
+                                    {}
+                                )
+
+                            parts = {}
+
+                            mix_bank = int(
+                                current_mix.split(":")[0]
+                            )
+
+                            rom_mix = mix_bank in (0, 1)
+
+                            for i, part in enumerate(
+                                sorted(
                                     parts_seen.values(),
-                                    start=1
-                                ):
+                                    key=lambda p: p["midi_channel"]
+                                ),
+                                start=1
+                            ):
 
-                                    new_part = dict(
-                                        part
-                                    )
+                                new_part = dict(
+                                    part
+                                )
+
+                                if rom_mix:
 
                                     for old_part in old_parts.values():
 
@@ -443,72 +465,61 @@ def capture_mix(
 
                                             continue
 
-                                        if (
-                                            old_part.get("bank")
-                                            !=
-                                            new_part.get("bank")
-                                            or
-                                            old_part.get("program")
-                                            !=
-                                            new_part.get("program")
+                                        for key in (
+                                            "bank",
+                                            "program",
+                                            "instrument",
+                                            "fusion_name"
                                         ):
 
-                                            continue
+                                            if key in old_part:
 
-                                        if "instrument" in old_part:
-
-                                            new_part["instrument"] = (
-                                                old_part["instrument"]
-                                            )
-
-                                        if "fusion_name" in old_part:
-
-                                            new_part["fusion_name"] = (
-                                                old_part["fusion_name"]
-                                            )
+                                                new_part[key] = (
+                                                    old_part[key]
+                                                )
 
                                         break
 
-                                    parts[str(i)] = new_part
+                                parts[str(i)] = new_part
 
-                                success, errors = project.replace_mix_parts(
-                                    current_mix,
-                                    parts
+                            success, errors = project.replace_mix_parts(
+                                current_mix,
+                                parts
+                            )
+
+                            if not success:
+
+                                print()
+
+                                print(
+                                    "Remplacement du Mix refusé :"
                                 )
 
-                                if not success:
+                                print_error_messages(
+                                    errors
+                                )
 
-                                    print()
+                                continue
 
-                                    print(
-                                        "Remplacement du Mix refusé :"
-                                    )
+                            if project.save_safe():
 
-                                    print_error_messages(
-                                        errors
-                                    )
+                                print()
+                                print(
+                                    "Capture terminée"
+                                )
 
-                                    continue
+                                print(
+                                    len(parts_seen),
+                                    "PART(s) sauvegardée(s)"
+                                )
 
-                                if project.save_safe():
+                                print()
 
-                                    print()
-                                    print(
-                                        "Capture terminée"
-                                    )
+                            else:
 
-                                    print(
-                                        len(parts_seen),
-                                        "PART(s) sauvegardée(s)"
-                                    )
-
-                                    print()
-
-                                else:
-
-                                    print(
-                                        "Le Mix n'a pas été sauvegardé."
-                                    )
+                                print(
+                                    "Le Mix n'a pas été sauvegardé."
+                                )
                 #
                 # Poll MIDI
                 #
@@ -528,8 +539,6 @@ def capture_mix(
                     #
                     elif msg.type == "program_change":
 
-                        programs[msg.channel] = msg.program
-
                         #
                         # Canal principal Fusion
                         #
@@ -537,7 +546,7 @@ def capture_mix(
 
                             bank = banks.get(
                                 msg.channel,
-                                fusion_default_channel
+                                0
                             )
 
                             current_mix = (
@@ -562,7 +571,8 @@ def capture_mix(
                             print()
                             print(
                                 "Fusion Mix :",
-                                current_mix
+                                f"{fusion_mix_bank_name(bank)} "
+                                f"({current_mix})"
                             )
                             print()
                             print(
@@ -609,28 +619,14 @@ def capture_mix(
                         if ch not in parts_seen:
 
                             parts_seen[ch] = {
-
-                                "midi_channel": ch + 1,
-
-                                "bank":
-                                    banks.get( ch, 0 ),
-
-                                "program":
-                                    programs.get( ch, 0 )
-
+                                "midi_channel": ch + 1
                             }
-
-                            # print()
 
                             print(
                                 "PART",
                                 len(parts_seen),
                                 "→ CH",
-                                ch + 1,
-                                "Bank",
-                                parts_seen[ch]["bank"],
-                                "Program",
-                                parts_seen[ch]["program"]
+                                ch + 1
                             )
 
                         if ch not in notes_seen:
@@ -649,6 +645,7 @@ def capture_mix(
                         )
 
                 time.sleep(0.01)
+
     except KeyboardInterrupt:
         print()
         print("Retour au menu")
@@ -934,17 +931,9 @@ def capture_song(
                         {}
                     )
 
-                    bank = (
-                        banks_msb.get(
-                            msg.channel,
-                            0
-                        )
-                        * 128
-                        +
-                        banks_lsb.get(
-                            msg.channel,
-                            0
-                        )
+                    bank = banks_msb.get(
+                        msg.channel,
+                        0
                     )
 
                     channels[

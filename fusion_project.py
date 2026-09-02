@@ -10,6 +10,8 @@ from fusion_lib import (
     note_name, note_range
 )
 
+from fusion_gm_map import fusion_program_bank_name
+
 # Fichiers
 FUSION_FILE = "fusion.json"
 
@@ -416,11 +418,24 @@ class FusionProject:
             )
         ]
 
-    def save_safe(self):
+    def save_safe(
+        self,
+        allowed_errors=None
+    ):
 
         errors = self.validate()
 
-        blocking_errors = self.get_blocking_errors(errors)
+        blocking_errors = self.get_blocking_errors(
+            errors
+        )
+
+        if allowed_errors is not None:
+
+            blocking_errors = [
+                error
+                for error in blocking_errors
+                if error not in allowed_errors
+            ]
 
         if blocking_errors:
 
@@ -1524,15 +1539,25 @@ class FusionProject:
 
         old = dict(part)
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         part.update(
             updates
         )
 
-        errors = self.validate()
+        after_errors = self.get_blocking_errors(
+            self.validate()
+        )
 
-        blocking_errors = self.get_blocking_errors(errors)
+        new_errors = [
+            error
+            for error in after_errors
+            if error not in before_errors
+        ]
 
-        if blocking_errors:
+        if new_errors:
 
             part.clear()
 
@@ -1540,14 +1565,14 @@ class FusionProject:
                 old
             )
 
-            return(
+            return (
                 False,
-                errors
+                new_errors
             )
 
         return (
             True,
-            []
+            before_errors
         )
 
     #
@@ -2609,7 +2634,8 @@ class FusionProject:
     def print_part(
         self,
         part_id,
-        part
+        part,
+        fusion_name=None
     ):
 
         print()
@@ -2623,17 +2649,24 @@ class FusionProject:
 
         print(
             "Nom Fusion     :",
-            part.get(
-                "fusion_name",
-                "Non défini"
+            (
+                fusion_name
+                if fusion_name is not None
+                else part.get(
+                    "fusion_name",
+                    "Non défini"
+                )
             )
         )
 
+        bank = part.get("bank")
+
         print(
             "Fusion Bank    :",
-            part.get(
-                "bank",
-                "?"
+            (
+                f"{fusion_program_bank_name(bank)} ({bank})"
+                if bank is not None
+                else "?"
             )
         )
 

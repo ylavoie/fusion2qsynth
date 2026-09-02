@@ -6,12 +6,18 @@ import time
 from fusion_lib import (
     find_fluidsynth_output,
     note_name,
-    note_number
+    note_number,
+    note_range
 )
 
 from fusion_diagnostic import (
     print_validation_errors,
     print_error_messages
+)
+
+from fusion_gm_map import (
+    fusion_program_bank_name,
+    FUSION_PROGRAM_BANK_NAMES
 )
 
 from fusion_suggestions import (
@@ -925,6 +931,7 @@ def edit_parts(
     mix_id,
     mix
 ):
+
     while True:
 
         part_id = input(
@@ -936,30 +943,56 @@ def edit_parts(
             break
 
         if part_id not in mix["parts"]:
-            print("PART inconnue")
+
+            print(
+                "PART inconnue"
+            )
+
             continue
 
-        part = mix["parts"][part_id]
-
-        project.print_part(part_id,part)
+        part = mix["parts"][
+            part_id
+        ]
 
         while True:
 
-            rep = input(
-                "Configurer cette PART ? (o/n/q) : "
+            project.print_part(
+                part_id,
+                part
             )
 
-            if rep.lower() == "q":
+            print()
+            print("====================")
+            print("Edition PART")
+            print("====================")
 
-                break
+            print(
+                "1 - Modifier instrument"
+            )
 
-            if rep.lower() == "n":
+            print(
+                "2 - Modifier paramètres PART"
+            )
 
-                break
+            print(
+                "3 - Modifier nom Fusion"
+            )
 
-            if rep.lower() == "o":
+            print(
+                "q - Retour"
+            )
 
-                old_instrument = project.resolve_part_instrument(part)
+            choix = input(
+                "> "
+            )
+
+            if choix == "1":
+
+                old_instrument = (
+                    project.resolve_part_instrument(
+                        part
+                    )
+                )
 
                 if old_instrument is None:
 
@@ -969,126 +1002,153 @@ def edit_parts(
                         "sf2_program": 0
                     }
 
-                print()
+                instrument = choose_instrument(
+                    project,
+                    part,
+                    fusion_name=part.get(
+                        "fusion_name"
+                    )
+                )
 
-                print("1 - Modifier instrument")
-                print("2 - Modifier paramètres PART")
-                print("3 - Modifier nom Fusion")
-                print("q - Annuler")
+                if instrument is None:
 
-                choix = input("> ")
+                    continue
 
-                if choix == "1":
+                while True:
 
-                    instrument = choose_instrument(
-                        project,
-                        part,
-                        fusion_name=part.get(
-                            "fusion_name"
+                    print()
+
+                    print(
+                        "1 - Tester"
+                    )
+
+                    print(
+                        "2 - Comparer A/B"
+                    )
+
+                    print(
+                        "3 - Garder"
+                    )
+
+                    print(
+                        "q - Annuler"
+                    )
+
+                    rep = input(
+                        "> "
+                    )
+
+                    if rep == "1":
+
+                        play_preview(
+                            part,
+                            instrument
                         )
-                    )
 
-                    if instrument is None:
+                    elif rep == "2":
 
-                        # L'utilisateur a annulé.
-                        # On ne modifie rien.
-                        break
+                        compare_instrument(
+                            part,
+                            old_instrument,
+                            instrument
+                        )
 
-                    if instrument:
+                    elif rep == "3":
 
-                        while True:
+                        old_part = dict(
+                            part
+                        )
 
-                            print()
+                        allowed_errors = (
+                            project.get_blocking_errors(
+                                project.validate()
+                            )
+                        )
 
-                            print(
-                                "1 - Tester"
+                        project.set_part_instrument(
+                            mix_id,
+                            part_id,
+                            instrument["id"]
+                        )
+
+                        if not project.save_safe(
+                            allowed_errors=allowed_errors
+                        ):
+
+                            part.clear()
+
+                            part.update(
+                                old_part
                             )
 
                             print(
-                                "2 - Comparer A/B"
+                                "⚠ Sauvegarde non effectuée."
                             )
 
-                            print(
-                                "3 - Garder"
-                            )
-
-                            print(
-                                "q - Annuler"
-                            )
-
-                            choix = input("> ")
-
-                            if choix == "1":
-
-                                play_preview(
-                                    part,
-                                    instrument
-                                )
-
-                            elif choix == "2":
-
-                                compare_instrument(
-                                    part,
-                                    old_instrument,
-                                    instrument
-                                )
-
-                            elif choix == "3":
-
-                                project.set_part_instrument(
-                                    mix_id,
-                                    part_id,
-                                    instrument["id"]
-                                )
-
-                                if not project.save_safe():
-
-                                    print(
-                                        "⚠ Sauvegarde non effectuée."
-                                    )
-
-                                    input(
-                                        "Entrée pour continuer..."
-                                    )
-
-                                    break
-
-                                break
-
-                            elif choix.lower()=="q":
-
-                                break
-
-                    break
-
-                if choix == "2":
-
-                    edit_part_parameters(
-                        project,
-                        mix_id,
-                        part_id,
-                        part
-                    )
-
-                    break
-
-                elif choix == "3":
-
-                    if edit_fusion_name(
-                        part
-                    ):
-
-                        if project.save_safe():
-
-                            print(
-                                "Nom Fusion modifié."
+                            input(
+                                "Entrée pour continuer..."
                             )
 
                         else:
 
                             print(
-                                "⚠ Sauvegarde non effectuée."
+                                "Instrument affecté."
                             )
+
+                        break
+
+                    elif rep.lower() == "q":
+
+                        break
+
+            elif choix == "2":
+
+                edit_part_parameters(
+                    project,
+                    mix_id,
+                    part_id,
+                    part
+                )
+
+            elif choix == "3":
+
+                old_part = dict(
+                    part
+                )
+
+                allowed_errors = (
+                    project.get_blocking_errors(
+                        project.validate()
+                    )
+                )
+
+                if edit_fusion_name(
+                    part
+                ):
+
+                    if project.save_safe(
+                        allowed_errors=allowed_errors
+                    ):
+
+                        print(
+                            "Nom Fusion modifié."
+                        )
+
+                    else:
+
+                        part.clear()
+
+                        part.update(
+                            old_part
+                        )
+
+                        print(
+                            "⚠ Sauvegarde non effectuée."
+                        )
+
+            elif choix.lower() == "q":
+
+                break
 
 def read_int(
     prompt,
@@ -1222,6 +1282,34 @@ def validate_part_updates(
 
         return False
 
+    bank = test.get("bank")
+
+    if (
+        bank is not None
+        and not 0 <= bank <= 18
+    ):
+
+        print()
+        print(
+            "Fusion Bank invalide (0-18)."
+        )
+
+        return False
+
+    program = test.get("program")
+
+    if (
+        program is not None
+        and not 0 <= program <= 127
+    ):
+
+        print()
+        print(
+            "Fusion Program invalide (0-127)."
+        )
+
+        return False
+
     if not (
         0 <= test.get(
             "note_min",
@@ -1268,6 +1356,70 @@ def validate_part_updates(
 
     return True
 
+def choose_fusion_program_bank(
+    current_bank=None
+):
+
+    print()
+
+    print(
+        "Banque Fusion actuelle :",
+        (
+            f"{fusion_program_bank_name(current_bank)} "
+            f"({current_bank})"
+            if current_bank is not None
+            else "?"
+        )
+    )
+
+    print()
+
+    for bank in sorted(
+        FUSION_PROGRAM_BANK_NAMES
+    ):
+
+        print(
+            f"{bank:2} - "
+            f"{FUSION_PROGRAM_BANK_NAMES[bank]}"
+        )
+
+    print()
+    print(
+        "Entrée - Conserver"
+    )
+
+    while True:
+
+        value = input(
+            "> "
+        ).strip()
+
+        if not value:
+
+            return None
+
+        try:
+
+            bank = int(
+                value
+            )
+
+        except ValueError:
+
+            print(
+                "Choix invalide."
+            )
+
+            continue
+
+        if bank in FUSION_PROGRAM_BANK_NAMES:
+
+            return bank
+
+        print(
+            "Banque Fusion invalide."
+        )
+
 def edit_part_values(
     part,
     part_id
@@ -1288,19 +1440,37 @@ def edit_part_values(
         )
     )
 
+    bank = part.get(
+        "bank"
+    )
+
+    print(
+        "Fusion Bank :",
+        (
+            f"{fusion_program_bank_name(bank)} ({bank})"
+            if bank is not None
+            else "?"
+        )
+    )
+
+    print(
+        "Fusion Prog :",
+        part.get(
+            "program",
+            "?"
+        )
+    )
+
     print(
         "Plage      :",
-        note_name(
+        note_range(
             part.get(
                 "note_min",
-                0
-            )
-        ),
-        "-",
-        note_name(
+                None
+            ),
             part.get(
                 "note_max",
-                127
+                None
             )
         )
     )
@@ -1338,16 +1508,57 @@ def edit_part_values(
 
         updates["midi_channel"] = int(value)
 
+    print()
+
+    bank = part.get("bank")
+
+    print(
+        "Fusion Bank actuelle :",
+        (
+            f"{fusion_program_bank_name(bank)} ({bank})"
+            if bank is not None
+            else "?"
+        )
+    )
+
+    value = choose_fusion_program_bank(
+        bank
+    )
+
+    if value is not None:
+
+        updates["bank"] = value
 
     print()
 
     print(
+        "Fusion Program actuel :",
+        part.get(
+            "program",
+            "?"
+        )
+    )
+
+    value = read_int(
+        "Nouveau Fusion Program (Entrée = conserver) : ",
+        0,
+        127
+    )
+
+    if value is not None:
+
+        updates["program"] = value
+
+    print()
+
+    note_min = part.get("note_min")
+
+    print(
         "Note min actuelle :",
-        note_name(
-            part.get(
-                "note_min",
-                0
-            )
+        (
+            note_name(note_min)
+            if note_min is not None
+            else "non spécifiée (défaut C-1)"
         )
     )
 
@@ -1369,13 +1580,14 @@ def edit_part_values(
 
     print()
 
+    note_max = part.get("note_max")
+
     print(
         "Note max actuelle :",
-        note_name(
-            part.get(
-                "note_max",
-                0
-            )
+        (
+            note_name(note_max)
+            if note_max is not None
+            else "non spécifiée (défaut G9)"
         )
     )
 
@@ -1463,7 +1675,7 @@ def edit_part_parameters(
 
         return
 
-    success, messages = project.update_part(
+    success, allowed_errors = project.update_part(
         mix_id,
         part_id,
         updates
@@ -1475,7 +1687,7 @@ def edit_part_parameters(
             "PART non modifiée."
         )
 
-        for message in messages:
+        for message in allowed_errors:
 
             print(
                 "-",
@@ -1484,7 +1696,9 @@ def edit_part_parameters(
 
         return
 
-    if project.save_safe():
+    if project.save_safe(
+        allowed_errors=allowed_errors
+    ):
 
         print(
             "PART modifiée."
@@ -2344,14 +2558,14 @@ def list_programs(
         f"{'ID':<10}"
         f"{'Nom':<28}"
         f"{'CH':>4}"
-        f"{'Bank':>8}"
-        f"{'Program':>10}"
+        f"  {'Banque Fusion':<22}"
+        f"{'Prog':>5}"
         f"  {'Instrument':<22}"
         f"État"
     )
 
     print(
-        "-" * 100
+        "-" * 115
     )
 
     displayed = []
@@ -2364,6 +2578,16 @@ def list_programs(
         ).get(
             "1",
             {}
+        )
+
+        bank = part.get(
+            "bank"
+        )
+
+        bank_name = (
+            fusion_program_bank_name(bank)
+            if bank is not None
+            else "?"
         )
 
         instrument_name = (
@@ -2408,8 +2632,8 @@ def list_programs(
             f"{program_id:<10}"
             f"{program.get('name', ''):<28}"
             f"{part.get('midi_channel', '?'):>4}"
-            f"{part.get('bank', '?'):>8}"
-            f"{part.get('program', '?'):>10}"
+            f"  {bank_name:<22}"
+            f"{part.get('program', '?'):>5}"
             f"  {instrument_name:<22}"
             f"{state}"
         )
@@ -2440,6 +2664,40 @@ def edit_program(
     project,
     program_id
 ):
+
+    def edit_program_name(
+        program
+    ):
+
+        current_name = program.get(
+            "name",
+            ""
+        )
+
+        print()
+        print(
+            "Nom Fusion actuel :",
+            current_name or "Non défini"
+        )
+
+        name = input(
+            "Nom Fusion "
+            "(Entrée = conserver, - = effacer) : "
+        ).strip()
+
+        if not name:
+
+            return False
+
+        if name == "-":
+
+            program["name"] = ""
+
+        else:
+
+            program["name"] = name
+
+        return True
 
     program = project.get_program(
         program_id
@@ -2495,7 +2753,10 @@ def edit_program(
 
     project.print_part(
         "1",
-        part
+        part,
+        fusion_name=program.get(
+            "name"
+        )
     )
 
     while True:
@@ -2506,6 +2767,7 @@ def edit_program(
         print("====================")
         print("1 - Modifier l'instrument")
         print("2 - Modifier les paramètres")
+        print("3 - Modifier le nom Fusion")
         print("q - Retour")
 
         choice = input(
@@ -2549,17 +2811,28 @@ def edit_program(
                 part
             )
 
+            before_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             part.update(
                 updates
             )
 
-            errors = project.validate_program(
-                program_id
+            after_errors = project.get_blocking_errors(
+                project.validate()
             )
 
-            if errors:
+            new_errors = [
+                error
+                for error in after_errors
+                if error not in before_errors
+            ]
+
+            if new_errors:
 
                 part.clear()
+
                 part.update(
                     old_part
                 )
@@ -2569,16 +2842,64 @@ def edit_program(
                 )
 
                 print_error_messages(
-                    errors
+                    new_errors
                 )
 
                 continue
 
-            if project.save_safe():
+            if project.save_safe(
+                allowed_errors=before_errors
+            ):
 
                 print(
                     "PROGRAM modifié."
                 )
+
+            else:
+
+                part.clear()
+
+                part.update(
+                    old_part
+                )
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
+
+        elif choice == "3":
+
+            old_program = dict(
+                program
+            )
+
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
+            if edit_program_name(
+                program
+            ):
+
+                if project.save_safe(
+                    allowed_errors=allowed_errors
+                ):
+
+                    print(
+                        "Nom Fusion modifié."
+                    )
+
+                else:
+
+                    program.clear()
+
+                    program.update(
+                        old_program
+                    )
+
+                    print(
+                        "⚠ Sauvegarde non effectuée."
+                    )
 
         elif choice.lower() == "q":
 
@@ -2715,11 +3036,7 @@ def list_songs(
             f" {configured}/{total} canaux configurés - {state}"
         )
 
-        print()
-
         # boucle des canaux...
-
-        print()
 
         for channel_id, channel in song.get(
             "channels",
@@ -2739,11 +3056,36 @@ def list_songs(
                 else "Non configuré"
             )
 
+            bank = channel.get(
+                "bank"
+            )
+
+            program = channel.get(
+                "program"
+            )
+
+            bank_name = (
+                fusion_program_bank_name(
+                    bank
+                )
+                if bank is not None
+                else "?"
+            )
+
+            fusion_program = (
+                f"{bank}:{program}"
+                if (
+                    bank is not None
+                    and program is not None
+                )
+                else "?"
+            )
+
             print(
                 f" CH {str(channel_id):<2}"
                 f" → {instrument_name:<20}"
-                f" | Bank {channel.get('bank', '?'):>3}"
-                f" | Program {channel.get('program', '?'):>3}"
+                f" | {bank_name:<20}"
+                f" | {fusion_program:>6}"
             )
 
         print()
@@ -2770,8 +3112,6 @@ def list_songs(
 
         return
 
-    print()
-
     return displayed
 
 def edit_song(
@@ -2795,16 +3135,21 @@ def edit_song(
         )
         print("====================")
 
+        bank = channel.get(
+            "bank"
+        )
+
         print(
-            "Bank       :",
-            channel.get(
-                "bank",
-                "?"
+            "Fusion Bank    :",
+            (
+                f"{fusion_program_bank_name(bank)} ({bank})"
+                if bank is not None
+                else "?"
             )
         )
 
         print(
-            "Program    :",
+            "Fusion Program :",
             channel.get(
                 "program",
                 "?"
@@ -2853,18 +3198,20 @@ def edit_song(
 
         print()
 
-        value = read_int(
-            "Nouveau Bank (Entrée = conserver) : ",
-            0,
-            16383
+        new_bank = choose_fusion_program_bank(
+            channel.get(
+                "bank"
+            )
         )
 
-        if value is not None:
+        if new_bank is not None:
 
-            updates["bank"] = value
+            updates[
+                "bank"
+            ] = new_bank
 
         value = read_int(
-            "Nouveau Program (Entrée = conserver) : ",
+            "Nouveau Fusion Program (Entrée = conserver) : ",
             0,
             127
         )
@@ -2935,16 +3282,25 @@ def edit_song(
             channel
         )
 
+        before_errors = project.get_blocking_errors(
+            project.validate()
+        )
+
         channel.update(
             updates
         )
 
-        errors = project.validate_song_channel(
-            song_id,
-            channel_id
+        after_errors = project.get_blocking_errors(
+            project.validate()
         )
 
-        if errors:
+        new_errors = [
+            error
+            for error in after_errors
+            if error not in before_errors
+        ]
+
+        if new_errors:
 
             channel.clear()
 
@@ -2957,12 +3313,14 @@ def edit_song(
             )
 
             print_error_messages(
-                errors
+                new_errors
             )
 
             return
 
-        if project.save_safe():
+        if project.save_safe(
+            allowed_errors=before_errors
+        ):
 
             print(
                 "Canal SONG modifié."
@@ -3039,6 +3397,16 @@ def edit_song(
                 channel
             )
 
+            bank = channel.get(
+                "bank"
+            )
+
+            bank_name = (
+                fusion_program_bank_name(bank)
+                if bank is not None
+                else "?"
+            )
+
             print(
                 "CH",
                 channel_id,
@@ -3049,7 +3417,8 @@ def edit_song(
                 )
                 if instrument
                 else "Non configuré",
-                f"({channel.get('bank', '?')}:"
+                f"({bank_name} "
+                f"{bank if bank is not None else '?'}:"
                 f"{channel.get('program', '?')})"
             )
 
@@ -3075,201 +3444,241 @@ def edit_song(
 
             continue
 
-        print()
-        print(
-            "Fusion Bank    :",
-            channel.get(
-                "bank",
-                "?"
+        while True:
+
+            bank = channel.get(
+                "bank"
             )
-        )
 
-        print(
-            "Fusion Program :",
-            channel.get(
-                "program",
-                "?"
-            )
-        )
+            print()
 
-        print()
-        print("====================")
-        print("Edition canal SONG")
-        print("====================")
-        print("1 - Modifier l'instrument")
-        print("2 - Modifier les paramètres")
-        print("3 - Modifier le canal MIDI")
-        print("4 - Modifier le nom Fusion")
-        print("q - Retour")
-
-        choice = input(
-            "> "
-        )
-
-        if choice == "1":
-
-            instrument = choose_instrument(
-                project,
-                channel,
-                fusion_name=channel.get(
-                    "fusion_name"
+            print(
+                "Fusion Bank    :",
+                (
+                    f"{fusion_program_bank_name(bank)} ({bank})"
+                    if bank is not None
+                    else "?"
                 )
             )
 
-            if instrument is None:
-
-                continue
-
-            old_instrument = channel.get(
-                "instrument"
+            print(
+                "Fusion Program :",
+                channel.get(
+                    "program",
+                    "?"
+                )
             )
 
-            channel[
-                "instrument"
-            ] = instrument[
-                "id"
-            ]
+            print()
+            print("====================")
+            print("Edition canal SONG")
+            print("====================")
+            print("1 - Modifier l'instrument")
+            print("2 - Modifier les paramètres")
+            print("3 - Modifier le canal MIDI")
+            print("4 - Modifier le nom Fusion")
+            print("q - Retour")
 
-            if project.save_safe():
+            choice = input(
+                "> "
+            )
 
-                print(
-                    "Instrument affecté."
-                )
+            if choice == "1":
 
-            else:
-
-                if old_instrument is None:
-
-                    channel.pop(
-                        "instrument",
-                        None
+                instrument = choose_instrument(
+                    project,
+                    channel,
+                    fusion_name=channel.get(
+                        "fusion_name"
                     )
-
-                else:
-
-                    channel[
-                        "instrument"
-                    ] = old_instrument
-
-                print(
-                    "⚠ Sauvegarde non effectuée."
                 )
 
-        elif choice == "2":
+                if instrument is None:
 
-            edit_song_channel_parameters(
-                project,
-                song_id,
-                channel_id,
-                channel
-            )
+                    continue
 
-        elif choice == "3":
-
-            new_channel = read_int(
-                "Nouveau canal MIDI : ",
-                1,
-                16
-            )
-
-            if new_channel is None:
-
-                continue
-
-            new_channel_id = str(
-                new_channel
-            )
-
-            if new_channel_id == channel_id:
-
-                print(
-                    "Canal inchangé."
+                old_channel = dict(
+                    channel
                 )
 
-                continue
-
-            if new_channel_id in channels:
-
-                print(
-                    "Canal MIDI déjà utilisé."
+                allowed_errors = project.get_blocking_errors(
+                    project.validate()
                 )
 
-                continue
+                channel[
+                    "instrument"
+                ] = instrument[
+                    "id"
+                ]
 
-            old_channels = dict(
-                channels
-            )
-
-            channels[
-                new_channel_id
-            ] = channels.pop(
-                channel_id
-            )
-
-            errors = project.validate_song(
-                song_id
-            )
-
-            if errors:
-
-                channels.clear()
-
-                channels.update(
-                    old_channels
-                )
-
-                print(
-                    "Canal MIDI non modifié."
-                )
-
-                print_error_messages(
-                    errors
-                )
-
-                continue
-
-            if project.save_safe():
-
-                print(
-                    "Canal MIDI modifié :",
-                    channel_id,
-                    "→",
-                    new_channel_id
-                )
-
-            else:
-
-                channels.clear()
-
-                channels.update(
-                    old_channels
-                )
-
-                print(
-                    "⚠ Sauvegarde non effectuée."
-                )
-
-        elif choice == "4":
-
-            if edit_fusion_name(
-                channel
-            ):
-
-                if project.save_safe():
+                if project.save_safe(
+                    allowed_errors=allowed_errors
+                ):
 
                     print(
-                        "Nom Fusion modifié."
+                        "Instrument affecté."
                     )
 
                 else:
+
+                    channel.clear()
+
+                    channel.update(
+                        old_channel
+                    )
 
                     print(
                         "⚠ Sauvegarde non effectuée."
                     )
 
-        elif choice.lower() == "q":
+            elif choice == "2":
 
-            continue
+                edit_song_channel_parameters(
+                    project,
+                    song_id,
+                    channel_id,
+                    channel
+                )
+
+            elif choice == "3":
+
+                new_channel = read_int(
+                    "Nouveau canal MIDI : ",
+                    1,
+                    16
+                )
+
+                if new_channel is None:
+
+                    continue
+
+                new_channel_id = str(
+                    new_channel
+                )
+
+                if new_channel_id == channel_id:
+
+                    print(
+                        "Canal inchangé."
+                    )
+
+                    continue
+
+                if new_channel_id in channels:
+
+                    print(
+                        "Canal MIDI déjà utilisé."
+                    )
+
+                    continue
+
+                old_channels = dict(
+                    channels
+                )
+
+                before_errors = project.get_blocking_errors(
+                    project.validate()
+                )
+
+                channels[
+                    new_channel_id
+                ] = channels.pop(
+                    channel_id
+                )
+
+                after_errors = project.get_blocking_errors(
+                    project.validate()
+                )
+
+                new_errors = [
+                    error
+                    for error in after_errors
+                    if error not in before_errors
+                ]
+
+                if new_errors:
+
+                    channels.clear()
+
+                    channels.update(
+                        old_channels
+                    )
+
+                    print(
+                        "Canal MIDI non modifié."
+                    )
+
+                    print_error_messages(
+                        new_errors
+                    )
+
+                    continue
+
+                if project.save_safe(
+                    allowed_errors=before_errors
+                ):
+
+                    print(
+                        "Canal MIDI modifié :",
+                        channel_id,
+                        "→",
+                        new_channel_id
+                    )
+
+                    channel_id = new_channel_id
+                    channel = channels[
+                        new_channel_id
+                    ]
+
+                else:
+
+                    channels.clear()
+
+                    channels.update(
+                        old_channels
+                    )
+
+                    print(
+                        "⚠ Sauvegarde non effectuée."
+                    )
+
+            elif choice == "4":
+
+                old_channel = dict(
+                    channel
+                )
+
+                allowed_errors = project.get_blocking_errors(
+                    project.validate()
+                )
+
+                if edit_fusion_name(
+                    channel
+                ):
+
+                    if project.save_safe(
+                        allowed_errors=allowed_errors
+                    ):
+
+                        print(
+                            "Nom Fusion modifié."
+                        )
+
+                    else:
+
+                        channel.clear()
+
+                        channel.update(
+                            old_channel
+                        )
+
+                        print(
+                            "⚠ Sauvegarde non effectuée."
+                        )
+
+            elif choice.lower() == "q":
+
+                break
 
 def print_project_summary(
     project
