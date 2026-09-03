@@ -23,7 +23,6 @@ presets = [
     for p in list_presets()
 ]
 
-
 names = set()
 
 #
@@ -142,6 +141,16 @@ FAMILY_COMPATIBILITY = {
     "voice": {
         "voice",
         "choir",
+    },
+
+    "square_lead": {
+        "square_lead",
+        "lead",
+    },
+
+    "lead": {
+        "lead",
+        "square_lead",
     },
 }
 
@@ -562,7 +571,7 @@ for name in sorted(names):
 
         expected_bank = (
             128
-            if family == "drums"
+            if hint.get("family") == "drums"
             else 0
         )
 

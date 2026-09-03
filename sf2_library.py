@@ -99,7 +99,7 @@ def load_library():
             "Bibliothèque SF2 absente"
         )
 
-        return []
+        return {}
 
     with open(
         SF2_FILE,
@@ -128,7 +128,6 @@ def list_presets():
     )
 
     return instruments
-
 
 def save_library(
     library,

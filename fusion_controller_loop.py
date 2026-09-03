@@ -92,6 +92,8 @@ def run_controller_loop(
         #
         # MIDI
         #
+        bank = None
+
         for msg in inp.iter_pending():
 
             if (
@@ -339,6 +341,10 @@ def run_controller_loop(
 
                     continue
 
+                if bank is None:
+
+                    continue
+
                 performance_id = (
                     f"{bank}:{msg.program}"
                 )
@@ -387,15 +393,11 @@ def run_controller_loop(
                     "===================="
                 )
 
-                if (
-                    state.current_mode == selected_mode
-                    and
-                    performance_id == state.current_performance
-                ):
+                if performance_id == state.current_performance:
 
                     continue
 
-                if state.current_mode == "program":
+                if selected_mode == "program":
 
                     load_program(
                         performance_id,
@@ -403,7 +405,7 @@ def run_controller_loop(
                         project
                     )
 
-                elif state.current_mode == "mix":
+                elif selected_mode == "mix":
 
                     load_mix(
                         performance_id,

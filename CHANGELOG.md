@@ -1254,3 +1254,155 @@ Date : 2026-09-02
   * aucune instabilité du classement ;
   * 1209 aliases GM testés ;
   * aucune erreur dans `FUSION_GM_DATA`.
+
+## Fusion2QSynth v2.7
+
+### Version 2.7
+
+La version 2.7 poursuit la consolidation de l'architecture de Fusion2QSynth, avec une séparation plus nette des responsabilités du Contrôleur Live, une meilleure protection du mapping SoundFont et une validation renforcée des correspondances Fusion / General MIDI.
+
+#### Contrôleur Live
+
+* Refactorisation du Contrôleur Live afin de séparer l'orchestration, la boucle MIDI, l'état dynamique et le chargement des performances.
+* Répartition des responsabilités entre :
+
+  * `fusion_controller.py` ;
+  * `fusion_controller_loop.py` ;
+  * `fusion_controller_state.py` ;
+  * `fusion_performance.py`.
+* Centralisation du chargement des PROGRAM, MIX et SONG dans `fusion_performance.py`.
+* Centralisation de l'état dynamique dans `fusion_controller_state.py`.
+* Gestion explicite de :
+
+  * `current_mode` ;
+  * `current_performance` ;
+  * `current_parts` ;
+  * `active_notes` ;
+  * `pending_reload`.
+* Séparation claire entre l'état persistant du projet et l'état temporaire du Contrôleur Live.
+
+#### Traitement MIDI du Contrôleur Live
+
+* Correction du traitement des `Bank Select` en modes PROGRAM et MIX.
+* Le `CC0` reçu sur le canal MIDI par défaut du Fusion est utilisé pour détecter la banque de la performance sélectionnée.
+* Initialisation de la banque détectée avec `None` afin de distinguer correctement :
+
+  * l'absence de `Bank Select` ;
+  * la banque valide `0`.
+* Un `Program Change` de sélection de performance n'est traité que lorsqu'une banque a préalablement été détectée.
+* Les `CC0` et `CC32` provenant des PARTS ne sont plus retransmis à FluidSynth en modes PROGRAM et MIX.
+* Cette protection empêche les `Bank Select` du Fusion d'écraser le mapping SoundFont défini dans Fusion2QSynth.
+* Les contrôleurs provenant de PARTS non actives sont ignorés.
+* Les autres contrôleurs MIDI autorisés continuent d'être transmis à FluidSynth.
+* En mode SONG, les `Program Change` sont ignorés.
+* Le chargement de la SONG sélectionnée reste déclenché par le message MIDI `START`.
+
+#### Mapping Fusion / General MIDI
+
+* Consolidation de `fusion_gm_map.py` comme source centrale des données de correspondance Fusion / General MIDI.
+* Consolidation de `fusion_suggestions.py` pour la détection des familles et le classement des presets proposés.
+* Suppression de l'ancienne structure `GM_DRUM_KITS` devenue inutile.
+* Utilisation de `GM_DRUM_KIT_PROGRAMS` pour l'identification des kits de batterie GM.
+* Correction des mappings responsables des conflits apparents :
+
+  * `Sine Lead` ;
+  * `Stereo 12-Strings`.
+* Validation exhaustive des aliases définis dans `FUSION_GM_DATA`.
+
+#### SoundFonts
+
+* Consolidation de `sf2_library.py` comme interface de la bibliothèque de presets SoundFont.
+* Séparation explicite entre :
+
+  * les banques et programmes provenant du Fusion ;
+  * les banques et programmes des SoundFonts.
+* Les instruments persistants utilisent :
+
+  * `sf2_bank` ;
+  * `sf2_program`.
+* Les performances référencent les instruments par leur identifiant plutôt que de dupliquer les coordonnées SoundFont.
+* Prise en charge des banques SoundFont supérieures à 127 par conversion :
+
+  * `MSB = sf2_bank // 128` ;
+  * `LSB = sf2_bank % 128`.
+* Programmation de FluidSynth par `CC0`, `CC32` et `Program Change`.
+
+#### Encapsulation et architecture
+
+* Consolidation de `FusionProject` comme interface unique du modèle persistant.
+* Séparation entre :
+
+  * modèle persistant ;
+  * logique applicative ;
+  * état dynamique ;
+  * services SoundFont ;
+  * outils de diagnostic ;
+  * outils de développement.
+* Clarification de la convention des canaux MIDI :
+
+  * Fusion2QSynth et `fusion.json` : canaux `1..16` ;
+  * Mido : canaux `0..15`.
+* Conversion des canaux effectuée à la frontière avec Mido.
+* Maintien de la séparation entre données Fusion et données SoundFont.
+* Centralisation des constantes communes dans `fusion_constants.py`.
+* Centralisation des fonctions techniques communes dans `fusion_lib.py`.
+
+#### Nettoyage
+
+* Suppression ou retrait de la documentation des anciens outils de développement devenus obsolètes :
+
+  * `compare_fusion_sf2.py` ;
+  * `plage-GM.py` ;
+  * `parse_sf2_program_list.py` ;
+  * `test-global.py`.
+* Conservation de `integration-globale.py` comme outil officiel de validation globale.
+* Retrait de l'ancien `ROADMAP.md`, devenu obsolète.
+
+#### Documentation
+
+* Révision complète de `ARCHITECTURE.md` pour refléter l'architecture actuelle.
+* Documentation du modèle `fusion.json` et de ses collections :
+
+  * `instruments` ;
+  * `programs` ;
+  * `mixes` ;
+  * `songs`.
+* Documentation des banques SoundFont et de leur conversion MIDI.
+* Documentation des flux :
+
+  * Capture ;
+  * Édition ;
+  * Contrôleur Live.
+* Documentation de la validation et de la réparation progressive.
+* Documentation de la sauvegarde du modèle.
+* Documentation de l'encapsulation et des dépendances entre modules.
+* Documentation des limites MIDI observées du Fusion 8HD.
+* Formalisation des principes de conception du projet.
+* Documentation des possibilités d'évolution future.
+* Ajout d'une section décrivant la philosophie du projet.
+* Révision complète de `README.md` afin de l'aligner sur l'architecture et les fonctionnalités de la version 2.7.
+* Création d'un `TODO` séparant les améliorations futures de l'architecture actuellement implantée.
+
+#### Validation
+
+* Validation finale de `integration-globale.py`.
+* Validation de 61 noms Fusion :
+
+  * 56 avec Hint GM ;
+  * 3 identifiés par famille seulement ;
+  * 2 inconnus (`Program 1` et `TransForce`).
+* Aucun conflit apparent.
+* Aucun Hint GM non respecté.
+* Aucun meilleur Hint GM incorrect.
+* Aucune famille seule incorrecte.
+* Aucune suggestion invalide.
+* Aucun doublon de suggestion.
+* Aucun preset avec champ manquant.
+* Aucun score mal ordonné.
+* Aucun score aberrant.
+* Aucune limite dépassée.
+* Aucune erreur du paramètre `limit`.
+* Aucun Top 1 instable.
+* Aucun Top N instable.
+* Validation exhaustive de 1209 aliases GM.
+* Aucune erreur dans `FUSION_GM_DATA`.
