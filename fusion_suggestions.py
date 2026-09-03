@@ -6,7 +6,6 @@ from difflib import SequenceMatcher
 from fusion_gm_map import (
     FUSION_GM_HINTS,
     GM_PROGRAMS,
-    GM_DRUM_KITS,
     GM_DRUM_KIT_PROGRAMS,
     FAMILIES,
     FUSION_FAMILY_OVERRIDES

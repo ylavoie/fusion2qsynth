@@ -8310,96 +8310,6 @@ GM_PROGRAMS = {
     },
 }
 
-GM_DRUM_KITS = {
-    "standard kit": {
-        "sf2_bank": 128,
-        "sf2_program": 0,
-    },
-    "room kit": {
-        "sf2_bank": 128,
-        "sf2_program": 8,
-    },
-    "power kit": {
-        "sf2_bank": 128,
-        "sf2_program": 16,
-    },
-    "electronic kit": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "tr 808 kit": {
-        "sf2_bank": 128,
-        "sf2_program": 25,
-    },
-    "jazz kit": {
-        "sf2_bank": 128,
-        "sf2_program": 32,
-    },
-    "brush kit": {
-        "sf2_bank": 128,
-        "sf2_program": 40,
-    },
-    "orchestra kit": {
-        "sf2_bank": 128,
-        "sf2_program": 48,
-    },
-    "909ish kit": {
-        "sf2_bank": 128,
-        "sf2_program": 25,
-    },
-    #
-    # HD:Hollow Sun 05
-    #
-    "iix drumps perc": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "el em one": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "el em two": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "akai xr10": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "drum u l8r": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "obie dzx": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "kraftperk": {
-        "sf2_bank": 128,
-        "sf2_program": 25,
-    },
-    "sakata dpm48": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "sdsv kits": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "hs 8 oh 8": {
-        "sf2_bank": 128,
-        "sf2_program": 25,
-    },
-    "hs 9 oh 9": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-    "see our 78": {
-        "sf2_bank": 128,
-        "sf2_program": 24,
-    },
-}
-
 GM_DRUM_KIT_PROGRAMS = {
     0,
     8,
@@ -8547,6 +8457,9 @@ FUSION_FAMILY_OVERRIDES = {
     },
     "low rosin section": {
         "strings"
+    },
+    "stereo 12 strings": {
+        "guitar"
     },
     "standard set": {
         "drums"

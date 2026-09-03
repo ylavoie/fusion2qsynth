@@ -18,6 +18,9 @@ venv/
 # Suivi des performances
 last_performance.json
 
+# Projet utilisateur local
+fusion.json
+
 # Sauvegardes locales
 fusion.json.bak*
 backups/*
@@ -26,7 +29,7 @@ backups/*
 .markdownlint.json
 
 # Archives de release
-releases/*.tar.gz
+releases/*.tar.xz
 
 # Archives de MIDI
 Community/*
