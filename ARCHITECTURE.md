@@ -320,6 +320,95 @@ pas sauvegardée.
 La sauvegarde définitive est effectuée par
 `FusionProject.save_safe()`.
 
+###### Assignation automatique des PROGRAM
+
+Lors de la capture d'une SONG, chaque canal transmet notamment le Bank Select et le Program Change du PROGRAM utilisé sur le Fusion.
+
+La combinaison :
+
+```text
+bank + program
+```
+
+correspond à l'identifiant utilisé pour les PROGRAM enregistrés dans le projet :
+
+```text
+bank:program
+```
+
+La Capture utilise cette correspondance pour reconnaître automatiquement les PROGRAM déjà connus.
+
+Pour chaque canal capturé :
+
+```text
+bank + program
+    |
+    v
+PROGRAM connu ?
+    |
+    +-- oui -> récupérer le nom Fusion
+    |          et l'instrument associé
+    |
+    +-- non -> conserver le canal
+               non configuré
+```
+
+Lorsqu'un PROGRAM connu possède un seul PART, la Capture peut récupérer automatiquement :
+
+* `fusion_name` depuis le nom du PROGRAM ;
+* `instrument` depuis le PART du PROGRAM.
+
+Aucune correspondance approximative n'est effectuée. Si aucun PROGRAM enregistré ne correspond exactement à `bank:program`, le canal reste à configurer dans l'Éditeur.
+
+###### Recapture d'une SONG existante
+
+Une SONG peut être modifiée soit directement sur le Fusion, soit dans Fusion2QSynth.
+
+Lors d'une recapture, les valeurs `bank` et `program` reçues du Fusion sont donc comparées à celles déjà enregistrées pour chaque canal.
+
+Si elles sont identiques, les choix existants de `instrument` et `fusion_name` sont conservés.
+
+Si elles sont différentes, la Capture demande à l'utilisateur quelle configuration doit être conservée :
+
+```text
+canal recapturé
+    |
+    v
+canal déjà enregistré ?
+    |
+    +-- non -> utiliser la nouvelle capture
+    |
+    +-- oui
+          |
+          v
+   même bank + program ?
+          |
+      +---+---+
+      |       |
+     oui     non
+      |       |
+      |       v
+      |   demander à l'utilisateur
+      |       |
+      |    +--+--+
+      |    |     |
+      |   oui   non
+      |    |     |
+      |    |     +-> accepter la capture Fusion
+      |    |
+      |    +-> conserver la configuration
+      |        Fusion2QSynth
+      |
+      +-> conserver instrument
+          et fusion_name existants
+```
+
+Le choix de conserver la configuration enregistrée préserve le canal existant complet.
+
+Le choix d'accepter la capture utilise les nouvelles valeurs reçues du Fusion. Si le nouveau `bank:program` correspond à un PROGRAM connu, son nom Fusion et son instrument sont alors assignés automatiquement.
+
+Ce mécanisme permet ainsi d'éditer une SONG indifféremment depuis le Fusion ou depuis Fusion2QSynth, sans imposer systématiquement la priorité de l'un sur l'autre.
+
 ---
 
 ### Contrôle temps réel
