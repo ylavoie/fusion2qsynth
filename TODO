@@ -1,9 +1,5 @@
 # TODO
 
-## ARCHITECTURE.md
-
-* Documenter le mécanisme de sauvegarde, d'archivage et de récupération (`backups / archives / récupération`).
-
 ## Capture améliorée ##
 
 Les MIX et les SONG sont composés de PROGRAM par canaux.
