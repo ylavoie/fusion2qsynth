@@ -1255,6 +1255,8 @@ Date : 2026-09-02
   * 1209 aliases GM testés ;
   * aucune erreur dans `FUSION_GM_DATA`.
 
+---
+
 ## Fusion2QSynth v2.7
 
 ### Version 2.7
@@ -1406,3 +1408,104 @@ La version 2.7 poursuit la consolidation de l'architecture de Fusion2QSynth, ave
 * Aucun Top N instable.
 * Validation exhaustive de 1209 aliases GM.
 * Aucune erreur dans `FUSION_GM_DATA`.
+
+---
+
+## Fusion2QSynth v2.8
+
+### Version 2.8
+
+La version 2.8 poursuit la consolidation de Fusion2QSynth en unifiant le système de journalisation, en documentant les mécanismes de sauvegarde, d'archivage et de récupération du projet, et en améliorant la capture des SONG afin de réutiliser automatiquement les PROGRAM déjà connus.
+
+#### Journalisation
+
+* Unification du système de journalisation dans `fusion_lib.py`.
+* Suppression de l'ancien mécanisme `_log()` qui écrivait directement dans le fichier journal.
+* Utilisation du module standard Python `logging` pour l'ensemble des messages du projet.
+* Conservation des interfaces publiques :
+  * `log_info()` ;
+  * `log_warning()` ;
+  * `log_event()` ;
+  * `log_error()`.
+* Conservation de la distinction sémantique entre les messages d'information et les événements, tout en utilisant le même niveau `INFO` dans le journal.
+* Centralisation du format et de la destination du journal par `logging.basicConfig()`.
+
+#### Sauvegarde du projet
+
+* Documentation détaillée de `save_safe()` comme mécanisme central de sauvegarde de `fusion.json`.
+* Validation du modèle avant toute sauvegarde.
+* Distinction entre les erreurs bloquantes et les erreurs autorisées ou préexistantes.
+* Rotation automatique des sauvegardes locales :
+  * `fusion.json.bak` ;
+  * `fusion.json.bak1` ;
+  * `fusion.json.bak2`.
+* Écriture du nouveau modèle dans un fichier temporaire avant le remplacement final de `fusion.json`.
+* Utilisation de `os.replace()` pour le remplacement final du fichier.
+* Maintien de `FusionProject` comme interface unique de modification et de sauvegarde du modèle persistant.
+
+#### Archivage
+
+* Documentation du mécanisme d'archivage historique de `fusion.json`.
+* Conservation des archives dans le répertoire `backups`.
+* Création d'archives horodatées sous la forme :
+  * `fusion-YYYY-MM-DD_HHMMSS.json`.
+* Conservation automatique des 30 archives les plus récentes.
+* Utilisation de SHA-256 pour déterminer si l'état courant du projet est déjà présent parmi les archives conservées.
+* `archive_if_changed()` évite la création d'une nouvelle archive lorsqu'un contenu identique existe déjà.
+* Création automatique d'une archive lors de la sortie normale du programme lorsque le projet a changé.
+* Possibilité de créer manuellement une archive depuis le menu principal.
+
+#### Récupération
+
+* Documentation détaillée du mécanisme de récupération d'un projet dont `fusion.json` est invalide.
+* Distinction entre :
+  * une erreur permettant une récupération depuis les sauvegardes locales ;
+  * une erreur de chargement ne permettant pas cette récupération automatique.
+* Présentation des sauvegardes `.bak`, `.bak1` et `.bak2` disponibles lors d'une récupération.
+* Validation du projet après restauration depuis une sauvegarde locale.
+* Journalisation séparée des opérations de récupération dans `fusion_recovery.log`.
+* Validation des archives avant leur présentation comme candidates à une restauration.
+* Les erreurs non bloquantes, notamment les conflits de canaux MIDI autorisés par le modèle, n'empêchent pas une archive d'être considérée comme valide.
+* Validation d'une archive avant le remplacement du projet courant.
+* Protection de l'état courant par `archive_if_changed()` avant une restauration depuis une archive.
+* Possibilité de restaurer manuellement une archive depuis le menu principal.
+
+#### Capture SONG
+
+* Amélioration de la capture des SONG par reconnaissance automatique des PROGRAM déjà enregistrés.
+* Utilisation de la combinaison `bank:program` comme identifiant d'un PROGRAM connu.
+* Pour chaque canal capturé, recherche du PROGRAM correspondant dans le projet.
+* Lorsqu'un PROGRAM connu possède un seul PART, récupération automatique :
+  * du nom Fusion dans `fusion_name` ;
+  * de l'instrument associé dans `instrument`.
+* Les canaux dont le `bank:program` ne correspond à aucun PROGRAM connu restent non configurés.
+* Aucune correspondance approximative n'est effectuée lors de cette assignation.
+
+#### Recapture SONG
+
+* Amélioration de la recapture d'une SONG déjà enregistrée.
+* Comparaison du `bank:program` capturé avec celui déjà enregistré pour chaque canal.
+* Lorsque le PROGRAM est inchangé, conservation des choix existants de `instrument` et `fusion_name`.
+* Lorsqu'un PROGRAM diffère, présentation des valeurs enregistrées et capturées à l'utilisateur.
+* L'utilisateur peut alors choisir entre :
+  * conserver la configuration existante de Fusion2QSynth ;
+  * accepter la nouvelle configuration reçue du Fusion.
+* La conservation de la configuration existante préserve le canal enregistré complet.
+* L'acceptation de la nouvelle configuration permet à une modification effectuée directement sur le Fusion d'être intégrée au projet.
+* Lorsqu'une nouvelle configuration acceptée correspond à un PROGRAM connu, son nom Fusion et son instrument sont assignés automatiquement.
+* Ce mécanisme permet de modifier une SONG aussi bien sur le Fusion que dans Fusion2QSynth sans imposer systématiquement la priorité de l'un sur l'autre.
+
+#### Documentation
+
+* Mise à jour de `ARCHITECTURE.md` pour documenter l'unification du système de journalisation.
+* Documentation détaillée des mécanismes de :
+  * sauvegarde ;
+  * rotation des sauvegardes ;
+  * archivage ;
+  * rotation des archives ;
+  * détection des archives identiques ;
+  * récupération depuis une sauvegarde ;
+  * restauration depuis une archive.
+* Documentation de l'assignation automatique des PROGRAM lors de la capture SONG.
+* Documentation de la gestion des conflits entre une SONG modifiée sur le Fusion et une SONG modifiée dans Fusion2QSynth.
+* Résolution des améliorations restantes consignées dans `TODO`.

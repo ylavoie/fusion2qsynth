@@ -320,6 +320,95 @@ pas sauvegardée.
 La sauvegarde définitive est effectuée par
 `FusionProject.save_safe()`.
 
+###### Assignation automatique des PROGRAM
+
+Lors de la capture d'une SONG, chaque canal transmet notamment le Bank Select et le Program Change du PROGRAM utilisé sur le Fusion.
+
+La combinaison :
+
+```text
+bank + program
+```
+
+correspond à l'identifiant utilisé pour les PROGRAM enregistrés dans le projet :
+
+```text
+bank:program
+```
+
+La Capture utilise cette correspondance pour reconnaître automatiquement les PROGRAM déjà connus.
+
+Pour chaque canal capturé :
+
+```text
+bank + program
+    |
+    v
+PROGRAM connu ?
+    |
+    +-- oui -> récupérer le nom Fusion
+    |          et l'instrument associé
+    |
+    +-- non -> conserver le canal
+               non configuré
+```
+
+Lorsqu'un PROGRAM connu possède un seul PART, la Capture peut récupérer automatiquement :
+
+* `fusion_name` depuis le nom du PROGRAM ;
+* `instrument` depuis le PART du PROGRAM.
+
+Aucune correspondance approximative n'est effectuée. Si aucun PROGRAM enregistré ne correspond exactement à `bank:program`, le canal reste à configurer dans l'Éditeur.
+
+###### Recapture d'une SONG existante
+
+Une SONG peut être modifiée soit directement sur le Fusion, soit dans Fusion2QSynth.
+
+Lors d'une recapture, les valeurs `bank` et `program` reçues du Fusion sont donc comparées à celles déjà enregistrées pour chaque canal.
+
+Si elles sont identiques, les choix existants de `instrument` et `fusion_name` sont conservés.
+
+Si elles sont différentes, la Capture demande à l'utilisateur quelle configuration doit être conservée :
+
+```text
+canal recapturé
+    |
+    v
+canal déjà enregistré ?
+    |
+    +-- non -> utiliser la nouvelle capture
+    |
+    +-- oui
+          |
+          v
+   même bank + program ?
+          |
+      +---+---+
+      |       |
+     oui     non
+      |       |
+      |       v
+      |   demander à l'utilisateur
+      |       |
+      |    +--+--+
+      |    |     |
+      |   oui   non
+      |    |     |
+      |    |     +-> accepter la capture Fusion
+      |    |
+      |    +-> conserver la configuration
+      |        Fusion2QSynth
+      |
+      +-> conserver instrument
+          et fusion_name existants
+```
+
+Le choix de conserver la configuration enregistrée préserve le canal existant complet.
+
+Le choix d'accepter la capture utilise les nouvelles valeurs reçues du Fusion. Si le nouveau `bank:program` correspond à un PROGRAM connu, son nom Fusion et son instrument sont alors assignés automatiquement.
+
+Ce mécanisme permet ainsi d'éditer une SONG indifféremment depuis le Fusion ou depuis Fusion2QSynth, sans imposer systématiquement la priorité de l'un sur l'autre.
+
 ---
 
 ### Contrôle temps réel
@@ -2096,22 +2185,19 @@ conversion des notes
 
 ##### Journalisation
 
-Le module fournit deux mécanismes de journalisation.
+Le module centralise la journalisation à l'aide du module standard `logging` de Python.
 
-Les fonctions :
+La configuration est définie une seule fois par :
 
-```text
-log_info()
-log_warning()
+```python
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s [ %(levelname)s ] %(message)s"
+)
 ```
 
-s'appuient sur une fonction interne :
-
-```text
-_log()
-```
-
-qui écrit directement dans le fichier défini par :
+La destination est le fichier défini par :
 
 ```text
 LOG_FILE
@@ -2128,28 +2214,41 @@ message
 sous une forme comparable à :
 
 ```text
-YYYY-MM-DD HH:MM:SS [INFO] message
+YYYY-MM-DD HH:MM:SS [ INFO ] message
 ```
 
-Le module configure également le système standard `logging` de Python.
-
-Les fonctions :
+Le module fournit quatre fonctions d'interface :
 
 ```text
+log_info()
+log_warning()
 log_event()
 log_error()
 ```
 
-utilisent respectivement :
+Elles utilisent toutes le même mécanisme de journalisation.
 
-```text
+`log_info()` et `log_event()` utilisent :
+
+```python
 logging.info()
+```
+
+`log_warning()` utilise :
+
+```python
+logging.warning()
+```
+
+et `log_error()` utilise :
+
+```python
 logging.error()
 ```
 
-La destination est également `LOG_FILE`.
+La distinction entre `log_info()` et `log_event()` est volontairement conservée afin de maintenir une séparation sémantique entre les informations générales et les événements applicatifs, même si les deux utilisent actuellement le niveau `INFO`.
 
-Ces deux mécanismes coexistent actuellement dans le module.
+L'ancien mécanisme interne `_log()`, qui écrivait directement dans `LOG_FILE`, a été supprimé afin d'éviter la coexistence de deux systèmes de journalisation.
 
 ##### Détection des ports MIDI
 
@@ -5069,6 +5168,7 @@ FusionProject
      |
      +-- validation
      +-- sauvegarde sécurisée
+     +-- rotation des sauvegardes
      |
      v
 fusion.json
@@ -5080,7 +5180,13 @@ Cette centralisation garantit que toutes les modifications persistantes passent 
 
 ### Sauvegarde sécurisée
 
-La méthode de sauvegarde sécurisée constitue le chemin normal d'écriture du projet.
+La méthode :
+
+```text
+save_safe()
+```
+
+constitue le chemin normal d'écriture du projet.
 
 Le flux général est :
 
@@ -5098,16 +5204,62 @@ validation
 valide    erreurs
    |         |
    v         v
-écriture   traitement
-             |
-             +-- correction
-             +-- réparation
-             +-- refus éventuel
+rotation   traitement
+des .bak     |
+   |         +-- correction
+   v         +-- réparation
+écriture     +-- refus éventuel
+temporaire
+   |
+   v
+fusion.json
 ```
 
 La validation précède donc la persistance des modifications.
 
 L'objectif est d'éviter qu'une modification incorrecte remplace silencieusement un projet utilisable.
+
+---
+
+### Validation avant sauvegarde
+
+`save_safe()` commence par appeler :
+
+```text
+validate()
+```
+
+puis :
+
+```text
+get_blocking_errors()
+```
+
+afin de déterminer si l'état courant du projet peut être persisté.
+
+Les conflits de canaux MIDI représentés par :
+
+```text
+midi_channel_conflict
+```
+
+ne sont pas considérés comme bloquants par `get_blocking_errors()`.
+
+La méthode `save_safe()` accepte également :
+
+```text
+allowed_errors
+```
+
+qui permet à l'appelant d'autoriser explicitement certaines erreurs déjà connues.
+
+Si des erreurs bloquantes demeurent, la sauvegarde est refusée :
+
+```text
+Sauvegarde refusée : erreurs de validation.
+```
+
+Le fichier `fusion.json` n'est alors pas remplacé.
 
 ---
 
@@ -5155,6 +5307,132 @@ Une opération ne doit toutefois pas être autorisée à introduire de nouvelles
 
 ---
 
+### Rotation des sauvegardes
+
+Avant de remplacer `fusion.json`, `save_safe()` appelle :
+
+```text
+_rotate_backups()
+```
+
+Le nombre de sauvegardes conservées est défini par :
+
+```python
+_BACKUP_COUNT = 3
+```
+
+Le système maintient donc :
+
+```text
+fusion.json.bak
+fusion.json.bak1
+fusion.json.bak2
+```
+
+La rotation fonctionne ainsi :
+
+```text
+fusion.json.bak1
+        |
+        v
+fusion.json.bak2
+
+fusion.json.bak
+        |
+        v
+fusion.json.bak1
+
+fusion.json
+        |
+        v
+fusion.json.bak
+```
+
+Les déplacements sont effectués avec :
+
+```text
+os.replace()
+```
+
+Ainsi, immédiatement avant l'installation d'une nouvelle version de `fusion.json`, les trois versions précédentes peuvent être conservées.
+
+La sauvegarde la plus récente est :
+
+```text
+fusion.json.bak
+```
+
+et les versions plus anciennes sont progressivement déplacées vers :
+
+```text
+fusion.json.bak1
+fusion.json.bak2
+```
+
+Ces fichiers constituent la protection immédiate du fichier de travail.
+
+Ils sont distincts des archives historiques décrites dans la section `Archivage`.
+
+---
+
+### Écriture temporaire
+
+Après la validation et la rotation des sauvegardes, le nouvel état du projet n'est pas écrit directement dans `fusion.json`.
+
+`save_safe()` crée d'abord :
+
+```text
+fusion.json.tmp
+```
+
+Le modèle est sérialisé dans ce fichier avec :
+
+```text
+json.dump()
+```
+
+Lorsque l'écriture est terminée, le fichier temporaire est installé avec :
+
+```python
+os.replace(
+    temp_file,
+    self.filename
+)
+```
+
+Le cycle d'écriture est donc :
+
+```text
+fusion.json courant
+        |
+        v
+rotation des sauvegardes
+        |
+        v
+fusion.json.bak
+        |
+        +--------------------+
+                             |
+nouvel état du modèle        |
+        |                    |
+        v                    |
+fusion.json.tmp              |
+        |                    |
+        v                    |
+   os.replace()              |
+        |                    |
+        v                    |
+nouveau fusion.json          |
+                             |
+ancienne version ------------+
+```
+
+Le fichier temporaire est supprimé dans le bloc `finally` s'il existe encore après l'opération.
+
+Cette stratégie réduit le risque de laisser `fusion.json` partiellement écrit si la sérialisation échoue.
+
+---
+
 ### Échec de sauvegarde
 
 Lorsqu'une modification ne peut pas être sauvegardée correctement, le module appelant doit éviter autant que possible de conserver un modèle partiellement modifié.
@@ -5180,6 +5458,22 @@ nouvel  restauration
 ```
 
 Cette stratégie permet de maintenir la cohérence entre l'état en mémoire et l'état réellement enregistré.
+
+Elle complète la protection assurée par `save_safe()` :
+
+```text
+niveau modèle
+    |
+    +-- restauration de l'état en mémoire
+        par le module appelant
+
+niveau fichier
+    |
+    +-- validation
+    +-- rotation des .bak
+    +-- écriture temporaire
+    +-- remplacement de fusion.json
+```
 
 ---
 
@@ -5229,6 +5523,8 @@ FusionProject
         +-- possède le modèle
         +-- valide le modèle
         +-- contrôle la sauvegarde
+        +-- maintient les sauvegardes rotatives
+        +-- assure l'écriture sécurisée
         |
         v
 fusion.json
@@ -5237,6 +5533,8 @@ fusion.json
 Les modules applicatifs décident des modifications métier à effectuer.
 
 `FusionProject` décide si l'état obtenu peut être persisté et assure l'écriture du fichier.
+
+La gestion physique de `fusion.json`, de son fichier temporaire et de ses sauvegardes rotatives reste ainsi encapsulée dans le modèle persistant.
 
 ---
 
@@ -5254,7 +5552,10 @@ modèle en mémoire
 validation
        |
        v
-sauvegarde sécurisée
+rotation des sauvegardes
+       |
+       v
+écriture temporaire
        |
        v
 fusion.json
@@ -5263,6 +5564,1238 @@ fusion.json
 L'objectif n'est pas seulement d'écrire un fichier JSON valide syntaxiquement.
 
 La sauvegarde doit préserver un modèle Fusion2QSynth cohérent et exploitable par la Capture, l'Éditeur et le Contrôleur Live.
+
+Les sauvegardes rotatives ajoutent une protection immédiate contre la perte du dernier état utilisable, tandis que le mécanisme d'archivage fournit un historique à plus long terme.
+
+## Archivage
+
+L'archivage de `fusion.json` est géré par `FusionProject`.
+
+Il complète le mécanisme de sauvegarde rotative décrit dans la section précédente.
+
+Les deux mécanismes répondent à des objectifs différents :
+
+```text
+sauvegardes .bak
+       |
+       +-- protection immédiate
+       +-- dernières versions du projet
+       +-- rotation automatique
+       |
+       v
+fusion.json.bak
+fusion.json.bak1
+fusion.json.bak2
+
+archives
+       |
+       +-- historique à plus long terme
+       +-- copies horodatées
+       +-- conservation de plusieurs états
+       |
+       v
+backups/fusion-YYYY-MM-DD_HHMMSS.json
+```
+
+Les sauvegardes `.bak` sont créées pendant la sauvegarde sécurisée du projet.
+
+Les archives sont des copies indépendantes de `fusion.json` conservées dans un répertoire dédié.
+
+---
+
+### Répertoire des archives
+
+Le répertoire utilisé pour les archives est défini par :
+
+```python
+ARCHIVE_DIR = "backups"
+```
+
+Le nombre maximal d'archives conservées est défini par :
+
+```python
+ARCHIVE_COUNT = 30
+```
+
+Le répertoire est créé automatiquement lorsqu'une archive doit être enregistrée et qu'il n'existe pas encore.
+
+La structure obtenue est par exemple :
+
+```text
+fusion2qsynth/
+       |
+       +-- fusion.json
+       +-- fusion.json.bak
+       +-- fusion.json.bak1
+       +-- fusion.json.bak2
+       |
+       +-- backups/
+              |
+              +-- fusion-2026-08-28_142531.json
+              +-- fusion-2026-08-29_091405.json
+              +-- fusion-2026-09-02_214812.json
+              +-- ...
+```
+
+Les sauvegardes rotatives restent donc à côté de `fusion.json`, tandis que les archives historiques sont regroupées dans `backups/`.
+
+---
+
+### Création d'une archive
+
+La méthode :
+
+```text
+archive()
+```
+
+crée une copie horodatée du projet courant.
+
+Elle vérifie d'abord que `fusion.json` existe.
+
+Le flux est :
+
+```text
+archive()
+    |
+    v
+fusion.json existe ?
+    |
+ +--+--+
+ |     |
+non   oui
+ |     |
+ v     v
+échec  création de backups/
+             |
+             v
+      génération du nom
+             |
+             v
+      copie de fusion.json
+             |
+             v
+      rotation des archives
+             |
+             v
+           succès
+```
+
+Le fichier courant est copié avec :
+
+```text
+shutil.copy()
+```
+
+L'archive représente donc un instantané complet du projet au moment de sa création.
+
+---
+
+### Nom des archives
+
+Chaque archive reçoit un nom construit à partir du nom du projet et d'un horodatage.
+
+Le format de l'horodatage est :
+
+```text
+YYYY-MM-DD_HHMMSS
+```
+
+Pour `fusion.json`, le résultat prend la forme :
+
+```text
+fusion-YYYY-MM-DD_HHMMSS.json
+```
+
+Par exemple :
+
+```text
+fusion-2026-09-03_201530.json
+```
+
+L'horodatage permet :
+
+```text
+archive
+   |
+   +-- identification chronologique
+   +-- noms distincts
+   +-- tri naturel par nom
+```
+
+Le format utilisé place les composantes temporelles de la plus significative à la moins significative, ce qui permet également au nom du fichier de représenter correctement l'ordre chronologique.
+
+---
+
+### Rotation des archives
+
+Après la création d'une archive, `archive()` appelle :
+
+```text
+_rotate_archives()
+```
+
+Le nombre maximal d'archives conservées est :
+
+```python
+ARCHIVE_COUNT = 30
+```
+
+La rotation recherche les fichiers correspondant au projet :
+
+```text
+fusion-*.json
+```
+
+puis les trie en ordre décroissant.
+
+Le principe est :
+
+```text
+archives existantes
+        |
+        v
+tri décroissant
+        |
+        v
+30 plus récentes
+        |
+   +----+----+
+   |         |
+conservées  archives
+           plus anciennes
+                |
+                v
+             supprimées
+```
+
+Ainsi, le répertoire d'archives ne croît pas indéfiniment.
+
+Lorsque la limite est dépassée, les archives les plus anciennes sont supprimées.
+
+---
+
+### Archivage conditionnel
+
+La méthode :
+
+```text
+archive_if_changed()
+```
+
+évite de créer inutilement plusieurs archives contenant exactement le même projet.
+
+Le principe est :
+
+```text
+fusion.json
+    |
+    v
+calcul SHA-256
+    |
+    v
+archives existantes
+    |
+    v
+comparaison des contenus
+    |
+ +--+--+
+ |     |
+identique
+ |     |
+oui   non
+ |     |
+ v     v
+aucune création
+       |
+       v
+   archive()
+```
+
+Si le répertoire `backups/` n'existe pas encore, une archive est créée.
+
+De même, si aucune archive du projet n'existe encore, `archive_if_changed()` crée la première archive.
+
+---
+
+### Comparaison par contenu
+
+La comparaison repose sur :
+
+```text
+_file_hash()
+```
+
+Cette méthode calcule une empreinte :
+
+```text
+SHA-256
+```
+
+du contenu du fichier.
+
+Le fichier est lu en blocs et son empreinte cryptographique est calculée :
+
+```text
+fichier
+   |
+   v
+lecture par blocs
+   |
+   v
+SHA-256
+   |
+   v
+empreinte
+```
+
+`archive_if_changed()` calcule l'empreinte de `fusion.json`, puis la compare aux empreintes des archives existantes.
+
+Le principe est donc fondé sur le contenu réel :
+
+```text
+nom différent
+date différente
+       |
+       v
+contenu identique
+       |
+       v
+même empreinte SHA-256
+       |
+       v
+pas de nouvelle archive
+```
+
+La comparaison ne se limite pas à l'archive la plus récente.
+
+Les archives existantes sont parcourues et, si l'une d'elles possède déjà le même contenu que `fusion.json`, aucune nouvelle archive n'est créée.
+
+Cela évite de multiplier les copies identiques même si un état antérieur du projet réapparaît ultérieurement.
+
+---
+
+### Archivage à la fermeture
+
+Le programme principal utilise l'archivage conditionnel lorsqu'il quitte normalement.
+
+Le principe est :
+
+```text
+quitter Fusion2QSynth
+        |
+        v
+archive_if_changed()
+        |
+   +----+----+
+   |         |
+projet     projet
+déjà       différent
+archivé
+   |         |
+   v         v
+aucune     nouvelle
+archive    archive
+   |         |
+   +----+----+
+        |
+        v
+      sortie
+```
+
+Ainsi, un état nouveau du projet peut être conservé à la fin d'une session sans créer systématiquement une archive identique à une archive déjà existante.
+
+---
+
+### Archivage manuel
+
+Le menu principal permet également de demander explicitement la création d'une archive.
+
+Cette opération utilise :
+
+```text
+archive()
+```
+
+et non :
+
+```text
+archive_if_changed()
+```
+
+Le principe est donc différent :
+
+```text
+archivage automatique
+à la fermeture
+       |
+       v
+archive_if_changed()
+       |
+       +-- évite les contenus identiques
+
+archivage manuel
+       |
+       v
+archive()
+       |
+       +-- demande explicite de création
+```
+
+L'utilisateur peut ainsi créer volontairement un instantané du projet lorsqu'il considère qu'un état particulier mérite d'être conservé.
+
+---
+
+### Validation et archivage
+
+La création d'une archive et la validation d'une archive sont deux opérations distinctes.
+
+`archive()` copie le fichier courant :
+
+```text
+fusion.json
+    |
+    v
+archive()
+    |
+    v
+backups/fusion-...json
+```
+
+La validation intervient lorsqu'une archive doit être considérée comme candidate à une restauration.
+
+Cette responsabilité appartient au mécanisme de récupération décrit dans la section suivante.
+
+Cette séparation permet de distinguer clairement :
+
+```text
+Archivage
+    |
+    +-- création
+    +-- conservation
+    +-- rotation
+    +-- déduplication
+
+Récupération
+    |
+    +-- recherche des candidats
+    +-- validation
+    +-- sélection
+    +-- restauration
+```
+
+---
+
+### Responsabilités
+
+La gestion des archives reste centralisée dans `FusionProject`.
+
+```text
+fusion2qsynth.py
+       |
+       +-- demande archive
+       +-- demande archive_if_changed
+       |
+       v
+FusionProject
+       |
+       +-- archive()
+       +-- archive_if_changed()
+       +-- _file_hash()
+       +-- _rotate_archives()
+       |
+       v
+backups/
+```
+
+Le programme principal décide quand une archive doit être demandée.
+
+`FusionProject` prend en charge les détails physiques de sa création, de sa comparaison et de sa rotation.
+
+---
+
+### Objectif architectural
+
+Le mécanisme d'archivage ajoute une seconde couche de protection au projet.
+
+```text
+fusion.json
+    |
+    +----------------------+
+    |                      |
+    v                      v
+sauvegardes             archives
+rotatives               historiques
+    |                      |
+    v                      v
+.bak                   backups/
+.bak1                      |
+.bak2                      +-- jusqu'à 30
+    |                      |   instantanés
+    |                      |
+    +----------+-----------+
+               |
+               v
+       protection du projet
+```
+
+Les sauvegardes rotatives protègent principalement les derniers états de travail.
+
+Les archives permettent de conserver plusieurs états historiques du projet sur une période plus longue.
+
+La restauration de ces données constitue une responsabilité distincte et est décrite dans la section `Récupération`.
+
+## Récupération
+
+Le mécanisme de récupération permet de restaurer un projet lorsque `fusion.json` est invalide ou lorsqu'un état antérieur doit être rétabli volontairement.
+
+Il s'appuie sur les deux niveaux de protection décrits précédemment :
+
+```text
+fusion.json
+    |
+    +-- sauvegardes rotatives
+    |       |
+    |       +-- fusion.json.bak
+    |       +-- fusion.json.bak1
+    |       +-- fusion.json.bak2
+    |
+    +-- archives historiques
+            |
+            +-- backups/fusion-*.json
+```
+
+Ces deux sources de récupération ont des rôles différents.
+
+Les sauvegardes rotatives permettent principalement de récupérer rapidement les derniers états du projet.
+
+Les archives permettent de revenir volontairement à un état historique conservé.
+
+---
+
+### Détection d'un projet invalide
+
+Le chargement normal du projet est effectué par :
+
+```text
+FusionProject.load()
+```
+
+Si `fusion.json` n'existe pas, le projet est initialisé avec un modèle vide.
+
+Si le fichier existe, il est chargé avec le décodeur JSON.
+
+Le principe est :
+
+```text
+FusionProject()
+      |
+      v
+    load()
+      |
+      v
+fusion.json existe ?
+      |
+   +--+--+
+   |     |
+  non   oui
+   |     |
+   v     v
+projet  chargement
+vide      JSON
+           |
+           v
+       JSON valide ?
+           |
+        +--+--+
+        |     |
+       oui   non
+        |     |
+        v     v
+      projet  récupération
+      chargé  éventuelle
+```
+
+Une erreur de syntaxe JSON ne provoque donc pas nécessairement un arrêt brutal du programme.
+
+`FusionProject` détermine d'abord si une sauvegarde immédiate peut permettre une récupération.
+
+---
+
+### Projet récupérable
+
+Lorsqu'un `fusion.json` invalide est détecté, `load()` vérifie la présence de :
+
+```text
+fusion.json.bak
+```
+
+Si cette sauvegarde existe, l'exception :
+
+```text
+ProjectRecoveryError
+```
+
+est levée.
+
+Elle indique au programme principal que le projet courant ne peut pas être chargé normalement, mais qu'une récupération est possible.
+
+Le flux devient :
+
+```text
+fusion.json invalide
+        |
+        v
+fusion.json.bak existe ?
+        |
+     +--+--+
+     |     |
+    oui   non
+     |     |
+     v     v
+ProjectRecoveryError
+           RuntimeError
+     |         |
+     v         v
+récupération  arrêt
+possible      propre
+```
+
+Si aucune sauvegarde immédiate n'existe, une `RuntimeError` est produite et le programme termine proprement après avoir affiché l'erreur.
+
+---
+
+### Sélection d'une sauvegarde
+
+Lorsqu'un `ProjectRecoveryError` est intercepté par le programme principal, celui-ci appelle le mécanisme de sélection des sauvegardes.
+
+La méthode :
+
+```text
+list_backups()
+```
+
+recherche les sauvegardes rotatives disponibles.
+
+Avec :
+
+```python
+_BACKUP_COUNT = 3
+```
+
+les candidats possibles sont :
+
+```text
+fusion.json.bak
+fusion.json.bak1
+fusion.json.bak2
+```
+
+Seuls les fichiers réellement présents sont retournés.
+
+Le flux est :
+
+```text
+ProjectRecoveryError
+        |
+        v
+list_backups()
+        |
+        v
+sauvegardes présentes
+        |
+        v
+affichage des candidats
+        |
+        v
+choix utilisateur
+        |
+     +--+--+
+     |     |
+   choix  annulation
+     |     |
+     v     v
+restauration
+           sortie
+```
+
+Le programme affiche pour chaque sauvegarde des informations obtenues avec :
+
+```text
+get_backup_info()
+```
+
+notamment :
+
+```text
+nom du fichier
+taille
+date de modification
+```
+
+Cela permet à l'utilisateur de choisir explicitement l'état qu'il souhaite tenter de restaurer.
+
+---
+
+### Validation des sauvegardes
+
+`list_backups()` ne valide pas le contenu des fichiers `.bak`.
+
+Son rôle est uniquement d'énumérer les sauvegardes disponibles.
+
+Le principe est donc :
+
+```text
+list_backups()
+      |
+      v
+existence du fichier
+      |
+      v
+candidat affiché
+```
+
+La validité du candidat sélectionné est vérifiée pendant la restauration.
+
+Ce choix évite de charger et valider systématiquement toutes les sauvegardes simplement pour construire la liste des candidats.
+
+Une sauvegarde présente peut donc apparaître dans la liste même si son contenu est lui-même invalide.
+
+---
+
+### Restauration d'une sauvegarde
+
+La restauration du candidat choisi est effectuée par :
+
+```text
+restore_from_backup()
+```
+
+Le fichier sélectionné est copié vers :
+
+```text
+fusion.json
+```
+
+Le projet restauré est ensuite chargé et validé.
+
+Le flux est :
+
+```text
+sauvegarde choisie
+        |
+        v
+restore_from_backup()
+        |
+        v
+copie vers fusion.json
+        |
+        v
+load()
+        |
+        v
+validate()
+        |
+     +--+--+
+     |     |
+   valide erreurs
+     |     |
+     v     v
+  succès  échec
+```
+
+La restauration n'est considérée comme réussie que si le chargement et la validation s'exécutent correctement et qu'aucune erreur de validation n'est retournée.
+
+En cas d'exception ou d'échec de validation, la méthode retourne :
+
+```text
+None
+```
+
+Le programme principal peut alors signaler l'échec de la récupération.
+
+Contrairement à la restauration d'une archive, cette restauration intervient normalement alors que `fusion.json` a déjà été identifié comme inutilisable.
+
+Le candidat `.bak` est donc installé avant sa validation complète.
+
+---
+
+### Journal de récupération
+
+Les opérations de récupération peuvent être enregistrées dans :
+
+```text
+fusion_recovery.log
+```
+
+Le nom du fichier est défini par :
+
+```python
+_RECOVERY_LOG = "fusion_recovery.log"
+```
+
+La méthode :
+
+```text
+log_recovery()
+```
+
+ajoute les événements de récupération à ce journal.
+
+Lors d'une restauration depuis une sauvegarde, les événements peuvent notamment indiquer :
+
+```text
+RESTORE_VALIDATED
+RESTORE_FAILED
+```
+
+Le principe est :
+
+```text
+tentative de récupération
+          |
+          v
+       résultat
+          |
+      +---+---+
+      |       |
+    succès   échec
+      |       |
+      v       v
+RESTORE_   RESTORE_
+VALIDATED  FAILED
+      |       |
+      +---+---+
+          |
+          v
+fusion_recovery.log
+```
+
+Ce journal est distinct du journal applicatif général géré dans `fusion_lib.py`.
+
+Il est spécifiquement associé aux opérations de récupération du projet.
+
+Une erreur d'écriture du journal ne doit pas elle-même empêcher la récupération : `log_recovery()` ignore les erreurs rencontrées lors de cette journalisation.
+
+---
+
+### Liste des archives récupérables
+
+La récupération depuis les archives historiques utilise :
+
+```text
+list_archives()
+```
+
+Contrairement à `list_backups()`, cette méthode ne présente pas simplement tous les fichiers existants.
+
+Chaque archive candidate est vérifiée avec :
+
+```text
+archive_is_valid()
+```
+
+Le flux est :
+
+```text
+backups/
+    |
+    v
+fusion-*.json
+    |
+    v
+archive_is_valid()
+    |
+ +--+--+
+ |     |
+valide invalide
+ |     |
+ v     v
+liste  ignorée
+```
+
+Une archive invalide n'est donc pas présentée à l'utilisateur comme candidate à une restauration.
+
+Les archives valides sont ensuite triées selon leur date de modification, de la plus récente à la plus ancienne.
+
+---
+
+### Validation d'une archive
+
+`archive_is_valid()` charge le contenu JSON de l'archive dans une instance temporaire de `FusionProject`.
+
+Le modèle est ensuite soumis à :
+
+```text
+validate()
+```
+
+puis :
+
+```text
+get_blocking_errors()
+```
+
+Le principe est :
+
+```text
+archive
+   |
+   v
+chargement JSON
+   |
+   v
+FusionProject temporaire
+   |
+   v
+validate()
+   |
+   v
+get_blocking_errors()
+   |
+ +--+--+
+ |     |
+aucune erreurs
+erreur bloquantes
+bloquante |
+ |        v
+ v      invalide
+valide
+```
+
+Les erreurs non bloquantes, notamment certains conflits de canaux MIDI, n'empêchent donc pas une archive d'être considérée comme récupérable.
+
+Cette règle est cohérente avec la distinction entre erreurs bloquantes et non bloquantes utilisée par la sauvegarde sécurisée.
+
+---
+
+### Sélection d'une archive
+
+Le menu principal permet à l'utilisateur de demander explicitement une restauration depuis une archive.
+
+Le programme appelle alors le mécanisme de sélection qui utilise :
+
+```text
+list_archives()
+```
+
+Le flux utilisateur est :
+
+```text
+Restaurer archive
+        |
+        v
+list_archives()
+        |
+        v
+archives valides
+        |
+        v
+affichage
+        |
+        v
+choix utilisateur
+        |
+     +--+--+
+     |     |
+   choix  annulation
+     |     |
+     v     v
+restauration
+           retour au menu
+```
+
+Puisque la validation a déjà été effectuée lors de la construction de la liste, les candidats présentés sont des archives considérées comme récupérables.
+
+---
+
+### Restauration d'une archive
+
+La restauration est effectuée par :
+
+```text
+restore_from_archive()
+```
+
+Contrairement au mécanisme utilisé pour les `.bak`, l'archive est chargée et validée avant de remplacer le projet courant.
+
+Le principe est :
+
+```text
+archive choisie
+      |
+      v
+chargement JSON
+      |
+      v
+validation
+      |
+   +--+--+
+   |     |
+valide invalide
+   |     |
+   v     v
+protection
+du projet  échec
+courant
+   |
+   v
+copie archive
+vers fusion.json
+   |
+   v
+load()
+   |
+   v
+nouveau projet
+```
+
+Si des erreurs bloquantes sont détectées, la restauration est abandonnée avant le remplacement de `fusion.json`.
+
+---
+
+### Protection du projet courant
+
+Avant de remplacer un `fusion.json` existant par une archive, `restore_from_archive()` appelle :
+
+```text
+archive_if_changed()
+```
+
+Le projet courant peut ainsi être archivé s'il ne correspond à aucune archive déjà conservée.
+
+Le flux devient :
+
+```text
+archive à restaurer
+        |
+        v
+validation
+        |
+        v
+fusion.json courant
+        |
+        v
+archive_if_changed()
+        |
+        v
+état courant protégé
+si nécessaire
+        |
+        v
+copie de l'archive
+        |
+        v
+fusion.json restauré
+```
+
+Cette étape protège l'état que l'utilisateur est sur le point d'abandonner.
+
+Il devient donc possible de restaurer un état historique sans perdre nécessairement l'état courant.
+
+---
+
+### Différence entre restauration `.bak` et restauration d'archive
+
+Les deux mécanismes de récupération ne suivent pas exactement le même chemin.
+
+```text
+sauvegarde .bak
+      |
+      v
+copie vers fusion.json
+      |
+      v
+chargement
+      |
+      v
+validation
+
+archive
+      |
+      v
+chargement
+      |
+      v
+validation
+      |
+      v
+protection état courant
+      |
+      v
+copie vers fusion.json
+```
+
+Cette différence correspond à leurs usages.
+
+La récupération `.bak` intervient principalement lorsqu'un `fusion.json` déjà invalide empêche le démarrage normal.
+
+La restauration d'une archive est une opération volontaire effectuée depuis un projet normalement utilisable.
+
+---
+
+### Intégration dans le programme principal
+
+Le programme principal orchestre les différents chemins de récupération.
+
+Au démarrage :
+
+```text
+Fusion2QSynth
+      |
+      v
+FusionProject()
+      |
+   +--+----------------+
+   |                   |
+succès       ProjectRecoveryError
+   |                   |
+   |                   v
+   |             choix sauvegarde
+   |                   |
+   |                   v
+   |           restore_from_backup()
+   |                   |
+   +---------+---------+
+             |
+             v
+       programme normal
+```
+
+Une `RuntimeError` non récupérable provoque une sortie propre.
+
+Pendant l'utilisation :
+
+```text
+menu principal
+      |
+      +-- sauvegarder archive
+      |       |
+      |       v
+      |    archive()
+      |
+      +-- restaurer archive
+              |
+              v
+       choix d'une archive
+              |
+              v
+     restore_from_archive()
+```
+
+À la fermeture normale :
+
+```text
+Quitter
+   |
+   v
+archive_if_changed()
+   |
+   v
+sortie
+```
+
+Le programme principal gère donc l'interaction avec l'utilisateur, tandis que `FusionProject` conserve la responsabilité de la validation et des opérations physiques sur les fichiers.
+
+---
+
+### Responsabilités
+
+La séparation des responsabilités est :
+
+```text
+fusion2qsynth.py
+        |
+        +-- détecte les exceptions
+        +-- présente les candidats
+        +-- recueille le choix
+        |
+        v
+FusionProject
+        |
+        +-- list_backups()
+        +-- get_backup_info()
+        +-- restore_from_backup()
+        +-- list_archives()
+        +-- archive_is_valid()
+        +-- restore_from_archive()
+        +-- log_recovery()
+        |
+        v
+fichiers du projet
+        |
+        +-- fusion.json
+        +-- fusion.json.bak*
+        +-- backups/fusion-*.json
+        +-- fusion_recovery.log
+```
+
+L'interface utilisateur ne décide pas elle-même si un projet restauré est valide.
+
+Cette responsabilité reste dans `FusionProject`.
+
+---
+
+### Objectif architectural
+
+La sauvegarde, l'archivage et la récupération forment ensemble une chaîne de protection du modèle persistant.
+
+```text
+                    fusion.json
+                        |
+          +-------------+-------------+
+          |                           |
+          v                           v
+     sauvegardes                  archives
+      rotatives                  historiques
+          |                           |
+          v                           v
+       .bak*                       backups/
+          |                           |
+          +-------------+-------------+
+                        |
+                        v
+                   récupération
+                        |
+              +---------+---------+
+              |                   |
+              v                   v
+       restauration .bak   restauration archive
+              |                   |
+              +---------+---------+
+                        |
+                        v
+                   fusion.json
+                        |
+                        v
+                    validation
+                        |
+                        v
+                 projet exploitable
+```
+
+Les trois mécanismes ont ainsi des responsabilités complémentaires :
+
+```text
+Sauvegarde
+    |
+    +-- protéger les derniers états
+    +-- sécuriser l'écriture courante
+
+Archivage
+    |
+    +-- conserver des états historiques
+    +-- éviter les duplications inutiles
+
+Récupération
+    |
+    +-- détecter un projet inutilisable
+    +-- proposer des états récupérables
+    +-- valider les candidats
+    +-- restaurer un état exploitable
+```
+
+Cette architecture permet de protéger `fusion.json` à la fois contre les erreurs d'écriture, les corruptions du fichier courant et les besoins de retour volontaire à un état antérieur.
 
 ## Encapsulation
 

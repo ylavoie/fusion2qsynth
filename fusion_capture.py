@@ -826,6 +826,115 @@ def capture_song(
                             channel_id
                         )
 
+                        #
+                        # Canal déjà enregistré avec un PROGRAM différent
+                        #
+                        if old_channel:
+
+                            same_program = (
+                                old_channel.get("bank")
+                                == channel.get("bank")
+                                and
+                                old_channel.get("program")
+                                == channel.get("program")
+                            )
+
+                            if not same_program:
+
+                                print()
+                                print(
+                                    "Canal",
+                                    channel_id,
+                                    "modifié"
+                                )
+
+                                print(
+                                    "Enregistré :",
+                                    f"{old_channel.get('bank')}:"
+                                    f"{old_channel.get('program')}"
+                                )
+
+                                print(
+                                    "Capturé    :",
+                                    f"{channel.get('bank')}:"
+                                    f"{channel.get('program')}"
+                                )
+
+                                rep = input(
+                                    "Conserver la configuration "
+                                    "enregistrée ? (o/n) : "
+                                ).strip().lower()
+
+                                if rep == "o":
+
+                                    channels[
+                                        channel_id
+                                    ] = old_channel
+
+                                    continue
+
+                        #
+                        # Assigner automatiquement un PROGRAM connu
+                        #
+                        bank = channel.get(
+                            "bank"
+                        )
+
+                        program = channel.get(
+                            "program"
+                        )
+
+                        if (
+                            bank is not None
+                            and
+                            program is not None
+                        ):
+
+                            program_id = (
+                                f"{bank}:{program}"
+                            )
+
+                            known_program = project.get_program(
+                                program_id
+                            )
+
+                            if known_program:
+
+                                fusion_name = known_program.get(
+                                    "name"
+                                )
+
+                                if fusion_name:
+
+                                    channel["fusion_name"] = (
+                                        fusion_name
+                                    )
+
+                                parts = known_program.get(
+                                    "parts",
+                                    {}
+                                )
+
+                                if len(parts) == 1:
+
+                                    program_part = next(
+                                        iter(parts.values())
+                                    )
+
+                                    instrument = program_part.get(
+                                        "instrument"
+                                    )
+
+                                    if instrument:
+
+                                        channel["instrument"] = (
+                                            instrument
+                                        )
+
+                        #
+                        # PROGRAM inchangé :
+                        # préserver les choix existants du SONG
+                        #
                         if not old_channel:
 
                             continue

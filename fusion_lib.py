@@ -1,6 +1,5 @@
 import mido
 import logging
-import time
 
 from fusion_constants import (
     FUSION_INPUT_NAME,
@@ -10,45 +9,19 @@ from fusion_constants import (
 
 # Logging
 
-def _log(level, message):
-
-    timestamp = time.strftime(
-        "%Y-%m-%d %H:%M:%S"
-    )
-
-    line = (
-        f"{timestamp} "
-        f"[{level}] "
-        f"{message}"
-    )
-
-    with open(
-        LOG_FILE,
-        "a",
-        encoding="utf-8"
-    ) as f:
-
-        f.write(line + "\n")
-
-def log_info(message):
-
-    _log(
-        "INFO",
-        message
-    )
-
-def log_warning(message):
-
-    _log(
-        "WARN",
-        message
-    )
-
 logging.basicConfig(
     filename=LOG_FILE,
     level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s"
+    format="%(asctime)s [ %(levelname)s ] %(message)s"
 )
+
+def log_info(message):
+
+    logging.info(message)
+
+def log_warning(message):
+
+    logging.warning(message)
 
 def log_event(message):
 
