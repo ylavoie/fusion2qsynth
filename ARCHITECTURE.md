@@ -2096,22 +2096,19 @@ conversion des notes
 
 ##### Journalisation
 
-Le module fournit deux mécanismes de journalisation.
+Le module centralise la journalisation à l'aide du module standard `logging` de Python.
 
-Les fonctions :
+La configuration est définie une seule fois par :
 
-```text
-log_info()
-log_warning()
+```python
+logging.basicConfig(
+    filename=LOG_FILE,
+    level=logging.INFO,
+    format="%(asctime)s [ %(levelname)s ] %(message)s"
+)
 ```
 
-s'appuient sur une fonction interne :
-
-```text
-_log()
-```
-
-qui écrit directement dans le fichier défini par :
+La destination est le fichier défini par :
 
 ```text
 LOG_FILE
@@ -2128,28 +2125,41 @@ message
 sous une forme comparable à :
 
 ```text
-YYYY-MM-DD HH:MM:SS [INFO] message
+YYYY-MM-DD HH:MM:SS [ INFO ] message
 ```
 
-Le module configure également le système standard `logging` de Python.
-
-Les fonctions :
+Le module fournit quatre fonctions d'interface :
 
 ```text
+log_info()
+log_warning()
 log_event()
 log_error()
 ```
 
-utilisent respectivement :
+Elles utilisent toutes le même mécanisme de journalisation.
 
-```text
+`log_info()` et `log_event()` utilisent :
+
+```python
 logging.info()
+```
+
+`log_warning()` utilise :
+
+```python
+logging.warning()
+```
+
+et `log_error()` utilise :
+
+```python
 logging.error()
 ```
 
-La destination est également `LOG_FILE`.
+La distinction entre `log_info()` et `log_event()` est volontairement conservée afin de maintenir une séparation sémantique entre les informations générales et les événements applicatifs, même si les deux utilisent actuellement le niveau `INFO`.
 
-Ces deux mécanismes coexistent actuellement dans le module.
+L'ancien mécanisme interne `_log()`, qui écrivait directement dans `LOG_FILE`, a été supprimé afin d'éviter la coexistence de deux systèmes de journalisation.
 
 ##### Détection des ports MIDI
 

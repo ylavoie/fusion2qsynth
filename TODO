@@ -1,10 +1,10 @@
 # TODO
 
-## fusion_lib.py
-
-* Unifier la journalisation actuellement dupliquée conceptuellement entre `_log()` et le module standard `logging`.
-* Cette duplication n'est pas une erreur fonctionnelle, mais constitue un bon candidat à simplification lors d'un futur nettoyage du code.
-
 ## ARCHITECTURE.md
 
 * Documenter le mécanisme de sauvegarde, d'archivage et de récupération (`backups / archives / récupération`).
+
+## Capture améliorée ##
+
+Les MIX et les SONG sont composés de PROGRAM par canaux.
+Lors d'une capture, les programmes connus pourraient être assignés automatiquement.
