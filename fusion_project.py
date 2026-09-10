@@ -1417,20 +1417,33 @@ class FusionProject:
                     f"{prefix} : canal MIDI invalide ({ch})."
                 )
 
+        has_bank = (
+            "bank" in part
+        )
 
-        if "bank" not in part:
+        has_program = (
+            "program" in part
+        )
 
-            errors.append(
-                f"{prefix} : bank Fusion absente."
-            )
-
-
-        if "program" not in part:
+        if (
+            has_bank
+            and
+            not has_program
+        ):
 
             errors.append(
                 f"{prefix} : program Fusion absent."
             )
 
+        if (
+            has_program
+            and
+            not has_bank
+        ):
+
+            errors.append(
+                f"{prefix} : bank Fusion absente."
+            )
 
         if "name" in part:
 
@@ -2858,50 +2871,59 @@ class FusionProject:
         return mixes[mix_id]
 
     def replace_mix_parts(
-        self,
-        mix_id,
-        parts
-    ):
+            self,
+            mix_id,
+            parts,
+            allowed_errors=None
+        ):
 
-        mix = self.get_mix(
-            mix_id
-        )
+            mix = self.get_mix(
+                mix_id
+            )
 
-        if not mix:
+            if not mix:
+
+                return (
+                    False,
+                    []
+                )
+
+            old_parts = dict(
+                mix.get(
+                    "parts",
+                    {}
+                )
+            )
+
+            mix["parts"] = parts
+
+            errors = self.validate()
+
+            blocking_errors = self.get_blocking_errors(
+                errors
+            )
+
+            if allowed_errors:
+
+                blocking_errors = [
+                    error
+                    for error in blocking_errors
+                    if error not in allowed_errors
+                ]
+
+            if blocking_errors:
+
+                mix["parts"] = old_parts
+
+                return (
+                    False,
+                    blocking_errors
+                )
 
             return (
-                False,
+                True,
                 []
             )
-
-        old_parts = dict(
-            mix.get(
-                "parts",
-                {}
-            )
-        )
-
-        mix["parts"] = parts
-
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
-        )
-
-        if blocking_errors:
-
-            mix["parts"] = old_parts
-
-            return (
-                False,
-                blocking_errors
-            )
-
-        return (
-            True,
-            []
-        )
 
     def prepare_capture(
         self,

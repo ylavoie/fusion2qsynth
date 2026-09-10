@@ -435,12 +435,6 @@ def capture_mix(
 
                             parts = {}
 
-                            mix_bank = int(
-                                current_mix.split(":")[0]
-                            )
-
-                            rom_mix = mix_bank in (0, 1)
-
                             for i, part in enumerate(
                                 sorted(
                                     parts_seen.values(),
@@ -453,39 +447,47 @@ def capture_mix(
                                     part
                                 )
 
-                                if rom_mix:
+                                for old_part in old_parts.values():
 
-                                    for old_part in old_parts.values():
+                                    if (
+                                        old_part.get("midi_channel")
+                                        !=
+                                        new_part.get("midi_channel")
+                                    ):
 
-                                        if (
-                                            old_part.get("midi_channel")
-                                            !=
-                                            new_part.get("midi_channel")
-                                        ):
+                                        continue
 
-                                            continue
+                                    #for key in (
+                                    #    "bank",
+                                    #    "program",
+                                    #    "instrument",
+                                    #    "fusion_name"
+                                    #):
 
-                                        for key in (
-                                            "bank",
-                                            "program",
-                                            "instrument",
-                                            "fusion_name"
-                                        ):
+                                        #if key in old_part:
 
-                                            if key in old_part:
+                                            #new_part[key] = (
+                                            #    old_part[key]
+                                            #)
 
-                                                new_part[key] = (
-                                                    old_part[key]
-                                                )
-
-                                        break
+                                    break
 
                                 parts[str(i)] = new_part
 
+                            #
+                            # Erreurs préexistantes du projet
+                            #
+                            existing_errors = project.validate()
+
+                            print("existing_errors:",existing_errors)
+
                             success, errors = project.replace_mix_parts(
                                 current_mix,
-                                parts
+                                parts,
+                                allowed_errors=existing_errors
                             )
+
+                            print("success:",success,"errors:",errors)
 
                             if not success:
 
@@ -501,8 +503,9 @@ def capture_mix(
 
                                 continue
 
-                            if project.save_safe():
-
+                            if project.save_safe(
+                                allowed_errors=existing_errors
+                            ):
                                 print()
                                 print(
                                     "Capture terminée"
