@@ -238,7 +238,8 @@ def ensure_project_instrument(
 def choose_instrument(
     project,
     part=None,
-    fusion_name=None
+    fusion_name=None,
+    fusion_program=None
 ):
     print()
 
@@ -279,11 +280,21 @@ def choose_instrument(
             fusion_name
         ):
 
-            suggestions = get_sf2_suggestions(
-                fusion_name,
-                part.get(
+            program = fusion_program
+
+            if (
+                program is None
+                and
+                part is not None
+            ):
+
+                program = part.get(
                     "program"
                 )
+
+            suggestions = get_sf2_suggestions(
+                fusion_name,
+                program
             )
             if (
                 show_suggestions
@@ -2941,18 +2952,66 @@ def list_songs(
             []
         )
 
-        configured = sum(
-            1
-            for channel in channels_diag
-            if channel.get(
-                "qsynth_configured",
-                False
-            )
+        configured = 0
+
+        song_channels = song.get(
+            "channels",
+            {}
         )
 
         total = len(
-            channels_diag
+            song_channels
         )
+
+        for channel in song_channels.values():
+
+            programs = channel.get(
+                "programs"
+            )
+
+            #
+            # Nouveau format SONG
+            #
+            if isinstance(
+                programs,
+                dict
+            ):
+
+                if not programs:
+
+                    continue
+
+                channel_configured = True
+
+                for program_id, program_data in programs.items():
+
+                    instrument = project.resolve_song_program_instrument(
+                        program_id,
+                        program_data
+                    )
+
+                    if not instrument:
+
+                        channel_configured = False
+
+                        break
+
+                if channel_configured:
+
+                    configured += 1
+
+                continue
+
+            #
+            # Ancien format SONG
+            #
+            instrument = project.resolve_part_instrument(
+                channel
+            )
+
+            if instrument:
+
+                configured += 1
 
         fusion_valid = all(
             channel.get(
@@ -3038,11 +3097,107 @@ def list_songs(
 
         # boucle des canaux...
 
-        for channel_id, channel in song.get(
-            "channels",
-            {}
-        ).items():
+        for channel_id, channel in sorted(
+            song.get(
+                "channels",
+                {}
+            ).items(),
+            key=lambda item: int(
+                item[0]
+            )
+        ):
+            programs = channel.get(
+                "programs"
+            )
 
+            #
+            # Nouveau format SONG
+            #
+            if isinstance(
+                programs,
+                dict
+            ):
+
+                if not programs:
+
+                    print(
+                        f" CH {str(channel_id):<2}"
+                        " → Aucun PROGRAM"
+                    )
+
+                    continue
+
+                first = True
+
+                for program_id, program_data in programs.items():
+
+                    try:
+
+                        bank_str, program_str = (
+                            program_id.split(
+                                ":",
+                                1
+                            )
+                        )
+
+                        bank = int(
+                            bank_str
+                        )
+
+                        program = int(
+                            program_str
+                        )
+
+                    except (
+                        ValueError,
+                        AttributeError
+                    ):
+
+                        bank = None
+                        program = None
+
+                    instrument = project.resolve_song_program_instrument(
+                        program_id,
+                        program_data
+                    )
+
+                    instrument_name = (
+                        instrument.get(
+                            "name",
+                            "Non configuré"
+                        )
+                        if instrument
+                        else "Non configuré"
+                    )
+
+                    bank_name = (
+                        fusion_program_bank_name(
+                            bank
+                        )
+                        if bank is not None
+                        else "?"
+                    )
+
+                    channel_label = (
+                        f"CH {channel_id}"
+                        if first
+                        else ""
+                    )
+
+                    print(
+                        f" {channel_label:<5}"
+                        f" → {instrument_name:<20}"
+                        f" | {bank_name:<20}"
+                        f" | {program_id:>6}"
+                    )
+
+                    first = False
+
+                continue
+
+            #
+            # Ancien format SONG
+            #
             instrument = project.resolve_part_instrument(
                 channel
             )
@@ -3076,7 +3231,8 @@ def list_songs(
                 f"{bank}:{program}"
                 if (
                     bank is not None
-                    and program is not None
+                    and
+                    program is not None
                 )
                 else "?"
             )
@@ -3120,7 +3276,6 @@ def edit_song(
 ):
     def edit_song_channel_parameters(
         project,
-        song_id,
         channel_id,
         channel
     ):
@@ -3134,27 +3289,6 @@ def edit_song(
             channel_id
         )
         print("====================")
-
-        bank = channel.get(
-            "bank"
-        )
-
-        print(
-            "Fusion Bank    :",
-            (
-                f"{fusion_program_bank_name(bank)} ({bank})"
-                if bank is not None
-                else "?"
-            )
-        )
-
-        print(
-            "Fusion Program :",
-            channel.get(
-                "program",
-                "?"
-            )
-        )
 
         print(
             "Volume     :",
@@ -3198,28 +3332,6 @@ def edit_song(
 
         print()
 
-        new_bank = choose_fusion_program_bank(
-            channel.get(
-                "bank"
-            )
-        )
-
-        if new_bank is not None:
-
-            updates[
-                "bank"
-            ] = new_bank
-
-        value = read_int(
-            "Nouveau Fusion Program (Entrée = conserver) : ",
-            0,
-            127
-        )
-
-        if value is not None:
-
-            updates["program"] = value
-
         value = read_int(
             "Nouveau Volume (Entrée = conserver) : ",
             0,
@@ -3228,7 +3340,9 @@ def edit_song(
 
         if value is not None:
 
-            updates["volume"] = value
+            updates[
+                "volume"
+            ] = value
 
         value = read_int(
             "Nouveau Pan (Entrée = conserver) : ",
@@ -3238,7 +3352,9 @@ def edit_song(
 
         if value is not None:
 
-            updates["pan"] = value
+            updates[
+                "pan"
+            ] = value
 
         value = read_int(
             "Nouvelle Expression (Entrée = conserver) : ",
@@ -3248,7 +3364,9 @@ def edit_song(
 
         if value is not None:
 
-            updates["expression"] = value
+            updates[
+                "expression"
+            ] = value
 
         value = read_int(
             "Nouvelle Reverb (Entrée = conserver) : ",
@@ -3258,7 +3376,9 @@ def edit_song(
 
         if value is not None:
 
-            updates["reverb"] = value
+            updates[
+                "reverb"
+            ] = value
 
         value = read_int(
             "Nouveau Chorus (Entrée = conserver) : ",
@@ -3268,7 +3388,9 @@ def edit_song(
 
         if value is not None:
 
-            updates["chorus"] = value
+            updates[
+                "chorus"
+            ] = value
 
         if not updates:
 
@@ -3323,7 +3445,7 @@ def edit_song(
         ):
 
             print(
-                "Canal SONG modifié."
+                "Paramètres du canal modifiés."
             )
 
         else:
@@ -3391,8 +3513,70 @@ def edit_song(
 
         print()
 
-        for channel_id, channel in channels.items():
+        for channel_id, channel in sorted(
+            channels.items(),
+            key=lambda item: int(
+                item[0]
+            )
+        ):
 
+            programs = channel.get(
+                "programs"
+            )
+
+            #
+            # Nouveau format SONG
+            #
+            if isinstance(
+                programs,
+                dict
+            ):
+
+                if not programs:
+
+                    print(
+                        f"CH {channel_id} - Aucun PROGRAM"
+                    )
+
+                    continue
+
+                first = True
+
+                for program_id, program_data in programs.items():
+
+                    instrument = project.resolve_song_program_instrument(
+                        program_id,
+                        program_data
+                    )
+
+                    instrument_name = (
+                        instrument.get(
+                            "name",
+                            "Non configuré"
+                        )
+                        if instrument
+                        else "Non configuré"
+                    )
+
+                    channel_label = (
+                        f"CH {channel_id}"
+                        if first
+                        else ""
+                    )
+
+                    print(
+                        f"{channel_label:<5}"
+                        f" - {instrument_name:<20}"
+                        f" ({program_id})"
+                    )
+
+                    first = False
+
+                continue
+
+            #
+            # Ancien format SONG
+            #
             instrument = project.resolve_part_instrument(
                 channel
             )
@@ -3402,7 +3586,9 @@ def edit_song(
             )
 
             bank_name = (
-                fusion_program_bank_name(bank)
+                fusion_program_bank_name(
+                    bank
+                )
                 if bank is not None
                 else "?"
             )
@@ -3444,40 +3630,289 @@ def edit_song(
 
             continue
 
-        while True:
+        programs = channel.get(
+            "programs"
+        )
 
-            bank = channel.get(
-                "bank"
-            )
+        selected_program_id = None
+        program_data = None
+
+        #
+        # Nouveau format SONG
+        #
+        if isinstance(
+            programs,
+            dict
+        ):
+
+            if not programs:
+
+                selected_program_id = None
+                program_data = None
+
+            else:
+
+                program_ids = list(
+                    programs.keys()
+                )
+
+                if len(program_ids) == 1:
+
+                    selected_program_id = (
+                        program_ids[0]
+                    )
+
+                else:
+
+                    print()
+                    print(
+                        "PROGRAMs disponibles :"
+                    )
+
+                    for index, program_id in enumerate(
+                        program_ids,
+                        start=1
+                    ):
+
+                        current_program_data = programs[
+                            program_id
+                        ]
+
+                        instrument = project.resolve_song_program_instrument(
+                            program_id,
+                            current_program_data
+                        )
+
+                        instrument_name = (
+                            instrument.get(
+                                "name",
+                                "Non configuré"
+                            )
+                            if instrument
+                            else "Non configuré"
+                        )
+
+                        print(
+                            f"{index} - "
+                            f"{program_id}"
+                            f" - {instrument_name}"
+                        )
+
+                    print(
+                        "q - Retour"
+                    )
+
+                    while True:
+
+                        choice = input(
+                            "> "
+                        ).strip()
+
+                        if choice.lower() == "q":
+
+                            selected_program_id = None
+
+                            break
+
+                        try:
+
+                            index = int(
+                                choice
+                            )
+
+                        except ValueError:
+
+                            print(
+                                "Choix invalide."
+                            )
+
+                            continue
+
+                        if not (
+                            1
+                            <= index
+                            <= len(program_ids)
+                        ):
+
+                            print(
+                                "Choix invalide."
+                            )
+
+                            continue
+
+                        selected_program_id = (
+                            program_ids[
+                                index - 1
+                            ]
+                        )
+
+                        break
+
+                    if selected_program_id is None:
+
+                        continue
+
+                program_data = programs[
+                    selected_program_id
+                ]
+
+        #
+        # Ancien format SONG
+        #
+        else:
+
+            program_data = channel
+
+        while True:
 
             print()
 
-            print(
-                "Fusion Bank    :",
-                (
-                    f"{fusion_program_bank_name(bank)} ({bank})"
-                    if bank is not None
-                    else "?"
-                )
-            )
+            #
+            # Nouveau format avec PROGRAM
+            #
+            if selected_program_id is not None:
 
-            print(
-                "Fusion Program :",
-                channel.get(
-                    "program",
-                    "?"
+                bank_str, program_str = (
+                    selected_program_id.split(
+                        ":",
+                        1
+                    )
                 )
-            )
+
+                bank = int(
+                    bank_str
+                )
+
+                print(
+                    "Fusion Bank    :",
+                    f"{fusion_program_bank_name(bank)} ({bank})"
+                )
+
+                print(
+                    "Fusion Program :",
+                    program_str
+                )
+
+                global_program = project.get_program(
+                    selected_program_id
+                )
+
+                global_fusion_name = (
+                    global_program.get(
+                        "name"
+                    )
+                    if global_program
+                    else None
+                )
+
+                print(
+                    "Nom Fusion global :",
+                    global_fusion_name
+                    or "PROGRAM inconnu"
+                )
+
+                local_instrument = project.resolve_part_instrument(
+                    program_data
+                )
+
+                inherited_instrument = project.resolve_program_instrument(
+                    selected_program_id
+                )
+
+                print()
+
+                print(
+                    "Instrument hérité :",
+                    (
+                        inherited_instrument.get(
+                            "name",
+                            "Non configuré"
+                        )
+                        if inherited_instrument
+                        else "Non configuré"
+                    )
+                )
+
+                print(
+                    "Instrument local  :",
+                    (
+                        local_instrument.get(
+                            "name",
+                            "Aucun"
+                        )
+                        if local_instrument
+                        else "Aucun"
+                    )
+                )
+            #
+            # Nouveau format sans PROGRAM
+            #
+            elif isinstance(
+                programs,
+                dict
+            ):
+
+                print(
+                    "Aucun PROGRAM capturé "
+                    "sur ce canal."
+                )
+
+            #
+            # Ancien format SONG
+            #
+            else:
+
+                bank = channel.get(
+                    "bank"
+                )
+
+                print(
+                    "Fusion Bank    :",
+                    (
+                        f"{fusion_program_bank_name(bank)} ({bank})"
+                        if bank is not None
+                        else "?"
+                    )
+                )
+
+                print(
+                    "Fusion Program :",
+                    channel.get(
+                        "program",
+                        "?"
+                    )
+                )
 
             print()
             print("====================")
             print("Edition canal SONG")
             print("====================")
-            print("1 - Modifier l'instrument")
-            print("2 - Modifier les paramètres")
-            print("3 - Modifier le canal MIDI")
-            print("4 - Modifier le nom Fusion")
-            print("q - Retour")
+
+            if program_data is not None:
+
+                print(
+                    "1 - Modifier l'instrument local du PROGRAM"
+                )
+
+            print(
+                "2 - Modifier les paramètres du canal"
+            )
+
+            print(
+                "3 - Modifier le canal MIDI"
+            )
+
+            if program_data is not None:
+
+                if "instrument" in program_data:
+
+                    print(
+                        "4 - Supprimer l'instrument local"
+                    )
+
+            print(
+                "q - Retour"
+            )
 
             choice = input(
                 "> "
@@ -3485,27 +3920,48 @@ def edit_song(
 
             if choice == "1":
 
+                if program_data is None:
+
+                    print(
+                        "Aucun PROGRAM à modifier."
+                    )
+
+                    continue
+
+                global_program = project.get_program(
+                    selected_program_id
+                )
+
+                fusion_name = None
+
+                if global_program:
+
+                    fusion_name = global_program.get(
+                        "name"
+                    )
+
                 instrument = choose_instrument(
                     project,
-                    channel,
-                    fusion_name=channel.get(
-                        "fusion_name"
-                    )
+                    program_data,
+                    fusion_name=fusion_name,
+                        fusion_program=int(
+                            program_str
+                        )
                 )
 
                 if instrument is None:
 
                     continue
 
-                old_channel = dict(
-                    channel
+                old_program_data = dict(
+                    program_data
                 )
 
                 allowed_errors = project.get_blocking_errors(
                     project.validate()
                 )
 
-                channel[
+                program_data[
                     "instrument"
                 ] = instrument[
                     "id"
@@ -3521,10 +3977,10 @@ def edit_song(
 
                 else:
 
-                    channel.clear()
+                    program_data.clear()
 
-                    channel.update(
-                        old_channel
+                    program_data.update(
+                        old_program_data
                     )
 
                     print(
@@ -3535,7 +3991,6 @@ def edit_song(
 
                 edit_song_channel_parameters(
                     project,
-                    song_id,
                     channel_id,
                     channel
                 )
@@ -3644,37 +4099,71 @@ def edit_song(
 
             elif choice == "4":
 
-                old_channel = dict(
-                    channel
+                if (
+                    program_data is None
+                    or
+                    "instrument" not in program_data
+                ):
+
+                    print(
+                        "Aucun instrument local à supprimer."
+                    )
+
+                    continue
+
+                old_program_data = dict(
+                    program_data
                 )
 
                 allowed_errors = project.get_blocking_errors(
                     project.validate()
                 )
 
-                if edit_fusion_name(
-                    channel
+                del program_data[
+                    "instrument"
+                ]
+
+                if project.save_safe(
+                    allowed_errors=allowed_errors
                 ):
 
-                    if project.save_safe(
-                        allowed_errors=allowed_errors
-                    ):
+                    print(
+                        "Instrument local supprimé."
+                    )
+
+                    inherited_instrument = (
+                        project.resolve_program_instrument(
+                            selected_program_id
+                        )
+                    )
+
+                    if inherited_instrument:
 
                         print(
-                            "Nom Fusion modifié."
+                            "Instrument hérité :",
+                            inherited_instrument.get(
+                                "name",
+                                "Non configuré"
+                            )
                         )
 
                     else:
 
-                        channel.clear()
-
-                        channel.update(
-                            old_channel
-                        )
-
                         print(
-                            "⚠ Sauvegarde non effectuée."
+                            "Instrument hérité : Non configuré"
                         )
+
+                else:
+
+                    program_data.clear()
+
+                    program_data.update(
+                        old_program_data
+                    )
+
+                    print(
+                        "⚠ Sauvegarde non effectuée."
+                    )
 
             elif choice.lower() == "q":
 

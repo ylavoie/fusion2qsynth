@@ -823,6 +823,8 @@ def capture_song(
                         {}
                     )
 
+                    unknown_programs = {}
+
                     for channel_id, channel in channels.items():
 
                         old_channel = old_channels.get(
@@ -830,139 +832,317 @@ def capture_song(
                         )
 
                         #
-                        # Canal déjà enregistré avec un PROGRAM différent
+                        # PROGRAMs déjà enregistrés sur ce canal
                         #
+                        old_programs = {}
+
                         if old_channel:
 
-                            same_program = (
-                                old_channel.get("bank")
-                                == channel.get("bank")
-                                and
-                                old_channel.get("program")
-                                == channel.get("program")
+                            existing_programs = old_channel.get(
+                                "programs"
                             )
 
-                            if not same_program:
+                            #
+                            # Nouveau format SONG
+                            #
+                            if isinstance(
+                                existing_programs,
+                                dict
+                            ):
 
-                                print()
-                                print(
-                                    "Canal",
-                                    channel_id,
-                                    "modifié"
+                                old_programs = existing_programs
+
+                            #
+                            # Ancien format SONG
+                            #
+                            else:
+
+                                old_bank = old_channel.get(
+                                    "bank"
                                 )
 
-                                print(
-                                    "Enregistré :",
-                                    f"{old_channel.get('bank')}:"
-                                    f"{old_channel.get('program')}"
+                                old_program = old_channel.get(
+                                    "program"
                                 )
 
-                                print(
-                                    "Capturé    :",
-                                    f"{channel.get('bank')}:"
-                                    f"{channel.get('program')}"
-                                )
+                                if (
+                                    old_bank is not None
+                                    and
+                                    old_program is not None
+                                ):
 
-                                rep = input(
-                                    "Conserver la configuration "
-                                    "enregistrée ? (o/n) : "
-                                ).strip().lower()
+                                    old_program_id = (
+                                        f"{old_bank}:"
+                                        f"{old_program}"
+                                    )
 
-                                if rep == "o":
+                                    old_program_data = {}
 
-                                    channels[
-                                        channel_id
-                                    ] = old_channel
+                                    if "fusion_name" in old_channel:
 
-                                    continue
+                                        old_program_data[
+                                            "fusion_name"
+                                        ] = old_channel[
+                                            "fusion_name"
+                                        ]
+
+                                    if "instrument" in old_channel:
+
+                                        old_program_data[
+                                            "instrument"
+                                        ] = old_channel[
+                                            "instrument"
+                                        ]
+
+                                    old_programs[
+                                        old_program_id
+                                    ] = old_program_data
 
                         #
-                        # Assigner automatiquement un PROGRAM connu
+                        # Identifier les PROGRAMs inconnus
                         #
-                        bank = channel.get(
-                            "bank"
+                        programs = channel.get(
+                            "programs",
+                            {}
                         )
 
-                        program = channel.get(
-                            "program"
-                        )
+                        for program_id in programs:
 
-                        if (
-                            bank is not None
-                            and
-                            program is not None
-                        ):
+                            try:
 
-                            program_id = (
-                                f"{bank}:{program}"
+                                bank_str, program_str = (
+                                    program_id.split(
+                                        ":",
+                                        1
+                                    )
+                                )
+
+                                bank = int(
+                                    bank_str
+                                )
+
+                                program = int(
+                                    program_str
+                                )
+
+                            except (
+                                ValueError,
+                                AttributeError
+                            ):
+
+                                continue
+
+                            if project.get_program(
+                                program_id
+                            ):
+
+                                continue
+
+                            unknown_programs[
+                                program_id
+                            ] = {
+                                "bank": bank,
+                                "program": program
+                            }
+
+                            print()
+
+                            print(
+                                "PROGRAM inconnu :",
+                                program_id,
+                                "- canal",
+                                channel_id
                             )
 
-                            known_program = project.get_program(
+                        #
+                        # Fusionner les PROGRAMs déjà enregistrés
+                        # avec ceux observés pendant cette capture
+                        #
+                        captured_programs = channel.setdefault(
+                            "programs",
+                            {}
+                        )
+
+                        merged_programs = {}
+
+                        #
+                        # Normaliser les anciennes données.
+                        #
+                        # fusion_name appartient maintenant au PROGRAM global.
+                        #
+                        # Un instrument identique à l'instrument global est
+                        # redondant et devient un simple héritage.
+                        #
+                        for (
+                            program_id,
+                            old_program_data
+                        ) in old_programs.items():
+
+                            if not isinstance(
+                                old_program_data,
+                                dict
+                            ):
+
+                                continue
+
+                            clean_program_data = {
+                                key: value
+                                for key, value in old_program_data.items()
+                                if key not in (
+                                    "instrument",
+                                    "fusion_name"
+                                )
+                            }
+
+                            local_instrument = old_program_data.get(
+                                "instrument"
+                            )
+
+                            if local_instrument:
+
+                                global_instrument = None
+
+                                global_program = project.get_program(
+                                    program_id
+                                )
+
+                                if global_program:
+
+                                    parts = global_program.get(
+                                        "parts",
+                                        {}
+                                    )
+
+                                    if len(parts) == 1:
+
+                                        program_part = next(
+                                            iter(
+                                                parts.values()
+                                            )
+                                        )
+
+                                        global_instrument = program_part.get(
+                                            "instrument"
+                                        )
+
+                                #
+                                # Conserver uniquement une vraie surcharge locale
+                                #
+                                if (
+                                    local_instrument
+                                    != global_instrument
+                                ):
+
+                                    clean_program_data[
+                                        "instrument"
+                                    ] = local_instrument
+
+                            merged_programs[
+                                program_id
+                            ] = clean_program_data
+
+                        #
+                        # Ajouter les PROGRAMs observés pendant la capture
+                        #
+                        for (
+                            program_id,
+                            program_data
+                        ) in captured_programs.items():
+
+                            merged_program_data = dict(
+                                program_data
+                            )
+
+                            old_program_data = merged_programs.get(
                                 program_id
                             )
 
-                            if known_program:
+                            if isinstance(
+                                old_program_data,
+                                dict
+                            ):
 
-                                fusion_name = known_program.get(
-                                    "name"
-                                )
+                                #
+                                # Les vraies surcharges locales existantes
+                                # ont priorité
+                                #
+                                if "instrument" in old_program_data:
 
-                                if fusion_name:
-
-                                    channel["fusion_name"] = (
-                                        fusion_name
-                                    )
-
-                                parts = known_program.get(
-                                    "parts",
-                                    {}
-                                )
-
-                                if len(parts) == 1:
-
-                                    program_part = next(
-                                        iter(parts.values())
-                                    )
-
-                                    instrument = program_part.get(
+                                    merged_program_data[
                                         "instrument"
-                                    )
+                                    ] = old_program_data[
+                                        "instrument"
+                                    ]
 
-                                    if instrument:
+                            merged_programs[
+                                program_id
+                            ] = merged_program_data
 
-                                        channel["instrument"] = (
-                                            instrument
-                                        )
+                        channel[
+                            "programs"
+                        ] = merged_programs
 
                         #
-                        # PROGRAM inchangé :
-                        # préserver les choix existants du SONG
+                        # Préserver les contrôleurs statiques
+                        # non observés pendant cette capture
                         #
-                        if not old_channel:
+                        if old_channel:
 
-                            continue
+                            for field in (
+                                "volume",
+                                "pan",
+                                "expression",
+                                "reverb",
+                                "chorus"
+                            ):
 
-                        if (
-                            old_channel.get("bank")
-                            == channel.get("bank")
-                            and
-                            old_channel.get("program")
-                            == channel.get("program")
-                        ):
+                                if (
+                                    field not in channel
+                                    and
+                                    field in old_channel
+                                ):
 
-                            if "instrument" in old_channel:
+                                    channel[
+                                        field
+                                    ] = old_channel[
+                                        field
+                                    ]
 
-                                channel["instrument"] = (
-                                    old_channel["instrument"]
-                                )
+                    #
+                    # Créer les PROGRAMs inconnus détectés dans la SONG
+                    #
+                    for program_id, program_data in unknown_programs.items():
 
-                            if "fusion_name" in old_channel:
+                        program = project.ensure_program(
+                            program_id
+                        )
 
-                                channel["fusion_name"] = (
-                                    old_channel["fusion_name"]
-                                )
+                        program["parts"] = {
+                            "1": {
+                                "midi_channel":
+                                    fusion_default_channel + 1,
 
-                    song["channels"] = channels
+                                "bank":
+                                    program_data["bank"],
+
+                                "program":
+                                    program_data["program"]
+                            }
+                        }
+
+                    #
+                    # Conserver les canaux enregistrés
+                    # non observés pendant cette capture
+                    #
+                    merged_channels = dict(
+                        old_channels
+                    )
+
+                    merged_channels.update(
+                        channels
+                    )
+
+                    song["channels"] = merged_channels
 
                     if project.save_safe():
 
@@ -1048,17 +1228,26 @@ def capture_song(
                         0
                     )
 
+                    program_id = (
+                        f"{bank}:"
+                        f"{msg.program}"
+                    )
+
                     channels[
                         channel
-                    ][
-                        "bank"
-                    ] = bank
+                    ].setdefault(
+                        "programs",
+                        {}
+                    )
 
                     channels[
                         channel
                     ][
-                        "program"
-                    ] = msg.program
+                        "programs"
+                    ].setdefault(
+                        program_id,
+                        {}
+                    )
 
                     continue
 
