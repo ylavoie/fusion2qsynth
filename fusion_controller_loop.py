@@ -21,7 +21,8 @@ from fusion_performance import (
     reload_current_performance,
     load_mix,
     load_program,
-    load_song
+    load_song,
+    load_song_program
 )
 
 from fusion_gm_map import (
@@ -66,8 +67,11 @@ def run_controller_loop(
     selected_mode,
     selected_song=None
 ):
-    while True:
 
+    bank = None
+    song_banks = {}
+
+    while True:
         if project.reload_if_changed():
 
             if not state.pending_reload:
@@ -92,7 +96,6 @@ def run_controller_loop(
         #
         # MIDI
         #
-        bank = None
 
         for msg in inp.iter_pending():
 
@@ -108,6 +111,22 @@ def run_controller_loop(
                         "SONG SELECT reçu :",
                         msg.song
                     )
+
+                #
+                # Le Fusion ne fournit pas d'identifiant
+                # exploitable de SONG : song_select vaut 0.
+                #
+                # On l'utilise donc seulement comme signal
+                # qu'une autre SONG vient d'être sélectionnée.
+                #
+                if state.current_performance is not None:
+
+                    print()
+                    print(
+                        "Changement de SONG détecté."
+                    )
+
+                    return "song_change"
 
                 continue
 
@@ -185,52 +204,81 @@ def run_controller_loop(
 
             if DEBUG:
 
-                part = state.current_parts.get(
-                    msg.channel + 1
-                )
-                name = "?"
+                if msg.type in ["note_on","note_off"]:
 
-                if part:
+                    name = "?"
 
-                    instrument = project.resolve_part_instrument(
-                        part
+                    channel_id = (
+                        msg.channel + 1
                     )
 
-                    if instrument:
+                    if selected_mode == "song":
 
-                        name = instrument.get(
-                            "name",
-                            "?"
+                        song_program = (
+                            state.current_song_programs.get(
+                                channel_id
+                            )
                         )
 
-                if msg.type == "note_on" and msg.velocity > 0:
+                        if song_program:
 
-                    print(
-                        "NOTE ON",
-                        "CH",
-                        msg.channel + 1, name,
-                        "Note",
-                        note_name(msg.note),
-                        "Vel",
-                        msg.velocity
-                    )
+                            instrument = song_program.get(
+                                "instrument"
+                            )
 
-                elif (
-                    msg.type == "note_off"
-                    or
-                    (
-                        msg.type == "note_on"
-                        and
-                        msg.velocity == 0
-                    )
-                ):
-                    print(
-                        "NOTE OFF",
-                        "CH",
-                        msg.channel + 1, name,
-                        "Note",
-                        note_name(msg.note)
-                    )
+                            if instrument:
+
+                                name = instrument.get(
+                                    "name",
+                                    "?"
+                                )
+
+                    else:
+
+                        part = state.current_parts.get(
+                            channel_id
+                        )
+
+                        if part:
+
+                            instrument = project.resolve_part_instrument(
+                                part
+                            )
+
+                            if instrument:
+
+                                name = instrument.get(
+                                    "name",
+                                    "?"
+            )
+                    if msg.type == "note_on" and msg.velocity > 0:
+
+                        print(
+                            "NOTE ON",
+                            "CH",
+                            msg.channel + 1, name,
+                            "Note",
+                            note_name(msg.note),
+                            "Vel",
+                            msg.velocity
+                        )
+
+                    elif (
+                        msg.type == "note_off"
+                        or
+                        (
+                            msg.type == "note_on"
+                            and
+                            msg.velocity == 0
+                        )
+                    ):
+                        print(
+                            "NOTE OFF",
+                            "CH",
+                            msg.channel + 1, name,
+                            "Note",
+                            note_name(msg.note)
+                        )
 
             if msg.type in [
                 "note_on",
@@ -322,6 +370,37 @@ def run_controller_loop(
 
                         continue
 
+                elif selected_mode == "song":
+
+                    #
+                    # Banque Fusion courante du canal SONG
+                    #
+                    if msg.control == 0:
+
+                        song_banks[
+                            msg.channel
+                        ] = msg.value
+
+                        continue
+
+                    #
+                    # CC32 Fusion :
+                    # ne pas laisser modifier la banque SF2.
+                    #
+                    if msg.control == 32:
+
+                        continue
+
+                    #
+                    # Pas encore de PROGRAM résolu sur ce canal
+                    #
+                    if (
+                        msg.channel + 1
+                        not in state.current_parts
+                    ):
+
+                        continue
+
                 #
                 # Autres contrôleurs MIDI
                 #
@@ -334,6 +413,30 @@ def run_controller_loop(
             elif msg.type == "program_change":
 
                 if selected_mode == "song":
+
+                    channel_id = (
+                        msg.channel + 1
+                    )
+
+                    #
+                    # Le Fusion utilise CC0 comme identité
+                    # de banque PROGRAM.
+                    #
+                    song_bank = song_banks.get(
+                        msg.channel,
+                        0
+                    )
+
+                    program_id = (
+                        f"{song_bank}:{msg.program}"
+                    )
+
+                    load_song_program(
+                        channel_id,
+                        program_id,
+                        out,
+                        project
+                    )
 
                     continue
 
@@ -422,6 +525,8 @@ def run_controller_loop(
                 and
                 msg.type == "start"
             ):
+
+                song_banks.clear()
 
                 load_song(
                     selected_song,

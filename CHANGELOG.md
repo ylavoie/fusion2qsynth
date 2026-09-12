@@ -1509,3 +1509,133 @@ La version 2.8 poursuit la consolidation de Fusion2QSynth en unifiant le systèm
 * Documentation de l'assignation automatique des PROGRAM lors de la capture SONG.
 * Documentation de la gestion des conflits entre une SONG modifiée sur le Fusion et une SONG modifiée dans Fusion2QSynth.
 * Résolution des améliorations restantes consignées dans `TODO`.
+
+---
+
+## Fusion2QSynth v2.9
+
+### SONG — Support multi-PROGRAM
+
+* Ajout du support de plusieurs PROGRAMs Fusion sur un même canal MIDI d'une SONG.
+* Nouveau format `programs` par canal permettant de mémoriser tous les PROGRAMs observés pendant la capture.
+* Traitement dynamique des `PROGRAM_CHANGE` pendant la lecture d'une SONG.
+* Le Fusion demeure maître du séquencement et du moment où les changements de PROGRAM doivent être appliqués.
+* Mémorisation indépendante de la banque Fusion courante pour chaque canal MIDI.
+* Les `CC0` et `CC32` utilisés par le Fusion ne remplacent pas les banques SoundFont programmées par Fusion2QSynth.
+* Les PROGRAMs non configurés sont détectés et ignorés proprement sans interrompre la SONG.
+* Les notes provenant d'un canal dont le PROGRAM courant n'est pas configuré ne sont pas transmises à FluidSynth.
+
+### Capture SONG
+
+* Capture de plusieurs PROGRAMs successifs sur un même canal MIDI.
+* Conservation de tous les PROGRAMs observés sous leur identifiant `bank:program`.
+* Création automatique d'un PROGRAM global minimal valide lorsqu'un PROGRAM Fusion inconnu est détecté.
+* Déduplication des PROGRAMs inconnus utilisés par plusieurs canaux.
+* Support des canaux ne transmettant aucun `PROGRAM_CHANGE`, notamment les canaux pilotés par l'arpégiateur.
+* Un canal sans PROGRAM est représenté par `programs: {}` et demeure valide.
+* Conservation des PROGRAMs déjà connus lors d'une capture partielle.
+* Conservation des paramètres statiques non observés lors d'une capture partielle.
+* Conservation des canaux non observés lors d'une capture partielle.
+* Migration progressive des SONGs de l'ancien format vers le nouveau format lors de leur recapture.
+* Compatibilité conservée avec les SONGs de l'ancien format.
+
+### PROGRAM global et héritage SONG
+
+* Le PROGRAM global devient la configuration de référence pour l'instrument associé à un `bank:program`.
+* Une occurrence de PROGRAM dans une SONG hérite automatiquement de l'instrument configuré dans le PROGRAM global.
+* Une SONG peut définir une surcharge locale d'instrument pour un PROGRAM particulier.
+* Une surcharge locale peut être supprimée afin de revenir à l'instrument hérité du PROGRAM global.
+* Les modifications apportées à un PROGRAM global sont immédiatement utilisables par les SONGs qui en héritent, sans duplication de configuration.
+* Le nom Fusion du PROGRAM demeure une propriété du PROGRAM global.
+* Suppression des copies locales redondantes de `fusion_name`.
+* Suppression des instruments locaux redondants lorsqu'ils sont identiques à l'instrument hérité.
+* Conservation des véritables surcharges locales lors de la recapture d'une SONG.
+
+### Éditeur SONG
+
+* Adaptation de la liste des SONGs au modèle multi-PROGRAM.
+* Affichage de tous les PROGRAMs associés à chaque canal.
+* Tri numérique des canaux MIDI.
+* Un canal multi-PROGRAM est considéré configuré seulement si tous ses PROGRAMs possèdent un instrument effectif.
+* Distinction entre instrument hérité du PROGRAM global et instrument local à la SONG.
+* Sélection d'un PROGRAM particulier avant l'édition de son instrument local.
+* Édition des paramètres statiques au niveau du canal : volume, panoramique, expression, réverbération et chorus.
+* Conservation du déplacement complet d'un canal MIDI.
+* Amélioration des suggestions d'instruments pour les PROGRAMs utilisés dans une SONG.
+* Utilisation du nom et du numéro du PROGRAM global pour produire les suggestions SoundFont.
+* Suppression de l'édition locale du nom Fusion d'un PROGRAM dans une SONG.
+
+### Diagnostic SONG
+
+* Adaptation du diagnostic au modèle multi-PROGRAM.
+* Résolution de l'instrument effectif par héritage global ou surcharge locale.
+* Un canal contenant plusieurs PROGRAMs est considéré configuré uniquement lorsque tous ses PROGRAMs sont résolus.
+* Les canaux `programs: {}` sont reconnus comme valides côté Fusion mais non configurés pour FluidSynth.
+* Compatibilité conservée avec le diagnostic des SONGs de l'ancien format.
+* Tri numérique des canaux dans l'affichage du diagnostic.
+
+### Contrôleur Live — SONG
+
+* Chargement des paramètres statiques de la SONG à la réception de `START`.
+* Les PROGRAMs du nouveau format ne sont plus préchargés au démarrage de la SONG.
+* Sélection de l'instrument SoundFont au moment où le Fusion transmet le `PROGRAM_CHANGE`.
+* Suivi du PROGRAM et de l'instrument effectivement actifs sur chaque canal pendant l'exécution.
+* Mise à jour correcte du nom de l'instrument dans les traces de notes après un changement dynamique de PROGRAM.
+* Désactivation d'un canal lorsqu'un nouveau PROGRAM reçu n'est pas configuré afin d'éviter l'utilisation du preset précédent.
+* Les canaux sans PROGRAM demeurent silencieux tant qu'aucun PROGRAM exploitable n'est reçu.
+* Conservation de la compatibilité avec les SONGs de l'ancien format.
+
+### Sélection et changement de SONG
+
+* La sélection de la SONG dans Fusion2QSynth demeure manuelle, le Fusion ne fournissant pas un identifiant `song_select` exploitable pour distinguer les SONGs.
+* Le Fusion demeure maître du message MIDI `START`.
+* Les `song_select` successifs générés par le Fusion pendant la navigation vers une SONG sont ignorés avant `START`.
+* Après `START`, un nouveau `song_select` est interprété comme un changement de SONG et provoque le retour au sélecteur de SONG.
+* Le changement de SONG peut ainsi être effectué sans quitter le Contrôleur Live.
+
+### Reload du projet
+
+* Validation du reload immédiat d'une SONG après modification de `fusion.json`.
+* La SONG courante est rechargée en conservant correctement son identité.
+* Les modifications apportées aux PROGRAMs globaux deviennent immédiatement disponibles pour l'héritage SONG.
+* Le reload ne provoque pas à lui seul un retour au menu de sélection de SONG.
+* Les `song_select` reçus avant `START` demeurent filtrés après la sélection d'une nouvelle SONG.
+* Aucun retour intempestif au sélecteur de SONG n'a été observé lors des validations.
+
+### Régression PROGRAM
+
+* Validation de la détection `bank:program`.
+* Validation du chargement d'un PROGRAM configuré dans FluidSynth.
+* Validation du traitement propre d'un PROGRAM non configuré.
+* Validation de la transmission des `NOTE ON` et `NOTE OFF`.
+
+### Régression MIX
+
+* Validation de la détection et du changement de MIX.
+* Validation du chargement des PARTs configurées d'un MIX.
+* Les PARTs incomplètes sont correctement ignorées sans empêcher le chargement des autres PARTs.
+* Les notes provenant des PARTs non configurées sont correctement filtrées.
+* Validation du maintien de la banque de performance entre les cycles de lecture de la boucle MIDI.
+
+### Nettoyage
+
+* Suppression des traces DEBUG temporaires `SONG BANK CH ... Bank ...` et `PROGRAM SONG CH ... bank:program`.
+* Conservation des traces DEBUG utiles au diagnostic MIDI, notamment `SONG SELECT`, `NOTE ON/OFF` et les notes ignorées.
+* Conservation des messages fonctionnels indiquant les changements de PROGRAM effectifs pendant une SONG.
+
+### Validation
+
+* Régression du mode PROGRAM validée avec PROGRAM configuré et non configuré.
+* Régression du mode MIX validée avec MIX sans PART configurée et MIX comportant plusieurs PARTs configurées et non configurées.
+* Mode SONG validé avec plusieurs PROGRAMs successifs par canal, héritage depuis les PROGRAMs globaux, surcharge locale d'instrument, PROGRAMs non configurés, canaux sans PROGRAM, changements dynamiques de PROGRAM, changement de SONG et reload immédiat du projet.
+* `integration-globale.py` validé sans suggestion invalide, doublon de suggestion, score mal ordonné ou aberrant, limite dépassée ni instabilité Top 1 ou Top N.
+* 1209 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
+* Les cas `Program 1` et `TransForce` demeurent sans suggestion connue et ne constituent pas des erreurs de validation.
+
+### Reporté à v2.10
+
+* Amélioration de la représentation de l'état « capturé mais non configuré » des MIX dans les listes et diagnostics.
+* Harmonisation générale des diagnostics PROGRAM, MIX et SONG.
+* Distinction plus fine des différents états de configuration.
+* Nettoyage et refactorisation pouvant découler de cette harmonisation.
+* Mise en place de tests de régression PROGRAM, MIX et SONG plus systématiques.

@@ -1,6 +1,8 @@
 import time
 import mido
 
+from fusion_constants import DEBUG
+
 from fusion_controller_state import (
     state,
     save_last_performance
@@ -406,6 +408,7 @@ def load_song(
     state.current_mode = "song"
     state.current_performance = song_id
     state.current_parts = {}
+    state.current_song_programs = {}
     state.pending_reload = False
 
     print_performance_header(
@@ -427,48 +430,31 @@ def load_song(
         0.1
     )
 
+    prepared_channels = 0
     loaded_channels = 0
 
-    for channel_id, channel in channels.items():
+    controls = {
+        7: "volume",
+        10: "pan",
+        11: "expression",
+        91: "reverb",
+        93: "chorus"
+    }
 
-        instrument = project.resolve_part_instrument(
-            channel
+    for channel_id, channel in sorted(
+        channels.items(),
+        key=lambda item: int(
+            item[0]
         )
-
-        if not instrument:
-
-            print(
-                "CH",
-                channel_id,
-                "instrument non configuré"
-            )
-
-            continue
+    ):
 
         midi_channel = (
             int(channel_id) - 1
         )
 
         #
-        # Instrument SoundFont
-        #
-        send_program(
-            out,
-            midi_channel,
-            instrument
-        )
-
-        #
         # Paramètres statiques SONG
         #
-        controls = {
-            7: "volume",
-            10: "pan",
-            11: "expression",
-            91: "reverb",
-            93: "chorus"
-        }
-
         for cc, field in controls.items():
 
             if field not in channel:
@@ -484,6 +470,42 @@ def load_song(
                 )
             )
 
+        prepared_channels += 1
+
+        programs = channel.get(
+            "programs"
+        )
+
+        #
+        # Nouveau format SONG :
+        # le PROGRAM sera choisi en temps réel
+        # par les PROGRAM_CHANGE du Fusion.
+        #
+        if isinstance(
+            programs,
+            dict
+        ):
+
+            continue
+
+        #
+        # Ancien format SONG :
+        # conserver le comportement historique.
+        #
+        instrument = project.resolve_part_instrument(
+            channel
+        )
+
+        if not instrument:
+
+            continue
+
+        send_program(
+            out,
+            midi_channel,
+            instrument
+        )
+
         state.current_parts[
             int(channel_id)
         ] = channel
@@ -492,41 +514,172 @@ def load_song(
 
     print()
     print(
-        loaded_channels,
-        "canaux chargés dans FluidSynth"
+        prepared_channels,
+        "canaux SONG préparés"
     )
 
-    if loaded_channels > 0:
+    if loaded_channels:
 
-        save_last_performance(
-            "song",
-            song_id
+        print(
+            loaded_channels,
+            "canaux ancien format chargés dans FluidSynth"
         )
+
+    save_last_performance(
+        "song",
+        song_id
+    )
 
     print()
     print(
-        "Canaux actifs :"
+        "En attente des PROGRAM_CHANGE du Fusion..."
     )
 
-    for ch, channel in state.current_parts.items():
+    print()
+
+def load_song_program(
+    channel_id,
+    program_id,
+    out,
+    project
+):
+
+    song_id = state.current_performance
+
+    song = project.get_song(
+        song_id
+    )
+
+    if not song:
+
+        return False
+
+    channel = song.get(
+        "channels",
+        {}
+    ).get(
+        str(channel_id)
+    )
+
+    if channel is None:
+
+        return False
+
+    programs = channel.get(
+        "programs"
+    )
+
+    #
+    # Nouveau format SONG
+    #
+    if isinstance(
+        programs,
+        dict
+    ):
+
+        program_data = programs.get(
+            program_id
+        )
+
+        if program_data is None:
+
+            if DEBUG:
+
+                print(
+                    "PROGRAM SONG ignoré",
+                    "CH",
+                    channel_id,
+                    program_id
+                )
+
+            return False
+
+        instrument = (
+            project.resolve_song_program_instrument(
+                program_id,
+                program_data
+            )
+        )
+
+    #
+    # Ancien format SONG
+    #
+    else:
+
+        bank = channel.get(
+            "bank"
+        )
+
+        program = channel.get(
+            "program"
+        )
+
+        if (
+            bank is None
+            or
+            program is None
+            or
+            f"{bank}:{program}" != program_id
+        ):
+
+            return False
 
         instrument = project.resolve_part_instrument(
             channel
         )
 
+    if not instrument:
+
         print(
-            " CH",
-            ch,
-            "→",
-            instrument.get(
-                "name",
-                "Non configuré"
-            )
-            if instrument
-            else "Non configuré"
+            "CH",
+            channel_id,
+            "PROGRAM",
+            program_id,
+            "non configuré"
         )
 
-    print()
+        state.current_parts.pop(
+            channel_id,
+            None
+        )
+
+        state.current_song_programs.pop(
+            channel_id,
+            None
+        )
+
+        return False
+
+    send_program(
+        out,
+        channel_id - 1,
+        instrument
+    )
+
+    state.current_parts[
+        channel_id
+    ] = channel
+
+    state.current_song_programs[
+        channel_id
+    ] = {
+        "program_id": program_id,
+        "instrument": instrument
+    }
+
+    print(
+        "CH",
+        channel_id,
+        "PROGRAM",
+        program_id,
+        "→",
+        instrument.get(
+            "name",
+            "?"
+        )
+    )
+
+    return True
 
 def reload_current_performance(
     out,

@@ -10,7 +10,8 @@ from fusion_project import FusionProject
 
 from fusion_lib import (
     find_fusion_input,
-    find_fluidsynth_output
+    find_fluidsynth_output,
+    panic
 )
 
 from fusion_controller_state import (
@@ -200,7 +201,12 @@ def print_mode_diagnostic(
                     song_id
                 )
 
-            for channel in song["channels"]:
+            for channel in sorted(
+                song["channels"],
+                key=lambda item: int(
+                    item["channel"]
+                )
+            ):
 
                 print(
                     " CH",
@@ -416,27 +422,15 @@ def main():
 
                     elif selected_mode == "song":
 
-                        if (
-                            last_id
-                            and
-                            project.get_song(
-                                last_id
-                            )
-                        ):
-
-                            selected_song = last_id
-
-                        else:
+                        while True:
 
                             selected_song = choose_song(
                                 project
                             )
 
-                        if selected_song is None:
+                            if selected_song is None:
 
-                            continue
-
-                        while True:
+                                continue
 
                             print()
                             print(
@@ -448,30 +442,34 @@ def main():
                                 "Attente du START..."
                             )
 
-                            try:
+                            result = run_controller_loop(
+                                inp,
+                                out,
+                                project,
+                                "song",
+                                selected_song=selected_song
+                            )
 
-                                run_controller_loop(
-                                    inp,
-                                    out,
-                                    project,
-                                    "song",
-                                    selected_song
+                            if result == "song_change":
+
+                                #
+                                # Nettoyer l'état de la SONG précédente
+                                #
+                                panic(
+                                    out
                                 )
 
-                            except KeyboardInterrupt:
+                                state.active_notes.clear()
+                                state.current_parts = {}
+                                state.current_performance = None
+                                state.current_song_programs = {}
 
                                 print()
                                 print(
-                                    "Retour à la sélection SONG"
+                                    "Sélectionne la nouvelle SONG."
                                 )
 
-                                selected_song = choose_song(
-                                    project
-                                )
-
-                                if selected_song is None:
-
-                                    break
+                                continue
 
     except KeyboardInterrupt:
 

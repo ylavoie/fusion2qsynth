@@ -1986,43 +1986,144 @@ class FusionProject:
                 f"{song_id} CH {channel_id} : canal MIDI invalide."
             )
 
-        if "bank" not in channel:
+        programs = channel.get(
+            "programs"
+        )
 
-            errors.append(
-                f"{song_id} CH {channel_id} : Bank absente."
-            )
+        #
+        # Nouveau format SONG
+        #
+        if programs is not None:
 
-        else:
-
-            bank = channel["bank"]
-
-            if not (
-                0 <= bank <= 16383
+            if not isinstance(
+                programs,
+                dict
             ):
 
                 errors.append(
                     f"{song_id} CH {channel_id} : "
-                    f"Bank invalide ({bank})."
+                    "programs invalide."
                 )
 
-        if "program" not in channel:
+            else:
 
-            errors.append(
-                f"{song_id} CH {channel_id} : Program absent."
-            )
+                for program_id, program_data in programs.items():
 
+                    try:
+
+                        bank_str, program_str = (
+                            program_id.split(
+                                ":",
+                                1
+                            )
+                        )
+
+                        bank = int(
+                            bank_str
+                        )
+
+                        program = int(
+                            program_str
+                        )
+
+                    except (
+                        ValueError,
+                        AttributeError
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM invalide ({program_id})."
+                        )
+
+                        continue
+
+                    if not (
+                        0 <= bank <= 16383
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"Bank invalide ({bank})."
+                        )
+
+                    if not (
+                        0 <= program <= 127
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"Program invalide ({program})."
+                        )
+
+                    if not isinstance(
+                        program_data,
+                        dict
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} invalide."
+                        )
+
+        #
+        # Ancien format SONG
+        #
         else:
 
-            program = channel["program"]
+            has_bank = (
+                "bank" in channel
+            )
 
-            if not (
-                0 <= program <= 127
+            has_program = (
+                "program" in channel
+            )
+
+            if (
+                has_bank
+                and
+                not has_program
             ):
 
                 errors.append(
-                    f"{song_id} CH {channel_id} : "
-                    f"Program invalide ({program})."
+                    f"{song_id} CH {channel_id} : Program absent."
                 )
+
+            if (
+                has_program
+                and
+                not has_bank
+            ):
+
+                errors.append(
+                    f"{song_id} CH {channel_id} : Bank absente."
+                )
+
+            if has_bank:
+
+                bank = channel["bank"]
+
+                if not (
+                    0 <= bank <= 16383
+                ):
+
+                    errors.append(
+                        f"{song_id} CH {channel_id} : "
+                        f"Bank invalide ({bank})."
+                    )
+
+            if has_program:
+
+                program = channel["program"]
+
+                if not (
+                    0 <= program <= 127
+                ):
+
+                    errors.append(
+                        f"{song_id} CH {channel_id} : "
+                        f"Program invalide ({program})."
+                    )
 
         for field in (
             "volume",
@@ -2119,6 +2220,62 @@ class FusionProject:
             )
 
         return errors
+
+    def resolve_song_program_instrument(
+        self,
+        program_id,
+        program_data
+    ):
+
+        #
+        # Surcharge locale de la SONG
+        #
+        instrument = self.resolve_part_instrument(
+            program_data
+        )
+
+        if instrument:
+
+            return instrument
+
+        #
+        # Héritage du PROGRAM global
+        #
+        return self.resolve_program_instrument(
+            program_id
+        )
+
+    def resolve_program_instrument(
+        self,
+        program_id
+    ):
+
+        program = self.get_program(
+            program_id
+        )
+
+        if not program:
+
+            return None
+
+        parts = program.get(
+            "parts",
+            {}
+        )
+
+        if len(parts) != 1:
+
+            return None
+
+        part = next(
+            iter(
+                parts.values()
+            )
+        )
+
+        return self.resolve_part_instrument(
+            part
+        )
 
     #
     # Diagnostic
@@ -2407,25 +2564,29 @@ class FusionProject:
 
         return results
 
-    def get_song_diagnostic(self):
+    def get_song_diagnostic(
+        self
+    ):
 
-        results = []
+        diagnostic = []
 
         for song_id, song in self.iter_songs():
 
-            song_result = {
+            song_diagnostic = {
                 "song": song_id,
                 "name": song.get(
                     "name",
-                    ""
+                    song_id
                 ),
                 "channels": []
             }
 
-            for channel_id, channel in song.get(
+            channels = song.get(
                 "channels",
                 {}
-            ).items():
+            )
+
+            for channel_id, channel in channels.items():
 
                 errors = self.validate_song_channel_data(
                     song_id,
@@ -2433,29 +2594,78 @@ class FusionProject:
                     channel
                 )
 
-                channel_result = {
-                    "channel": channel_id,
-                    "fusion_valid": not errors,
-                    "qsynth_configured": (
+                fusion_valid = (
+                    len(errors) == 0
+                )
+
+                programs = channel.get(
+                    "programs"
+                )
+
+                #
+                # Nouveau format SONG
+                #
+                if isinstance(
+                    programs,
+                    dict
+                ):
+
+                    if not programs:
+
+                        qsynth_configured = False
+
+                    else:
+
+                        qsynth_configured = True
+
+                        for (
+                            program_id,
+                            program_data
+                        ) in programs.items():
+
+                            instrument = (
+                                self.resolve_song_program_instrument(
+                                    program_id,
+                                    program_data
+                                )
+                            )
+
+                            if not instrument:
+
+                                qsynth_configured = False
+                                break
+
+                #
+                # Ancien format SONG
+                #
+                else:
+
+                    instrument = (
                         self.resolve_part_instrument(
                             channel
                         )
-                        is not None
-                    ),
-                    "errors": errors
-                }
+                    )
 
-                song_result[
+                    qsynth_configured = (
+                        instrument is not None
+                    )
+
+                song_diagnostic[
                     "channels"
                 ].append(
-                    channel_result
+                    {
+                        "channel": channel_id,
+                        "fusion_valid": fusion_valid,
+                        "qsynth_configured":
+                            qsynth_configured
+                    }
                 )
 
-            results.append(
-                song_result
+            diagnostic.append(
+                song_diagnostic
             )
 
-        return results
+        return diagnostic
 
     def get_project_diagnostic_summary(self):
 
