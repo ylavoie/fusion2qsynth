@@ -711,45 +711,84 @@ def edit_fusion_name(
 
 def edit_mix(project,mix_id):
 
-    def test_mix_menu(mix):
+    def test_mix_menu(
+        mix
+    ):
 
         while True:
 
             print()
-
             print("====================")
             print("Test Mix")
             print("====================")
 
-            print(
-                "1 - PARTS séparées"
-            )
+            #
+            # Nouveau format v2.10
+            #
+            if "channels" in mix:
 
-            print(
-                "2 - Toutes les PARTS"
-            )
+                print(
+                    "1 - Tester un canal"
+                )
+
+                print(
+                    "2 - Tous les canaux configurés"
+                )
+
+            #
+            # Ancien format
+            #
+            else:
+
+                print(
+                    "1 - PARTS séparées"
+                )
+
+                print(
+                    "2 - Toutes les PARTS"
+                )
 
             print(
                 "q - Retour"
             )
 
-            choix = input("> ")
+            choix = input(
+                "> "
+            )
 
             if choix == "1":
 
-                test_mix_parts(
-                    project,
-                    mix
-                )
+                if "channels" in mix:
+
+                    test_mix_channel(
+                        project,
+                        mix
+                    )
+
+                else:
+
+                    test_mix_parts(
+                        project,
+                        mix
+                    )
 
             elif choix == "2":
 
-                test_mix_all(
-                    project,
-                    mix
-                )
+                if "channels" in mix:
 
-            elif choix.lower()=="q":
+                    test_mix_channels_all(
+                        project,
+                        mix
+                    )
+
+                else:
+
+                    test_mix_all(
+                        project,
+                        mix
+                    )
+
+            elif choix.lower() == "q":
 
                 return
 
@@ -897,7 +936,7 @@ def edit_mix(project,mix_id):
         )
 
         print(
-            "4 - Modifier les PARTS"
+            "4 - Modifier les Canaux"
         )
 
         print(
@@ -927,13 +966,522 @@ def edit_mix(project,mix_id):
 
         elif choix == "4":
 
-            edit_parts(
-                project,
-                mix_id,
-                mix
-            )
+            if "channels" in mix:
+
+                edit_mix_channels(
+                    project,
+                    mix_id,
+                    mix
+                )
+
+            else:
+
+                edit_parts(
+                    project,
+                    mix_id,
+                    mix
+                )
 
         elif choix.lower() == "q":
+
+            return
+
+def edit_mix_channels(
+    project,
+    mix_id,
+    mix
+):
+
+    channels = mix.get(
+        "channels",
+        {}
+    )
+
+    while True:
+
+        print()
+        print("====================")
+        print("Canaux du MIX")
+        print("====================")
+
+        if not channels:
+
+            print(
+                "Aucun canal."
+            )
+
+            return
+
+        for channel_id, channel in sorted(
+            channels.items(),
+            key=lambda item: int(
+                item[0]
+            )
+        ):
+
+            program_id = channel.get(
+                "program"
+            )
+
+            program_name = None
+
+            if program_id:
+
+                program = project.get_program(
+                    program_id
+                )
+
+                if program:
+
+                    program_name = program.get(
+                        "name"
+                    )
+
+            instrument = (
+                project.resolve_mix_channel_instrument(
+                    channel
+                )
+            )
+
+            instrument_name = (
+                instrument.get(
+                    "name",
+                    "?"
+                )
+                if instrument
+                else "Non configuré"
+            )
+
+            print(
+                f"CH {channel_id:>2} | "
+                f"PROGRAM {program_id or '?':<7} | "
+                f"{program_name or '?':<25} | "
+                f"QSynth : {instrument_name}"
+            )
+
+        print()
+
+        channel_id = input(
+            "Canal à modifier (q pour quitter) : "
+        ).strip()
+
+        if channel_id.lower() == "q":
+
+            return
+
+        channel = channels.get(
+            channel_id
+        )
+
+        if channel is None:
+
+            print(
+                "Canal inconnu."
+            )
+
+            continue
+
+        edit_mix_channel(
+            project,
+            mix_id,
+            channel_id,
+            channel
+        )
+
+def edit_mix_channel(
+    project,
+    mix_id,
+    channel_id,
+    channel
+):
+
+    def edit_mix_channel_instrument(
+        project,
+        channel
+    ):
+
+        program_id = channel.get(
+            "program"
+        )
+
+        global_program = None
+
+        if program_id:
+
+            global_program = project.get_program(
+                program_id
+            )
+
+        fusion_name = None
+        fusion_program = None
+
+        if global_program:
+
+            fusion_name = global_program.get(
+                "name"
+            )
+
+        if program_id:
+
+            try:
+
+                fusion_program = int(
+                    program_id.split(
+                        ":",
+                        1
+                    )[1]
+                )
+
+            except (
+                ValueError,
+                IndexError
+            ):
+
+                fusion_program = None
+
+        instrument = choose_instrument(
+            project,
+            channel,
+            fusion_name=fusion_name,
+            fusion_program=fusion_program
+        )
+
+        if instrument is None:
+
+            return
+
+        old_channel = dict(
+            channel
+        )
+
+        allowed_errors = (
+            project.get_blocking_errors(
+                project.validate()
+            )
+        )
+
+        channel[
+            "instrument"
+        ] = instrument[
+            "id"
+        ]
+
+        if project.save_safe(
+            allowed_errors=allowed_errors
+        ):
+
+            print(
+                "Instrument local affecté."
+            )
+
+        else:
+
+            channel.clear()
+
+            channel.update(
+                old_channel
+            )
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
+    def edit_mix_channel_program(
+        project,
+        mix_id,
+        channel_id,
+        channel
+    ):
+
+        print()
+
+        print(
+            "PROGRAM actuel :",
+            channel.get(
+                "program",
+                "?"
+            )
+        )
+
+        value = input(
+            "Nouveau PROGRAM bank:program "
+            "(vide pour aucun) : "
+        ).strip()
+
+        old_channel = dict(
+            channel
+        )
+
+        allowed_errors = (
+            project.get_blocking_errors(
+                project.validate()
+            )
+        )
+
+        if not value:
+
+            channel.pop(
+                "program",
+                None
+            )
+
+        else:
+
+            program = project.get_program(
+                value
+            )
+
+            if program is None:
+
+                print(
+                    "PROGRAM global inconnu :",
+                    value
+                )
+
+                return
+
+            channel[
+                "program"
+            ] = value
+
+        errors = (
+            project.validate_mix_channel_data(
+                mix_id,
+                channel_id,
+                channel
+            )
+        )
+
+        if errors:
+
+            channel.clear()
+
+            channel.update(
+                old_channel
+            )
+
+            print(
+                "Canal non modifié."
+            )
+
+            print_error_messages(
+                errors
+            )
+
+            return
+
+        if project.save_safe(
+            allowed_errors=allowed_errors
+        ):
+
+            print(
+                "PROGRAM modifié."
+            )
+
+        else:
+
+            channel.clear()
+
+            channel.update(
+                old_channel
+            )
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
+    def remove_mix_channel_instrument(
+        project,
+        channel
+    ):
+
+        if "instrument" not in channel:
+
+            print(
+                "Aucun instrument local à supprimer."
+            )
+
+            return
+
+        old_channel = dict(
+            channel
+        )
+
+        allowed_errors = (
+            project.get_blocking_errors(
+                project.validate()
+            )
+        )
+
+        del channel[
+            "instrument"
+        ]
+
+        if project.save_safe(
+            allowed_errors=allowed_errors
+        ):
+
+            print(
+                "Instrument local supprimé."
+            )
+
+            instrument = (
+                project.resolve_mix_channel_instrument(
+                    channel
+                )
+            )
+
+            print(
+                "Instrument effectif :",
+                (
+                    instrument.get(
+                        "name",
+                        "?"
+                    )
+                    if instrument
+                    else "Non configuré"
+                )
+            )
+
+        else:
+
+            channel.clear()
+
+            channel.update(
+                old_channel
+            )
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
+    while True:
+
+        program_id = channel.get(
+            "program"
+        )
+
+        global_program = None
+
+        if program_id:
+
+            global_program = project.get_program(
+                program_id
+            )
+
+        fusion_name = None
+
+        if global_program:
+
+            fusion_name = global_program.get(
+                "name"
+            )
+
+        local_instrument_id = channel.get(
+            "instrument"
+        )
+
+        local_instrument = None
+
+        if local_instrument_id:
+
+            local_instrument = project.get_instrument(
+                local_instrument_id
+            )
+
+        effective_instrument = (
+            project.resolve_mix_channel_instrument(
+                channel
+            )
+        )
+
+        print()
+        print("====================")
+        print(
+            "Edition canal MIX",
+            channel_id
+        )
+        print("====================")
+
+        print(
+            "PROGRAM Fusion :",
+            program_id or "?"
+        )
+
+        print(
+            "Nom Fusion     :",
+            fusion_name or "?"
+        )
+
+        print(
+            "Instrument local :",
+            (
+                local_instrument.get(
+                    "name",
+                    local_instrument_id
+                )
+                if local_instrument
+                else "Aucun"
+            )
+        )
+
+        print(
+            "Instrument effectif :",
+            (
+                effective_instrument.get(
+                    "name",
+                    "?"
+                )
+                if effective_instrument
+                else "Non configuré"
+            )
+        )
+
+        print()
+        print(
+            "1 - Modifier le PROGRAM"
+        )
+
+        print(
+            "2 - Modifier l'instrument local"
+        )
+
+        print(
+            "3 - Supprimer l'instrument local"
+        )
+
+        print(
+            "q - Retour"
+        )
+
+        choice = input(
+            "> "
+        ).strip()
+
+        if choice == "1":
+
+            edit_mix_channel_program(
+                project,
+                mix_id,
+                channel_id,
+                channel
+            )
+
+        elif choice == "2":
+
+            edit_mix_channel_instrument(
+                project,
+                channel
+            )
+
+        elif choice == "3":
+
+            remove_mix_channel_instrument(
+                project,
+                channel
+            )
+
+        elif choice.lower() == "q":
 
             return
 
@@ -1771,6 +2319,355 @@ def test_mix_parts(project, mix):
             part
         )
 
+def send_midi_message(
+    out,
+    message
+):
+
+    try:
+
+        out.send(
+            message
+        )
+
+        return True
+
+    except Exception as error:
+
+        print()
+
+        print(
+            "Erreur MIDI :",
+            error
+        )
+
+        return False
+
+def stop_midi_test(
+    out,
+    channels,
+    active_notes
+):
+
+    #
+    # NOTE_OFF explicites
+    #
+    for midi_channel, note in list(
+        active_notes
+    ):
+
+        send_midi_message(
+            out,
+            mido.Message(
+                "note_off",
+                channel=midi_channel,
+                note=note,
+                velocity=0
+            )
+        )
+
+    active_notes.clear()
+
+    #
+    # Nettoyage des contrôleurs
+    #
+    for midi_channel in channels:
+
+        send_midi_message(
+            out,
+            mido.Message(
+                "control_change",
+                channel=midi_channel,
+                control=64,
+                value=0
+            )
+        )
+
+        send_midi_message(
+            out,
+            mido.Message(
+                "control_change",
+                channel=midi_channel,
+                control=123,
+                value=0
+            )
+        )
+
+        send_midi_message(
+            out,
+            mido.Message(
+                "control_change",
+                channel=midi_channel,
+                control=120,
+                value=0
+            )
+        )
+
+def test_mix_channel(
+    project,
+    mix
+):
+
+    channels = mix.get(
+        "channels",
+        {}
+    )
+
+    if not channels:
+
+        print(
+            "Aucun canal."
+        )
+
+        return
+
+    print()
+
+    print(
+        "Canaux disponibles :"
+    )
+
+    for channel_id, channel in sorted(
+        channels.items(),
+        key=lambda item: int(
+            item[0]
+        )
+    ):
+
+        instrument = (
+            project.resolve_mix_channel_instrument(
+                channel
+            )
+        )
+
+        print(
+            "CH",
+            channel_id,
+            "-",
+            (
+                instrument.get(
+                    "name",
+                    "?"
+                )
+                if instrument
+                else "Non configuré"
+            )
+        )
+
+    print()
+
+    channel_id = input(
+        "Canal à tester : "
+    ).strip()
+
+    channel = channels.get(
+        channel_id
+    )
+
+    if channel is None:
+
+        print(
+            "Canal inconnu."
+        )
+
+        return
+
+    instrument = (
+        project.resolve_mix_channel_instrument(
+            channel
+        )
+    )
+
+    if not instrument:
+
+        print(
+            "Canal non configuré."
+        )
+
+        return
+
+    port_name = (
+        find_fluidsynth_output()
+    )
+
+    if not port_name:
+
+        print(
+            "FluidSynth introuvable"
+        )
+
+        return
+
+    midi_channel = (
+        int(channel_id) - 1
+    )
+
+    bank = instrument.get(
+        "sf2_bank",
+        0
+    )
+
+    program = instrument.get(
+        "sf2_program",
+        0
+    )
+
+    if not 0 <= bank <= 16383:
+
+        print(
+            "Bank SF2 invalide :",
+            bank
+        )
+
+        return
+
+    if not 0 <= program <= 127:
+
+        print(
+            "Program SF2 invalide :",
+            program
+        )
+
+        return
+
+    bank_msb = bank // 128
+    bank_lsb = bank % 128
+
+    print()
+
+    print(
+        "CH",
+        channel_id,
+        "-",
+        instrument["name"]
+    )
+
+    input(
+        "Entrée pour jouer..."
+    )
+
+    notes = [
+        60,
+        64,
+        67,
+        72
+    ]
+
+    active_notes = set()
+
+    try:
+
+        with mido.open_output(
+            port_name
+        ) as out:
+
+            try:
+
+                if not send_midi_message(
+                    out,
+                    mido.Message(
+                        "control_change",
+                        channel=midi_channel,
+                        control=0,
+                        value=bank_msb
+                    )
+                ):
+
+                    return
+
+                if not send_midi_message(
+                    out,
+                    mido.Message(
+                        "control_change",
+                        channel=midi_channel,
+                        control=32,
+                        value=bank_lsb
+                    )
+                ):
+
+                    return
+
+                if not send_midi_message(
+                    out,
+                    mido.Message(
+                        "program_change",
+                        channel=midi_channel,
+                        program=program
+                    )
+                ):
+
+                    return
+
+                for note in notes:
+
+                    if not send_midi_message(
+                        out,
+                        mido.Message(
+                            "note_on",
+                            channel=midi_channel,
+                            note=note,
+                            velocity=70
+                        )
+                    ):
+
+                        break
+
+                    active_notes.add(
+                        (
+                            midi_channel,
+                            note
+                        )
+                    )
+
+                    time.sleep(
+                        0.5
+                    )
+
+                    if not send_midi_message(
+                        out,
+                        mido.Message(
+                            "note_off",
+                            channel=midi_channel,
+                            note=note,
+                            velocity=0
+                        )
+                    ):
+
+                        break
+
+                    active_notes.discard(
+                        (
+                            midi_channel,
+                            note
+                        )
+                    )
+
+            except KeyboardInterrupt:
+
+                print()
+                print(
+                    "Test interrompu."
+                )
+
+            finally:
+
+                stop_midi_test(
+                    out,
+                    {
+                        midi_channel
+                    },
+                    active_notes
+                )
+
+    except Exception as error:
+
+        print()
+
+        print(
+            "Erreur lors de l'accès au port MIDI :",
+            error
+        )
+
 def test_mix_all(project, mix):
 
     port_name = find_fluidsynth_output()
@@ -1929,6 +2826,262 @@ def test_mix_all(project, mix):
                     )
                 )
 
+def test_mix_channels_all(
+    project,
+    mix
+):
+
+    port_name = (
+        find_fluidsynth_output()
+    )
+
+    if not port_name:
+
+        print(
+            "FluidSynth introuvable"
+        )
+
+        return
+
+    channels = mix.get(
+        "channels",
+        {}
+    )
+
+    if not channels:
+
+        print(
+            "Aucun canal."
+        )
+
+        return
+
+    notes = [
+        60,
+        64,
+        67,
+        72
+    ]
+
+    active_channels = []
+    active_notes = set()
+
+    try:
+
+        with mido.open_output(
+            port_name
+        ) as out:
+
+            active_channels = []
+
+            try:
+
+                #
+                # Préparation des instruments
+                #
+                for channel_id, channel in sorted(
+                    channels.items(),
+                    key=lambda item: int(
+                        item[0]
+                    )
+                ):
+
+                    instrument = (
+                        project.resolve_mix_channel_instrument(
+                            channel
+                        )
+                    )
+
+                    if not instrument:
+
+                        print(
+                            "CH",
+                            channel_id,
+                            "- Non configuré"
+                        )
+
+                        continue
+
+                    midi_channel = (
+                        int(channel_id) - 1
+                    )
+
+                    bank = instrument.get(
+                        "sf2_bank",
+                        0
+                    )
+
+                    program = instrument.get(
+                        "sf2_program",
+                        0
+                    )
+
+                    if not 0 <= bank <= 16383:
+
+                        continue
+
+                    if not 0 <= program <= 127:
+
+                        continue
+
+                    bank_msb = (
+                        bank // 128
+                    )
+
+                    bank_lsb = (
+                        bank % 128
+                    )
+
+                    if not send_midi_message(
+                        out,
+                        mido.Message(
+                            "control_change",
+                            channel=midi_channel,
+                            control=0,
+                            value=bank_msb
+                        )
+                    ):
+
+                        break
+
+                    if not send_midi_message(
+                        out,
+                        mido.Message(
+                            "control_change",
+                            channel=midi_channel,
+                            control=32,
+                            value=bank_lsb
+                        )
+                    ):
+
+                        break
+
+                    if not send_midi_message(
+                        out,
+                        mido.Message(
+                            "program_change",
+                            channel=midi_channel,
+                            program=program
+                        )
+                    ):
+
+                        break
+
+                    active_channels.append(
+                        (
+                            channel_id,
+                            midi_channel,
+                            instrument
+                        )
+                    )
+
+                if active_channels:
+
+                    input(
+                        "Entrée pour jouer..."
+                    )
+
+                    for note in notes:
+
+                        send_failed = False
+
+                        for (
+                            channel_id,
+                            midi_channel,
+                            instrument
+                        ) in active_channels:
+
+                            if not send_midi_message(
+                                out,
+                                mido.Message(
+                                    "note_on",
+                                    channel=midi_channel,
+                                    note=note,
+                                    velocity=70
+                                )
+                            ):
+
+                                send_failed = True
+
+                                break
+
+                            active_notes.add(
+                                (
+                                    midi_channel,
+                                    note
+                                )
+                            )
+
+                        if send_failed:
+
+                            break
+
+                        time.sleep(
+                            0.5
+                        )
+
+                        for (
+                            channel_id,
+                            midi_channel,
+                            instrument
+                        ) in active_channels:
+
+                            if not send_midi_message(
+                                out,
+                                mido.Message(
+                                    "note_off",
+                                    channel=midi_channel,
+                                    note=note,
+                                    velocity=0
+                                )
+                            ):
+
+                                send_failed = True
+
+                                break
+
+                            active_notes.discard(
+                                (
+                                    midi_channel,
+                                    note
+                                )
+                            )
+
+                        if send_failed:
+
+                            break
+
+            except KeyboardInterrupt:
+
+                print()
+                print(
+                    "Test interrompu."
+                )
+
+            finally:
+
+                stop_midi_test(
+                    out,
+                    {
+                        midi_channel
+                        for (
+                            channel_id,
+                            midi_channel,
+                            instrument
+                        ) in active_channels
+                    },
+                    active_notes
+                )
+
+    except Exception as error:
+
+        print()
+
+        print(
+            "Erreur lors de l'accès au port MIDI :",
+            error
+        )
+
 def list_mixes(
     project,
     status_filter=None
@@ -1951,13 +3104,13 @@ def list_mixes(
     print(
         f"{'ID':<10}"
         f"{'Nom':<30}"
-        f"{'PARTS':>7}"
-        f"{'Configurées':>14}"
-        f"{'État':>16}"
+        f"{'Canaux':>7}"
+        f"{'Configurés':>14}"
+        f"{'État':>24}"
     )
 
     print(
-        "-" * 77
+        "-" * 85
     )
 
     displayed = []
@@ -1969,49 +3122,81 @@ def list_mixes(
             {}
         )
 
-        parts_diag = mix_diag.get(
-            "parts",
-            []
+        #
+        # Nouveau format v2.10
+        #
+        if "channels" in mix_diag:
+
+            units = mix_diag.get(
+                "channels",
+                []
+            )
+
+        #
+        # Ancien format <= v2.9
+        #
+        else:
+
+            units = mix_diag.get(
+                "parts",
+                []
+            )
+
+        total = len(
+            units
         )
 
-        fusion_valid = all(
-            part.get(
+        valid = sum(
+            1
+            for unit in units
+            if unit.get(
                 "fusion_valid",
                 False
             )
-            for part in parts_diag
         )
 
         configured = sum(
             1
-            for part in parts_diag
-            if part.get(
+            for unit in units
+            if unit.get(
                 "qsynth_configured",
                 False
             )
         )
 
-        total = len(
-            parts_diag
-        )
-
-        if not fusion_valid:
+        #
+        # État v2.10
+        #
+        if valid < total:
 
             state_code = "error"
 
-        elif (
-            total == 0
-            or
-            configured < total
-        ):
+        elif total == 0:
 
             state_code = "unconfigured"
 
+        elif configured == 0:
+
+            state_code = "unconfigured"
+
+        elif configured < total:
+
+            state_code = "partial"
+
         else:
 
-            state_code = "ok"
+            state_code = "configured"
 
-        if (
+        if status_filter == "unconfigured":
+
+            if state_code not in (
+                "unconfigured",
+                "partial"
+            ):
+
+                continue
+
+        elif (
             status_filter is not None
             and
             state_code != status_filter
@@ -2031,11 +3216,9 @@ def list_mixes(
 
             state = "À configurer"
 
-        elif mix_diag.get(
-            "shared_channels"
-        ):
+        elif state_code == "partial":
 
-            state = "Canaux partagés"
+            state = "Partiellement configuré"
 
         else:
 
@@ -2046,21 +3229,42 @@ def list_mixes(
             f"{mix.get('name', ''):<30}"
             f"{total:>7}"
             f"{f'{configured}/{total}':>14}"
-            f"{state:>16}"
+            f"{state:>24}"
         )
-    if len(displayed) == 0:
+
+    if len(
+        displayed
+    ) == 0:
 
         if status_filter == "error":
 
-            print("Aucun MIX en erreur.")
+            print(
+                "Aucun MIX en erreur."
+            )
 
         elif status_filter == "unconfigured":
 
-            print("Aucun MIX à configurer.")
+            print(
+                "Aucun MIX à configurer."
+            )
+
+        elif status_filter == "partial":
+
+            print(
+                "Aucun MIX partiellement configuré."
+            )
+
+        elif status_filter == "configured":
+
+            print(
+                "Aucun MIX configuré."
+            )
 
         else:
 
-            print("Aucun MIX.")
+            print(
+                "Aucun MIX."
+            )
 
         return
 
@@ -2799,12 +4003,40 @@ def edit_program(
 
                 continue
 
-            part["instrument"] = instrument["id"]
+            old_part = dict(
+                part
+            )
 
-            if project.save_safe():
+            allowed_errors = (
+                project.get_blocking_errors(
+                    project.validate()
+                )
+            )
+
+            part[
+                "instrument"
+            ] = instrument[
+                "id"
+            ]
+
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
 
                 print(
                     "Instrument affecté."
+                )
+
+            else:
+
+                part.clear()
+
+                part.update(
+                    old_part
+                )
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
                 )
 
         elif choice == "2":
