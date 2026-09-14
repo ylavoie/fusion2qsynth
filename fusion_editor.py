@@ -187,7 +187,8 @@ def choose_sf2_preset():
 
 def ensure_project_instrument(
     project,
-    preset
+    preset,
+    allowed_errors=None
 ):
 
     instrument_id = preset["id"]
@@ -219,7 +220,9 @@ def ensure_project_instrument(
 
         return None
 
-    if not project.save_safe():
+    if not project.save_safe(
+        allowed_errors=allowed_errors
+    ):
 
         project.remove_instrument(
             instrument_id
@@ -239,7 +242,8 @@ def choose_instrument(
     project,
     part=None,
     fusion_name=None,
-    fusion_program=None
+    fusion_program=None,
+    allowed_errors=None
 ):
     print()
 
@@ -391,7 +395,8 @@ def choose_instrument(
 
                 return ensure_project_instrument(
                     project,
-                    preset
+                    preset,
+                    allowed_errors=allowed_errors
                 )
 
         print()
@@ -597,6 +602,12 @@ def repair_instrument_errors(
     errors
 ):
 
+    allowed_errors = (
+        project.get_blocking_errors(
+            project.validate()
+        )
+    )
+
     repaired = False
 
     for error in errors:
@@ -641,7 +652,8 @@ def repair_instrument_errors(
             part,
             fusion_name=part.get(
                 "fusion_name"
-            )
+            ),
+            allowed_errors=allowed_errors
         )
 
         if instrument is None:
@@ -662,7 +674,9 @@ def repair_instrument_errors(
 
     if repaired:
 
-        if not project.save_safe():
+        if not project.save_safe(
+            allowed_errors=allowed_errors
+        ):
 
             print(
                 "⚠ Sauvegarde non effectuée."
@@ -1139,11 +1153,18 @@ def edit_mix_channel(
 
                 fusion_program = None
 
+        allowed_errors = (
+            project.get_blocking_errors(
+                project.validate()
+            )
+        )
+
         instrument = choose_instrument(
             project,
             channel,
             fusion_name=fusion_name,
-            fusion_program=fusion_program
+            fusion_program=fusion_program,
+            allowed_errors=allowed_errors
         )
 
         if instrument is None:
@@ -1152,12 +1173,6 @@ def edit_mix_channel(
 
         old_channel = dict(
             channel
-        )
-
-        allowed_errors = (
-            project.get_blocking_errors(
-                project.validate()
-            )
         )
 
         channel[
@@ -1547,12 +1562,6 @@ def edit_parts(
 
             if choix == "1":
 
-                old_instrument = (
-                    project.resolve_part_instrument(
-                        part
-                    )
-                )
-
                 if old_instrument is None:
 
                     old_instrument = {
@@ -1561,12 +1570,19 @@ def edit_parts(
                         "sf2_program": 0
                     }
 
+                allowed_errors = (
+                    project.get_blocking_errors(
+                        project.validate()
+                    )
+                )
+
                 instrument = choose_instrument(
                     project,
                     part,
                     fusion_name=part.get(
                         "fusion_name"
-                    )
+                    ),
+                    allowed_errors=allowed_errors
                 )
 
                 if instrument is None:
@@ -1675,15 +1691,15 @@ def edit_parts(
                     part
                 )
 
-                allowed_errors = (
-                    project.get_blocking_errors(
-                        project.validate()
-                    )
-                )
-
                 if edit_fusion_name(
                     part
                 ):
+
+                    allowed_errors = (
+                        project.get_blocking_errors(
+                            project.validate()
+                        )
+                    )
 
                     if project.save_safe(
                         allowed_errors=allowed_errors
@@ -3497,8 +3513,15 @@ def delete_instrument(
     project
 ):
 
+    allowed_errors = (
+        project.get_blocking_errors(
+            project.validate()
+        )
+    )
+
     selected = choose_instrument(
-        project
+        project,
+        allowed_errors=allowed_errors
     )
 
     if selected is None:
@@ -3556,7 +3579,9 @@ def delete_instrument(
         instrument_id
     ):
 
-        if project.save_safe():
+        if project.save_safe(
+            allowed_errors=allowed_errors
+        ):
 
             print(
                 "Instrument supprimé."
@@ -3578,8 +3603,15 @@ def edit_instrument(project):
 
     # choisir instrument
 
+    allowed_errors = (
+        project.get_blocking_errors(
+            project.validate()
+        )
+    )
+
     selected = choose_instrument(
-        project
+        project,
+        allowed_errors=allowed_errors
     )
 
     if selected is None:
@@ -3642,7 +3674,9 @@ def edit_instrument(project):
 
         return
 
-    if project.save_safe():
+    if project.save_safe(
+        allowed_errors=allowed_errors
+    ):
 
         print(
             "Instrument modifié."
@@ -3991,12 +4025,19 @@ def edit_program(
 
         if choice == "1":
 
+            allowed_errors = (
+                project.get_blocking_errors(
+                    project.validate()
+                )
+            )
+
             instrument = choose_instrument(
                 project,
                 part,
                 fusion_name=program.get(
                     "name"
-                )
+                ),
+                allowed_errors=allowed_errors
             )
 
             if instrument is None:
@@ -4005,12 +4046,6 @@ def edit_program(
 
             old_part = dict(
                 part
-            )
-
-            allowed_errors = (
-                project.get_blocking_errors(
-                    project.validate()
-                )
             )
 
             part[
@@ -5172,13 +5207,18 @@ def edit_song(
                         "name"
                     )
 
+                allowed_errors = project.get_blocking_errors(
+                    project.validate()
+                )
+
                 instrument = choose_instrument(
                     project,
                     program_data,
                     fusion_name=fusion_name,
-                        fusion_program=int(
-                            program_str
-                        )
+                    fusion_program=int(
+                        program_str
+                    ),
+                    allowed_errors=allowed_errors
                 )
 
                 if instrument is None:
@@ -5187,10 +5227,6 @@ def edit_song(
 
                 old_program_data = dict(
                     program_data
-                )
-
-                allowed_errors = project.get_blocking_errors(
-                    project.validate()
                 )
 
                 program_data[
