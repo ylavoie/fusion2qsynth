@@ -135,7 +135,31 @@ def run_controller_loop(
                 "note_off"
             ]:
 
-                if msg.channel + 1 not in state.current_parts:
+                key = (
+                    msg.channel,
+                    msg.note
+                )
+
+                is_note_off = (
+                    msg.type == "note_off"
+                    or
+                    (
+                        msg.type == "note_on"
+                        and
+                        msg.velocity == 0
+                    )
+                )
+
+                #
+                # NOTE ON :
+                # seulement sur un canal actuellement actif.
+                #
+                if (
+                    not is_note_off
+                    and
+                    msg.channel + 1
+                    not in state.current_parts
+                ):
 
                     if DEBUG:
 
@@ -143,68 +167,77 @@ def run_controller_loop(
                             "NOTE ignorée",
                             "CH",
                             msg.channel + 1,
-                            note_name(msg.note)
+                            note_name(
+                                msg.note
+                            )
                         )
 
                     continue
 
-            if msg.type == "note_on":
+                #
+                # NOTE OFF :
+                # conserver si cette note a réellement
+                # été envoyée auparavant.
+                #
+                if (
+                    is_note_off
+                    and
+                    msg.channel + 1
+                    not in state.current_parts
+                    and
+                    key not in state.active_notes
+                ):
 
-                key = (
-                    msg.channel,
-                    msg.note
-                )
+                    if DEBUG:
 
-                if msg.velocity > 0:
+                        print(
+                            "NOTE OFF ignorée",
+                            "CH",
+                            msg.channel + 1,
+                            note_name(
+                                msg.note
+                            )
+                        )
 
-                    state.active_notes.add(
-                        key
-                    )
+                    continue
 
-                else:
+                #
+                # Suivi des notes actives.
+                #
+                if is_note_off:
 
                     state.active_notes.discard(
                         key
                     )
 
-            elif msg.type == "note_off":
+                else:
 
-                state.active_notes.discard(
-                    (
-                        msg.channel,
-                        msg.note
+                    state.active_notes.add(
+                        key
                     )
-                )
 
+                #
+                # Reload différé en attente.
+                #
                 if (
                     state.pending_reload
                     and
-                    not state.active_notes
+                    state.active_notes
+                    and
+                    not state.reload_wait_announced
                 ):
-                        execute_pending_reload(
-                            out,
-                            project,
-                            deferred=state.reload_wait_announced
-                        )
 
-            if (
-                state.pending_reload
-                and
-                state.active_notes
-                and
-                not state.reload_wait_announced
-            ):
+                    print(
+                        "Projet modifié : reload en attente "
+                        "(notes actives)."
+                    )
 
-                print(
-                    "Projet modifié : reload en attente "
-                    "(notes actives)."
-                )
+                    state.reload_wait_announced = True
 
-                state.reload_wait_announced = True
-
-            if DEBUG:
-
-                if msg.type in ["note_on","note_off"]:
+                #
+                # Affichage DEBUG.
+                #
+                if DEBUG:
 
                     name = "?"
 
@@ -222,8 +255,10 @@ def run_controller_loop(
 
                         if song_program:
 
-                            instrument = song_program.get(
-                                "instrument"
+                            instrument = (
+                                song_program.get(
+                                    "instrument"
+                                )
                             )
 
                             if instrument:
@@ -241,61 +276,98 @@ def run_controller_loop(
 
                         if part:
 
-                            instrument = project.resolve_part_instrument(
-                                part
-                            )
+                            if selected_mode == "mix":
+
+                                instrument = (
+                                    project.resolve_mix_channel_instrument(
+                                        part
+                                    )
+                                )
+
+                            else:
+
+                                instrument = (
+                                    project.resolve_part_instrument(
+                                        part
+                                    )
+                                )
 
                             if instrument:
 
                                 name = instrument.get(
                                     "name",
                                     "?"
-            )
-                    if msg.type == "note_on" and msg.velocity > 0:
+                                )
+
+                    if not is_note_off:
 
                         print(
                             "NOTE ON",
                             "CH",
-                            msg.channel + 1, name,
+                            msg.channel + 1,
+                            name,
                             "Note",
-                            note_name(msg.note),
+                            note_name(
+                                msg.note
+                            ),
                             "Vel",
                             msg.velocity
                         )
 
-                    elif (
-                        msg.type == "note_off"
-                        or
-                        (
-                            msg.type == "note_on"
-                            and
-                            msg.velocity == 0
-                        )
-                    ):
+                    else:
+
                         print(
                             "NOTE OFF",
                             "CH",
-                            msg.channel + 1, name,
+                            msg.channel + 1,
+                            name,
                             "Note",
-                            note_name(msg.note)
+                            note_name(
+                                msg.note
+                            )
                         )
 
-            if msg.type in [
-                "note_on",
-                "note_off"
-            ]:
-
+                #
+                # Affichage normal.
+                #
                 if not DEBUG:
 
                     print(
                         "NOTE",
                         msg.channel + 1,
                         msg.type,
-                        note_name(msg.note),
+                        note_name(
+                            msg.note
+                        ),
                         msg.velocity
                     )
 
-                out.send(msg)
+                #
+                # Toujours envoyer le NOTE OFF
+                # avant un éventuel reload.
+                #
+                out.send(
+                    msg
+                )
+
+                #
+                # Si cette note termine la dernière
+                # note active, effectuer maintenant
+                # le reload différé.
+                #
+                if (
+                    is_note_off
+                    and
+                    state.pending_reload
+                    and
+                    not state.active_notes
+                ):
+
+                    execute_pending_reload(
+                        out,
+                        project,
+                        deferred=state.reload_wait_announced
+                    )
 
                 continue
 

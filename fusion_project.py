@@ -866,6 +866,87 @@ class FusionProject:
             mix_id
         )
 
+    def get_mix_channels(
+        self,
+        mix
+    ):
+
+        #
+        # Nouveau format v2.10
+        #
+        if "channels" in mix:
+
+            channels = mix.get(
+                "channels",
+                {}
+            )
+
+            if isinstance(
+                channels,
+                dict
+            ):
+
+                return channels
+
+            return {}
+
+        #
+        # Ancien format <= v2.9
+        #
+        channels = {}
+
+        for part in mix.get(
+            "parts",
+            {}
+        ).values():
+
+            if not isinstance(
+                part,
+                dict
+            ):
+
+                continue
+
+            midi_channel = part.get(
+                "midi_channel"
+            )
+
+            if midi_channel is None:
+
+                continue
+
+            channel = {}
+
+            bank = part.get(
+                "bank"
+            )
+
+            program = part.get(
+                "program"
+            )
+
+            if (
+                bank is not None
+                and
+                program is not None
+            ):
+
+                channel["program"] = (
+                    f"{bank}:{program}"
+                )
+
+            if "instrument" in part:
+
+                channel["instrument"] = (
+                    part["instrument"]
+                )
+
+            channels[
+                str(midi_channel)
+            ] = channel
+
+        return channels
+
     def rename_mix(
         self,
         mix_id,
@@ -1362,7 +1443,10 @@ class FusionProject:
 
         errors = []
 
-        if not isinstance(mix, dict):
+        if not isinstance(
+            mix,
+            dict
+        ):
 
             errors.append(
                 f"{mix_id} : définition invalide."
@@ -1370,6 +1454,43 @@ class FusionProject:
 
             return errors
 
+        #
+        # Nouveau modèle v2.10
+        #
+        if "channels" in mix:
+
+            channels = mix.get(
+                "channels"
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                errors.append(
+                    f"{mix_id} : channels invalide."
+                )
+
+                return errors
+
+            for channel_id, channel in (
+                channels.items()
+            ):
+
+                errors.extend(
+                    self.validate_mix_channel_data(
+                        mix_id,
+                        channel_id,
+                        channel
+                    )
+                )
+
+            return errors
+
+        #
+        # Ancien modèle <= v2.9
+        #
         if "parts" not in mix:
 
             errors.append(
@@ -1378,7 +1499,9 @@ class FusionProject:
 
             return errors
 
-        for part_id, part in mix["parts"].items():
+        for part_id, part in (
+            mix["parts"].items()
+        ):
 
             errors.extend(
                 self.validate_part_data(
@@ -1387,6 +1510,190 @@ class FusionProject:
                     part
                 )
             )
+
+        return errors
+
+    def validate_mix_channel_data(
+        self,
+        mix_id,
+        channel_id,
+        channel
+    ):
+
+        errors = []
+
+        prefix = (
+            f"{mix_id} CH {channel_id}"
+        )
+
+        #
+        # Canal MIDI
+        #
+        try:
+
+            midi_channel = int(
+                channel_id
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            errors.append(
+                f"{prefix} : canal MIDI invalide."
+            )
+
+            return errors
+
+        if not (
+            1 <= midi_channel <= 16
+        ):
+
+            errors.append(
+                f"{prefix} : canal MIDI hors limites."
+            )
+
+        #
+        # Définition du canal
+        #
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            errors.append(
+                f"{prefix} : définition invalide."
+            )
+
+            return errors
+
+        #
+        # Seulement les champs v2.10 autorisés
+        #
+        allowed_fields = {
+            "program",
+            "instrument"
+        }
+
+        for field in channel:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{prefix} : champ inconnu '{field}'."
+                )
+
+        #
+        # PROGRAM Fusion optionnel
+        #
+        program_id = channel.get(
+            "program"
+        )
+
+        if program_id is not None:
+
+            if not isinstance(
+                program_id,
+                str
+            ):
+
+                errors.append(
+                    f"{prefix} : PROGRAM Fusion invalide."
+                )
+
+            else:
+
+                try:
+
+                    bank_text, program_text = (
+                        program_id.split(
+                            ":",
+                            1
+                        )
+                    )
+
+                    bank = int(
+                        bank_text
+                    )
+
+                    program = int(
+                        program_text
+                    )
+
+                except (
+                    ValueError,
+                    AttributeError
+                ):
+
+                    errors.append(
+                        f"{prefix} : PROGRAM Fusion invalide "
+                        f"'{program_id}'."
+                    )
+
+                else:
+
+                    if not (
+                        0 <= bank <= 16383
+                    ):
+
+                        errors.append(
+                            f"{prefix} : bank Fusion hors limites."
+                        )
+
+                    if not (
+                        0 <= program <= 127
+                    ):
+
+                        errors.append(
+                            f"{prefix} : program Fusion hors limites."
+                        )
+
+                    if (
+                        0 <= bank <= 16383
+                        and
+                        0 <= program <= 127
+                        and
+                        self.get_program(
+                            program_id
+                        ) is None
+                    ):
+
+                        errors.append(
+                            f"{prefix} : PROGRAM global "
+                            f"{program_id} inexistant."
+                        )
+
+        #
+        # Override instrument optionnel
+        #
+        instrument_id = channel.get(
+            "instrument"
+        )
+
+        if instrument_id is not None:
+
+            if (
+                not isinstance(
+                    instrument_id,
+                    str
+                )
+                or
+                not instrument_id
+            ):
+
+                errors.append(
+                    f"{prefix} : instrument invalide."
+                )
+
+            elif self.get_instrument(
+                instrument_id
+            ) is None:
+
+                errors.append(
+                    f"{prefix} : instrument "
+                    f"{instrument_id} inexistant."
+                )
 
         return errors
 
@@ -1586,6 +1893,39 @@ class FusionProject:
         return (
             True,
             before_errors
+        )
+
+    def resolve_mix_channel_instrument(
+        self,
+        channel
+    ):
+
+        #
+        # Override local
+        #
+        instrument = (
+            self.resolve_part_instrument(
+                channel
+            )
+        )
+
+        if instrument:
+
+            return instrument
+
+        #
+        # Héritage du PROGRAM global
+        #
+        program_id = channel.get(
+            "program"
+        )
+
+        if not program_id:
+
+            return None
+
+        return self.resolve_program_instrument(
+            program_id
         )
 
     #
@@ -2280,9 +2620,11 @@ class FusionProject:
     #
     # Diagnostic
     #
-    def get_mix_diagnostic(self):
+    def get_mix_diagnostic(
+        self
+    ):
 
-        results = []
+        result = []
 
         for mix_id, mix in self.iter_mixes():
 
@@ -2290,150 +2632,150 @@ class FusionProject:
                 "mix": mix_id,
                 "name": mix.get(
                     "name",
-                    ""
-                ),
-                "parts": []
+                    mix_id
+                )
             }
 
+            #
+            # Nouveau format v2.10
+            #
+            if "channels" in mix:
+
+                mix_result[
+                    "channels"
+                ] = []
+
+                for channel_id, channel in sorted(
+                    mix.get(
+                        "channels",
+                        {}
+                    ).items(),
+                    key=lambda item: int(
+                        item[0]
+                    )
+                ):
+
+                    errors = (
+                        self.validate_mix_channel_data(
+                            mix_id,
+                            channel_id,
+                            channel
+                        )
+                    )
+
+                    instrument = (
+                        self.resolve_mix_channel_instrument(
+                            channel
+                        )
+                    )
+
+                    mix_result[
+                        "channels"
+                    ].append(
+                        {
+                            "channel":
+                                int(channel_id),
+
+                            "program":
+                                channel.get(
+                                    "program"
+                                ),
+
+                            "fusion_valid":
+                                len(errors) == 0,
+
+                            "qsynth_configured":
+                                instrument is not None,
+
+                            "instrument":
+                                instrument
+                        }
+                    )
+
+                result.append(
+                    mix_result
+                )
+
+                continue
+
+            #
+            # Ancien format <= v2.9
+            #
+            mix_result[
+                "parts"
+            ] = []
 
             channels = []
-
 
             for part_id, part in mix.get(
                 "parts",
                 {}
             ).items():
 
-                part_result = {
-                    "part": part_id,
-                    "fusion_valid": True,
-                    "qsynth_configured": False,
-                    "errors": []
-                }
+                errors = self.validate_part_data(
+                    mix_id,
+                    part_id,
+                    part
+                )
 
-                #
-                # Validation Fusion
-                #
-
-                if "midi_channel" not in part:
-
-                    part_result["fusion_valid"] = False
-
-                    part_result["errors"].append(
-                        "Canal MIDI absent"
-                    )
-
-                else:
-
-                    midi_channel = part[
-                        "midi_channel"
-                    ]
-
-                    if not (
-                        1 <= midi_channel <= 16
-                    ):
-
-                        part_result["fusion_valid"] = False
-
-                        part_result["errors"].append(
-                            f"Canal MIDI invalide ({midi_channel})"
-                        )
-
-                    else:
-
-                        channels.append(
-                            midi_channel
-                        )
-
-                #
-                # Plage de notes
-                #
-                if (
-                    "note_min" in part
-                    and
-                    "note_max" in part
-                ):
-
-                    if not (
-                        0
-                        <= part["note_min"]
-                        <= part["note_max"]
-                        <= 127
-                    ):
-
-                        part_result[
-                            "fusion_valid"
-                        ] = False
-
-                        part_result[
-                            "errors"
-                        ].append(
-                            "Zone de notes invalide"
-                        )
-
-                #
-                # Plage de vélocité
-                #
-                if (
-                    "velocity_min" in part
-                    and
-                    "velocity_max" in part
-                ):
-
-                    if not (
-                        0
-                        <= part["velocity_min"]
-                        <= part["velocity_max"]
-                        <= 127
-                    ):
-
-                        part_result[
-                            "fusion_valid"
-                        ] = False
-
-                        part_result[
-                            "errors"
-                        ].append(
-                            "Plage de vélocité invalide"
-                        )
-
-                #
-                # Configuration QSynth
-                #
-
-                part_result["qsynth_configured"] = (
-                    self.is_qsynth_ready(
+                instrument = (
+                    self.resolve_part_instrument(
                         part
                     )
                 )
 
-                mix_result["parts"].append(
-                    part_result
+                midi_channel = part.get(
+                    "midi_channel"
                 )
 
+                if midi_channel is not None:
 
-            #
-            # Détection canaux partagés
-            #
+                    channels.append(
+                        midi_channel
+                    )
 
-            duplicates = sorted({
-                ch
-                for ch in channels
-                if channels.count(ch) > 1
-            })
+                mix_result[
+                    "parts"
+                ].append(
+                    {
+                        "part":
+                            part_id,
 
+                        "midi_channel":
+                            midi_channel,
+
+                        "fusion_valid":
+                            len(errors) == 0,
+
+                        "qsynth_configured":
+                            instrument is not None,
+
+                        "instrument":
+                            instrument
+                    }
+                )
+
+            duplicates = sorted(
+                {
+                    channel
+                    for channel in channels
+                    if channels.count(
+                        channel
+                    ) > 1
+                }
+            )
 
             if duplicates:
 
-                mix_result["shared_channels"] = duplicates
+                mix_result[
+                    "shared_channels"
+                ] = duplicates
 
-
-            results.append(
+            result.append(
                 mix_result
             )
 
-
-        return results
+        return result
 
     def get_program_diagnostic(self):
 
@@ -2700,35 +3042,60 @@ class FusionProject:
 
             summary["mixes"]["total"] += 1
 
-            parts = mix.get(
-                "parts",
-                []
+            #
+            # Nouveau format v2.10
+            #
+            if "channels" in mix:
+
+                units = mix.get(
+                    "channels",
+                    []
+                )
+
+            #
+            # Ancien format <= v2.9
+            #
+            else:
+
+                units = mix.get(
+                    "parts",
+                    []
+                )
+
+            total = len(
+                units
             )
 
-            fusion_valid = all(
-                part.get(
+            valid = sum(
+                1
+                for unit in units
+                if unit.get(
                     "fusion_valid",
                     False
                 )
-                for part in parts
             )
 
-            qsynth_configured = (
-                bool(parts)
-                and all(
-                    part.get(
-                        "qsynth_configured",
-                        False
-                    )
-                    for part in parts
+            configured = sum(
+                1
+                for unit in units
+                if unit.get(
+                    "qsynth_configured",
+                    False
                 )
             )
 
-            if not fusion_valid:
+            #
+            # État v2.10
+            #
+            if valid < total:
 
                 summary["mixes"]["error"] += 1
 
-            elif not qsynth_configured:
+            elif (
+                total == 0
+                or
+                configured < total
+            ):
 
                 summary["mixes"]["unconfigured"] += 1
 
@@ -2736,6 +3103,10 @@ class FusionProject:
 
                 summary["mixes"]["ok"] += 1
 
+            #
+            # Information historique :
+            # plusieurs PARTs sur un même canal.
+            #
             if mix.get(
                 "shared_channels"
             ):
@@ -2836,18 +3207,81 @@ class FusionProject:
 
         print()
 
-        print("=" * 40)
-
         print(
+            "Mix :",
+            mix_id,
+            "-",
             mix.get(
                 "name",
                 mix_id
             )
         )
 
-        print("=" * 40)
+        #
+        # Nouveau format v2.10
+        #
+        if "channels" in mix:
 
-        for part_id, part in self.iter_parts(mix):
+            channels = mix.get(
+                "channels",
+                {}
+            )
+
+            for channel_id, channel in sorted(
+                channels.items(),
+                key=lambda item: int(
+                    item[0]
+                )
+            ):
+
+                program_id = channel.get(
+                    "program"
+                )
+
+                instrument = (
+                    self.resolve_mix_channel_instrument(
+                        channel
+                    )
+                )
+
+                instrument_name = (
+                    instrument.get(
+                        "name",
+                        "?"
+                    )
+                    if instrument
+                    else "Non configuré"
+                )
+
+                print()
+
+                print(
+                    "CH",
+                    channel_id
+                )
+
+                print(
+                    " PROGRAM    :",
+                    (
+                        program_id
+                        if program_id
+                        else "?"
+                    )
+                )
+
+                print(
+                    " Instrument :",
+                    instrument_name
+                )
+
+            return
+
+        #
+        # Ancien format <= v2.9
+        #
+        for part_id, part in self.iter_parts(
+            mix
+        ):
 
             self.print_part(
                 part_id,
@@ -3060,6 +3494,41 @@ class FusionProject:
             )
         )
 
+    def mix_has_channels(
+        self,
+        mix_id
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return False
+
+        #
+        # Nouveau format v2.10
+        #
+        if "channels" in mix:
+
+            return bool(
+                mix.get(
+                    "channels",
+                    {}
+                )
+            )
+
+        #
+        # Ancien format <= v2.9
+        #
+        return bool(
+            mix.get(
+                "parts",
+                {}
+            )
+        )
+
     def ensure_mix(
         self,
         mix_id
@@ -3070,12 +3539,10 @@ class FusionProject:
         if mix_id not in mixes:
 
             mixes[mix_id] = {
-
-                "name":
-                    f"Fusion Mix {mix_id}",
-
-                "parts": {}
-
+                "name": (
+                    f"Fusion Mix {mix_id}"
+                ),
+                "channels": {}
             }
 
         return mixes[mix_id]
@@ -3134,6 +3601,78 @@ class FusionProject:
                 True,
                 []
             )
+
+    def replace_mix_channels(
+        self,
+        mix_id,
+        channels,
+        allowed_errors=None
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return (
+                False,
+                [
+                    f"Mix inconnu : {mix_id}"
+                ]
+            )
+
+        #
+        # Sauvegarde complète de l'ancien MIX
+        # pour permettre un rollback exact.
+        #
+        old_mix = copy.deepcopy(
+            mix
+        )
+
+        #
+        # Nouveau modèle v2.10
+        #
+        mix["channels"] = channels
+
+        #
+        # Une recapture convertit définitivement
+        # ce MIX vers le nouveau modèle.
+        #
+        mix.pop(
+            "parts",
+            None
+        )
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            mix.clear()
+
+            mix.update(
+                old_mix
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def prepare_capture(
         self,

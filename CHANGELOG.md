@@ -1632,10 +1632,128 @@ La version 2.8 poursuit la consolidation de Fusion2QSynth en unifiant le systèm
 * 1209 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
 * Les cas `Program 1` et `TransForce` demeurent sans suggestion connue et ne constituent pas des erreurs de validation.
 
-### Reporté à v2.10
+---
 
-* Amélioration de la représentation de l'état « capturé mais non configuré » des MIX dans les listes et diagnostics.
-* Harmonisation générale des diagnostics PROGRAM, MIX et SONG.
-* Distinction plus fine des différents états de configuration.
-* Nettoyage et refactorisation pouvant découler de cette harmonisation.
-* Mise en place de tests de régression PROGRAM, MIX et SONG plus systématiques.
+## Fusion2QSynth v2.10
+
+### Architecture MIX — Modèle par canal
+
+* Migration du modèle MIX vers une représentation centrée sur les canaux MIDI.
+* Un canal MIX peut référencer un PROGRAM global par son identifiant `bank:program`.
+* Un canal observé dont le PROGRAM est inconnu peut être représenté par `{}` et demeure valide mais non configuré.
+* Un canal peut définir une surcharge locale d'instrument.
+* Un instrument local peut être configuré même lorsque le PROGRAM Fusion du canal est inconnu.
+* Suppression de la duplication des informations `bank`, `program`, `fusion_name`, `midi_channel` et des paramètres SoundFont dans le nouveau modèle MIX.
+* Conservation de la compatibilité avec les MIX de l'ancien format basé sur les PARTs.
+* Migration progressive des MIX de l'ancien format vers le nouveau format lors de leur recapture.
+
+### Capture MIX
+
+* La capture d'un MIX mémorise uniquement les informations réellement observables depuis le Fusion : identité du MIX et canaux MIDI actifs.
+* Suppression de l'invention de valeurs `bank` ou `program` lorsqu'elles ne sont pas transmises par le Fusion.
+* La recapture remplace les anciens PARTs par les canaux effectivement observés.
+* Conservation du mécanisme de rollback lorsqu'une recapture introduit de nouvelles erreurs de validation.
+* Prise en compte des erreurs préexistantes afin qu'elles ne bloquent pas une recapture qui n'en introduit aucune nouvelle.
+
+### PROGRAM global et héritage MIX
+
+* Le PROGRAM global devient la configuration de référence pour l'instrument associé à un `bank:program` utilisé dans un MIX.
+* Un canal MIX hérite automatiquement de l'instrument configuré dans le PROGRAM global.
+* Une surcharge locale d'instrument prend priorité sur l'instrument hérité.
+* Une surcharge locale peut être supprimée afin de revenir à l'instrument du PROGRAM global.
+* Les modifications d'un PROGRAM global deviennent immédiatement disponibles aux MIX qui y font référence.
+* Résolution uniforme de l'instrument effectif d'un canal MIX par surcharge locale puis héritage global.
+
+### Éditeur MIX
+
+* Adaptation de l'éditeur au nouveau modèle MIX par canal.
+* Sélection et édition des canaux MIDI d'un MIX.
+* Association d'un canal à un PROGRAM global.
+* Configuration d'une surcharge locale d'instrument.
+* Suppression d'une surcharge locale afin de rétablir l'héritage du PROGRAM global.
+* Conservation de l'éditeur historique pour les MIX de l'ancien format.
+
+### Test MIDI MIX
+
+* Adaptation du test MIDI au nouveau modèle par canal.
+* Test individuel d'un canal ou de tous les canaux configurés d'un MIX.
+* Résolution correcte des instruments hérités et des surcharges locales.
+* Les canaux non configurés sont ignorés proprement.
+* Arrêt sécurisé du test MIDI avec libération des notes et contrôleurs nécessaires.
+* Conservation de la compatibilité avec les MIX de l'ancien format.
+
+### Diagnostic et états de configuration
+
+* Harmonisation des états de configuration utilisés par PROGRAM, MIX et SONG.
+* Utilisation des états internes `configured`, `partial`, `unconfigured` et `error`.
+* Distinction entre données valides mais non configurées, configuration partielle et erreur de validation.
+* Un MIX ou une SONG est partiellement configuré lorsque certains canaux sont exploitables et d'autres non.
+* Un ensemble vide ou ne contenant aucun instrument exploitable est considéré non configuré.
+* Les canaux partagés de l'ancien modèle MIX demeurent un avertissement et ne constituent pas à eux seuls une erreur.
+* Adaptation du diagnostic MIX au nouveau format `channels`.
+* Correction du résumé global du projet afin que les erreurs des MIX au nouveau format soient correctement comptabilisées.
+* Tri numérique conservé dans les diagnostics et listes de canaux.
+
+### Validation et sauvegarde
+
+* Les canaux MIX `{}` sont reconnus comme valides mais non configurés.
+* Validation des références `bank:program` utilisées par les canaux MIX.
+* Une référence vers un PROGRAM global inexistant est signalée comme erreur.
+* Validation des instruments locaux associés aux canaux MIX.
+* Propagation des erreurs préexistantes autorisées lors des opérations d'édition nécessitant une sauvegarde intermédiaire.
+* Correction de l'éditeur PROGRAM afin qu'une erreur préexistante sans rapport avec le PROGRAM édité ne bloque plus l'affectation d'un nouvel instrument.
+* Propagation de `allowed_errors` lors de la création ou de l'enregistrement d'un instrument SoundFont.
+
+### Contrôleur Live — MIX
+
+* Adaptation du chargement des MIX au nouveau modèle par canal.
+* Chargement uniquement des canaux possédant un instrument effectif.
+* Support de l'héritage depuis un PROGRAM global.
+* Support des surcharges locales d'instrument.
+* Support d'un instrument local sur un canal dont le PROGRAM Fusion est inconnu.
+* Les canaux non configurés demeurent silencieux.
+* Correction du changement vers un MIX ne contenant aucun canal configuré afin que l'ancien MIX ne demeure pas actif.
+* Réinitialisation correcte de l'état du contrôleur et de FluidSynth lors d'un tel changement.
+* Affichage DEBUG du véritable instrument effectif pour les MIX utilisant l'héritage PROGRAM.
+
+### Contrôleur Live — Notes et transitions MIDI
+
+* Unification du traitement des `NOTE ON` et `NOTE OFF`.
+* Reconnaissance de `NOTE ON` avec vélocité zéro comme un `NOTE OFF` logique.
+* Les `NOTE ON` provenant d'un canal inactif sont ignorés.
+* Un `NOTE OFF` correspondant à une note précédemment transmise demeure accepté même si le canal est devenu inactif entre-temps.
+* Suivi centralisé des notes réellement actives dans `active_notes`.
+* Le reload différé attend la libération de la dernière note active.
+* Le dernier `NOTE OFF` est transmis à FluidSynth avant l'exécution du reload différé.
+* Prévention des notes bloquées lors des changements de configuration ou de PROGRAM.
+* Conservation du filtrage des contrôleurs MIDI selon l'état actif du canal.
+* Les Bank Select Fusion `CC0` et `CC32` demeurent isolés des banques SoundFont.
+
+### Contrôleur Live — SONG
+
+* Désactivation explicite d'un canal lorsqu'un `PROGRAM_CHANGE` reçu ne correspond à aucun PROGRAM connu de la SONG.
+* Désactivation explicite d'un canal lorsqu'un PROGRAM historique ne correspond plus au PROGRAM reçu.
+* Conservation des notes actives lors de la désactivation d'un canal afin que leurs `NOTE OFF` puissent encore atteindre FluidSynth.
+* Validation des transitions dynamiques entre PROGRAM configuré, PROGRAM non configuré et nouveau PROGRAM configuré.
+* Amélioration du sélecteur de SONG afin d'afficher systématiquement l'identifiant de la SONG et son nom descriptif lorsqu'ils diffèrent.
+* Correction du retour depuis le sélecteur de SONG vers le menu du Contrôleur Live.
+
+### Régressions PROGRAM, MIX et SONG
+
+* Régression PROGRAM validée avec changement de PROGRAM, remplacement du son et suivi complet des `NOTE ON` et `NOTE OFF`.
+* Régression MIX validée avec héritage PROGRAM global, surcharge locale, instrument local sans PROGRAM et canaux non configurés.
+* Validation du remplacement complet de `current_parts` lors d'un changement de MIX.
+* Validation d'un MIX ne possédant aucun canal configuré.
+* Régression SONG validée sur une séquence complète avec changements dynamiques de PROGRAM.
+* Validation d'un passage d'un PROGRAM non configuré vers un PROGRAM configuré pendant une SONG.
+* Validation d'un passage d'un PROGRAM configuré vers un PROGRAM non configuré.
+* Validation du remplacement d'instrument sur un même canal pendant l'exécution.
+* Validation de la transmission du `NOTE OFF` d'une note déjà active après un changement dynamique de PROGRAM.
+* Validation de la fin d'une SONG sans note active résiduelle.
+
+### Validation globale
+
+* `integration-globale.py` validé sans conflit apparent, hint non respecté, suggestion invalide, doublon de suggestion, preset incomplet, score mal ordonné ou aberrant, limite dépassée ni instabilité Top 1 ou Top N.
+* 1221 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
+* Les cas `Program 1` et `TransForce` demeurent sans suggestion connue et ne constituent pas des erreurs de validation.
+* Validation syntaxique finale des modules du contrôleur avec `py_compile`.

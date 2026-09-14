@@ -404,7 +404,7 @@ def capture_mix(
                                     part["midi_channel"]
                                 )
 
-                            if project.mix_has_parts(
+                            if project.mix_has_channels(
                                 current_mix
                             ):
 
@@ -420,74 +420,34 @@ def capture_mix(
 
                                     continue
 
-                            old_parts = {}
-
-                            existing_mix = project.get_mix(
-                                current_mix
+                            allowed_errors = (
+                                project.get_blocking_errors(
+                                    project.validate()
+                                )
                             )
 
-                            if existing_mix:
+                            channels = {}
 
-                                old_parts = existing_mix.get(
-                                    "parts",
-                                    {}
-                                )
-
-                            parts = {}
-
-                            for i, part in enumerate(
-                                sorted(
-                                    parts_seen.values(),
-                                    key=lambda p: p["midi_channel"]
-                                ),
-                                start=1
+                            for part in sorted(
+                                parts_seen.values(),
+                                key=lambda p: p["midi_channel"]
                             ):
 
-                                new_part = dict(
-                                    part
+                                channel_id = str(
+                                    part["midi_channel"]
                                 )
 
-                                for old_part in old_parts.values():
+                                channels[
+                                    channel_id
+                                ] = {}
 
-                                    if (
-                                        old_part.get("midi_channel")
-                                        !=
-                                        new_part.get("midi_channel")
-                                    ):
-
-                                        continue
-
-                                    #for key in (
-                                    #    "bank",
-                                    #    "program",
-                                    #    "instrument",
-                                    #    "fusion_name"
-                                    #):
-
-                                        #if key in old_part:
-
-                                            #new_part[key] = (
-                                            #    old_part[key]
-                                            #)
-
-                                    break
-
-                                parts[str(i)] = new_part
-
-                            #
-                            # Erreurs préexistantes du projet
-                            #
-                            existing_errors = project.validate()
-
-                            print("existing_errors:",existing_errors)
-
-                            success, errors = project.replace_mix_parts(
-                                current_mix,
-                                parts,
-                                allowed_errors=existing_errors
+                            success, errors = (
+                                project.replace_mix_channels(
+                                    current_mix,
+                                    channels,
+                                    allowed_errors=allowed_errors
+                                )
                             )
-
-                            print("success:",success,"errors:",errors)
 
                             if not success:
 
@@ -504,19 +464,12 @@ def capture_mix(
                                 continue
 
                             if project.save_safe(
-                                allowed_errors=existing_errors
+                                allowed_errors=allowed_errors
                             ):
-                                print()
-                                print(
-                                    "Capture terminée"
-                                )
 
                                 print(
-                                    len(parts_seen),
-                                    "PART(s) sauvegardée(s)"
+                                    "Mix sauvegardé."
                                 )
-
-                                print()
 
                             else:
 

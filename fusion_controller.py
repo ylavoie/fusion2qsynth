@@ -58,17 +58,30 @@ def choose_song(
             start=1
         ):
 
-            print(
-                index,
-                "-",
-                song.get(
-                    "name",
-                    song_id
-                )
+            label = song_id
+
+            name = song.get(
+                "name"
             )
 
+            if (
+                name
+                and
+                name != song_id
+            ):
+
+                label += (
+                    " - "
+                    + name
+                )
+
+            print(
+                f"{index:3} - {label}"
+            )
+
+        print()
         print(
-            "q - Retour"
+            "  Q - Retour"
         )
 
         print()
@@ -229,11 +242,14 @@ def print_mode_diagnostic(
 
     if selected_mode == "mix":
 
-        diagnostic = project.get_mix_diagnostic()
+        diagnostic = (
+            project.get_mix_diagnostic()
+        )
 
         for mix in diagnostic:
 
             print()
+
             print(
                 "Mix :",
                 mix["mix"],
@@ -241,29 +257,78 @@ def print_mode_diagnostic(
                 mix["name"]
             )
 
-            for part in mix["parts"]:
+            #
+            # Nouveau format v2.10
+            #
+            if "channels" in mix:
+
+                for channel in mix[
+                    "channels"
+                ]:
+
+                    print(
+                        " CH",
+                        channel["channel"],
+                        "Fusion:",
+                        (
+                            "OK"
+                            if channel[
+                                "fusion_valid"
+                            ]
+                            else "ERREUR"
+                        ),
+                        "QSynth:",
+                        (
+                            "OK"
+                            if channel[
+                                "qsynth_configured"
+                            ]
+                            else "Non configuré"
+                        )
+                    )
+
+                continue
+
+            #
+            # Ancien format <= v2.9
+            #
+            for part in mix.get(
+                "parts",
+                []
+            ):
 
                 print(
                     " PART",
                     part["part"],
                     "Fusion:",
-                    "OK"
-                    if part["fusion_valid"]
-                    else "ERREUR",
+                    (
+                        "OK"
+                        if part[
+                            "fusion_valid"
+                        ]
+                        else "ERREUR"
+                    ),
                     "QSynth:",
-                    "OK"
-                    if part["qsynth_configured"]
-                    else "Non configuré"
+                    (
+                        "OK"
+                        if part[
+                            "qsynth_configured"
+                        ]
+                        else "Non configuré"
+                    )
                 )
 
             if "shared_channels" in mix:
 
                 print(
                     " ⚠ Canaux partagés :",
-                    mix["shared_channels"]
+                    mix[
+                        "shared_channels"
+                    ]
                 )
 
         print()
+
         print(
             project.count_mixes(),
             "Mix chargés"
@@ -430,7 +495,7 @@ def main():
 
                             if selected_song is None:
 
-                                continue
+                                break
 
                             print()
                             print(

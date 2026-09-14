@@ -6664,7 +6664,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "high aptitude strings",
+            "iix arr1",
         ),
         "pad",
         92,
@@ -7061,6 +7061,39 @@ FUSION_GM_DATA = [
         ),
         "piano",
         2,
+    ),
+    #
+    # HD:Hollow Sun 05
+    #
+    (
+        (
+            "iix drumps perc",
+            "akai xr10",
+            "drum u l8r",
+            "obie dx",
+            "sakata dpm48",
+            "see our 78",
+        ),
+        "drums",
+        24,
+    ),
+    (
+        (
+            "el em one",
+            "el em two",
+            "sdsv kits",
+            "hs 9 oh 9",
+        ),
+        "drums",
+        24,
+    ),
+    (
+        (
+            "kraftperk",
+            "hs 8 oh 8",
+        ),
+        "drums",
+        25
     ),
     #
     # HD:Hollow Sun 06
