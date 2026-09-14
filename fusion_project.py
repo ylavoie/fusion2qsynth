@@ -79,6 +79,33 @@ class FusionProject:
                 f"Fichier {self.filename} invalide."
             )
 
+        allowed_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        migration = self.migrate_legacy_mixes()
+
+        if migration["mixes"] > 0:
+
+            print(
+                "Migration MIX :",
+                migration["mixes"],
+                "MIX migrés,",
+                migration["channels"],
+                "canaux reconstruits,",
+                migration["instruments"],
+                "instruments conservés."
+            )
+
+            if not self.save_safe(
+                allowed_errors=allowed_errors
+            ):
+
+                raise RuntimeError(
+                    "Impossible de sauvegarder "
+                    "la migration des MIX."
+                )
+
     def restore_backup(self):
 
         backup = self.filename + ".bak"
@@ -403,20 +430,9 @@ class FusionProject:
         errors
     ):
 
-        return [
-            error
-            for error in errors
-            if not (
-                isinstance(
-                    error,
-                    dict
-                )
-                and
-                error.get(
-                    "type"
-                ) == "midi_channel_conflict"
-            )
-        ]
+        return list(
+            errors
+        )
 
     def save_safe(
         self,
@@ -871,81 +887,154 @@ class FusionProject:
         mix
     ):
 
-        #
-        # Nouveau format v2.10
-        #
-        if "channels" in mix:
+        channels = mix.get(
+            "channels",
+            {}
+        )
 
-            channels = mix.get(
-                "channels",
+        if isinstance(
+            channels,
+            dict
+        ):
+
+            return channels
+
+        return {}
+
+    def migrate_legacy_mixes(
+        self
+    ):
+
+        mixes = self.get_mixes()
+
+        replacements = {}
+
+        migrated_count = 0
+        channel_count = 0
+        instrument_count = 0
+
+        for mix_id, mix in mixes.items():
+
+            #
+            # Nouveau format :
+            # rien à migrer.
+            #
+            if "channels" in mix:
+
+                continue
+
+            #
+            # Ce n'est pas un ancien MIX connu.
+            #
+            if "parts" not in mix:
+
+                continue
+
+            parts = mix.get(
+                "parts",
                 {}
             )
 
-            if isinstance(
-                channels,
-                dict
-            ):
+            channels = {}
 
-                return channels
+            for part_id, part in parts.items():
 
-            return {}
-
-        #
-        # Ancien format <= v2.9
-        #
-        channels = {}
-
-        for part in mix.get(
-            "parts",
-            {}
-        ).values():
-
-            if not isinstance(
-                part,
-                dict
-            ):
-
-                continue
-
-            midi_channel = part.get(
-                "midi_channel"
-            )
-
-            if midi_channel is None:
-
-                continue
-
-            channel = {}
-
-            bank = part.get(
-                "bank"
-            )
-
-            program = part.get(
-                "program"
-            )
-
-            if (
-                bank is not None
-                and
-                program is not None
-            ):
-
-                channel["program"] = (
-                    f"{bank}:{program}"
+                midi_channel = part.get(
+                    "midi_channel"
                 )
 
-            if "instrument" in part:
+                if midi_channel is None:
 
-                channel["instrument"] = (
-                    part["instrument"]
+                    raise ValueError(
+                        f"{mix_id} PART {part_id} : "
+                        "midi_channel absent."
+                    )
+
+                try:
+
+                    midi_channel = int(
+                        midi_channel
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    raise ValueError(
+                        f"{mix_id} PART {part_id} : "
+                        "midi_channel invalide."
+                    )
+
+                if not 1 <= midi_channel <= 16:
+
+                    raise ValueError(
+                        f"{mix_id} PART {part_id} : "
+                        f"canal MIDI {midi_channel} invalide."
+                    )
+
+                channel_id = str(
+                    midi_channel
                 )
 
-            channels[
-                str(midi_channel)
-            ] = channel
+                if channel_id in channels:
 
-        return channels
+                    raise ValueError(
+                        f"{mix_id} : plusieurs PARTs "
+                        f"utilisent le canal MIDI "
+                        f"{midi_channel}."
+                    )
+
+                channel = {}
+
+                instrument = part.get(
+                    "instrument"
+                )
+
+                if instrument:
+
+                    channel[
+                        "instrument"
+                    ] = instrument
+
+                    instrument_count += 1
+
+                channels[
+                    channel_id
+                ] = channel
+
+                channel_count += 1
+
+            replacements[
+                mix_id
+            ] = channels
+
+            migrated_count += 1
+
+        #
+        # Appliquer seulement lorsque toute
+        # la migration a pu être préparée.
+        #
+        for mix_id, channels in replacements.items():
+
+            mix = mixes[
+                mix_id
+            ]
+
+            mix[
+                "channels"
+            ] = channels
+
+            mix.pop(
+                "parts",
+                None
+            )
+
+        return {
+            "mixes": migrated_count,
+            "channels": channel_count,
+            "instruments": instrument_count
+        }
 
     def rename_mix(
         self,
@@ -1116,7 +1205,7 @@ class FusionProject:
         ):
 
             if not mix.get(
-                "parts",
+                "channels",
                 {}
             ):
 
@@ -1188,25 +1277,6 @@ class FusionProject:
             []
         )
 
-    def get_parts(
-        self,
-        mix_id
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            return {}
-
-
-        return mix.get(
-            "parts",
-            {}
-        )
-
     def iter_mixes(self):
 
         mixes = self.get_mixes()
@@ -1225,40 +1295,6 @@ class FusionProject:
         return len(
             self.get_mixes()
         )
-
-    def summary(self):
-
-        result = {}
-
-        result["mixes"] = len(
-            self.get_mixes()
-        )
-
-        parts = 0
-        configured = 0
-
-        for mix in self.get_mixes().values():
-
-            for part in mix.get(
-                "parts",
-                {}
-            ).values():
-
-                parts += 1
-
-                if "sf2_program" in part:
-
-                    configured += 1
-
-        result["parts"] = parts
-
-        result["configured"] = configured
-
-        result["missing"] = (
-            parts - configured
-        )
-
-        return result
 
     @staticmethod
     def sort_mix_ids(data):
@@ -1322,99 +1358,6 @@ class FusionProject:
 
         return errors
 
-    def validate_part_instruments(self):
-
-        errors = []
-
-        instruments = self.get_instruments()
-
-        for mix_id, mix in self.iter_mixes():
-
-            for part_id, part in mix.get(
-                "parts",
-                {}
-            ).items():
-
-                instrument_id = part.get(
-                    "instrument"
-                )
-
-                if not instrument_id:
-
-                    continue
-
-                if instrument_id not in instruments:
-
-                    errors.append(
-                        {
-                            "type": "missing_instrument",
-                            "mix_id": mix_id,
-                            "part_id": part_id,
-                            "channel": part.get(
-                                "midi_channel",
-                                "?"
-                            ),
-                            "instrument": instrument_id,
-                            "message":
-                                f"Mix {mix_id} PART {part_id} : "
-                                f"instrument {instrument_id} absent"
-                        }
-                    )
-
-        return errors
-
-    def validate_midi_channels(self):
-
-        errors = []
-
-        for mix_id, mix in self.iter_mixes():
-
-            channels = {}
-
-            for part_id, part in mix.get("parts", {}).items():
-
-                channel = part.get(
-                    "midi_channel"
-                )
-
-                if channel is None:
-
-                    continue
-
-                channels.setdefault(
-                    channel,
-                    []
-                ).append(
-                    part_id
-                )
-
-            for channel, parts in channels.items():
-
-                if len(parts) > 1:
-
-                    errors.append(
-                        {
-                            "type":
-                                "midi_channel_conflict",
-
-                            "mix_id":
-                                mix_id,
-
-                            "channel":
-                                channel,
-
-                            "parts":
-                                parts,
-
-                            "message":
-                                f"Mix {mix_id} : "
-                                f"canal MIDI {channel} utilisé par "
-                                f"PART {', '.join(parts)}"
-                        }
-                    )
-
-        return errors
-
     def validate_mix(
         self,
         mix_id
@@ -1454,60 +1397,38 @@ class FusionProject:
 
             return errors
 
-        #
-        # Nouveau modèle v2.10
-        #
-        if "channels" in mix:
-
-            channels = mix.get(
-                "channels"
-            )
-
-            if not isinstance(
-                channels,
-                dict
-            ):
-
-                errors.append(
-                    f"{mix_id} : channels invalide."
-                )
-
-                return errors
-
-            for channel_id, channel in (
-                channels.items()
-            ):
-
-                errors.extend(
-                    self.validate_mix_channel_data(
-                        mix_id,
-                        channel_id,
-                        channel
-                    )
-                )
-
-            return errors
-
-        #
-        # Ancien modèle <= v2.9
-        #
-        if "parts" not in mix:
+        if "channels" not in mix:
 
             errors.append(
-                f"{mix_id} : aucune PART."
+                f"{mix_id} : channels absent."
             )
 
             return errors
 
-        for part_id, part in (
-            mix["parts"].items()
+        channels = mix.get(
+            "channels"
+        )
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            errors.append(
+                f"{mix_id} : channels invalide."
+            )
+
+            return errors
+
+        for channel_id, channel in (
+            channels.items()
         ):
 
             errors.extend(
-                self.validate_part_data(
+                self.validate_mix_channel_data(
                     mix_id,
-                    part_id,
-                    part
+                    channel_id,
+                    channel
                 )
             )
 
@@ -1823,76 +1744,6 @@ class FusionProject:
             "sf2_bank" in instrument
             and
             "sf2_program" in instrument
-        )
-
-    def update_part(
-        self,
-        mix_id,
-        part_id,
-        updates
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-            return (
-                False,
-                []
-            )
-
-        parts = mix.get(
-            "parts",
-            {}
-        )
-
-        part = parts.get(
-            str(part_id)
-        )
-
-        if not part:
-            return (
-                False,
-                []
-            )
-
-        old = dict(part)
-
-        before_errors = self.get_blocking_errors(
-            self.validate()
-        )
-
-        part.update(
-            updates
-        )
-
-        after_errors = self.get_blocking_errors(
-            self.validate()
-        )
-
-        new_errors = [
-            error
-            for error in after_errors
-            if error not in before_errors
-        ]
-
-        if new_errors:
-
-            part.clear()
-
-            part.update(
-                old
-            )
-
-            return (
-                False,
-                new_errors
-            )
-
-        return (
-            True,
-            before_errors
         )
 
     def resolve_mix_channel_instrument(
@@ -2636,113 +2487,45 @@ class FusionProject:
                 )
             }
 
-            #
-            # Nouveau format v2.10
-            #
-            if "channels" in mix:
-
-                mix_result[
-                    "channels"
-                ] = []
-
-                for channel_id, channel in sorted(
-                    mix.get(
-                        "channels",
-                        {}
-                    ).items(),
-                    key=lambda item: int(
-                        item[0]
-                    )
-                ):
-
-                    errors = (
-                        self.validate_mix_channel_data(
-                            mix_id,
-                            channel_id,
-                            channel
-                        )
-                    )
-
-                    instrument = (
-                        self.resolve_mix_channel_instrument(
-                            channel
-                        )
-                    )
-
-                    mix_result[
-                        "channels"
-                    ].append(
-                        {
-                            "channel":
-                                int(channel_id),
-
-                            "program":
-                                channel.get(
-                                    "program"
-                                ),
-
-                            "fusion_valid":
-                                len(errors) == 0,
-
-                            "qsynth_configured":
-                                instrument is not None,
-
-                            "instrument":
-                                instrument
-                        }
-                    )
-
-                result.append(
-                    mix_result
-                )
-
-                continue
-
-            #
-            # Ancien format <= v2.9
-            #
             mix_result[
-                "parts"
+                "channels"
             ] = []
 
-            channels = []
+            for channel_id, channel in sorted(
+                mix.get(
+                    "channels",
+                    {}
+                ).items(),
+                key=lambda item: int(
+                    item[0]
+                )
+            ):
 
-            for part_id, part in mix.get(
-                "parts",
-                {}
-            ).items():
-
-                errors = self.validate_part_data(
-                    mix_id,
-                    part_id,
-                    part
+                errors = (
+                    self.validate_mix_channel_data(
+                        mix_id,
+                        channel_id,
+                        channel
+                    )
                 )
 
                 instrument = (
-                    self.resolve_part_instrument(
-                        part
+                    self.resolve_mix_channel_instrument(
+                        channel
                     )
                 )
-
-                midi_channel = part.get(
-                    "midi_channel"
-                )
-
-                if midi_channel is not None:
-
-                    channels.append(
-                        midi_channel
-                    )
 
                 mix_result[
-                    "parts"
+                    "channels"
                 ].append(
                     {
-                        "part":
-                            part_id,
+                        "channel":
+                            int(channel_id),
 
-                        "midi_channel":
-                            midi_channel,
+                        "program":
+                            channel.get(
+                                "program"
+                            ),
 
                         "fusion_valid":
                             len(errors) == 0,
@@ -2755,25 +2538,11 @@ class FusionProject:
                     }
                 )
 
-            duplicates = sorted(
-                {
-                    channel
-                    for channel in channels
-                    if channels.count(
-                        channel
-                    ) > 1
-                }
-            )
-
-            if duplicates:
-
-                mix_result[
-                    "shared_channels"
-                ] = duplicates
-
             result.append(
                 mix_result
             )
+
+            continue
 
         return result
 
@@ -3042,25 +2811,10 @@ class FusionProject:
 
             summary["mixes"]["total"] += 1
 
-            #
-            # Nouveau format v2.10
-            #
-            if "channels" in mix:
-
-                units = mix.get(
-                    "channels",
-                    []
-                )
-
-            #
-            # Ancien format <= v2.9
-            #
-            else:
-
-                units = mix.get(
-                    "parts",
-                    []
-                )
+            units = mix.get(
+                "channels",
+                []
+            )
 
             total = len(
                 units
@@ -3217,9 +2971,6 @@ class FusionProject:
             )
         )
 
-        #
-        # Nouveau format v2.10
-        #
         if "channels" in mix:
 
             channels = mix.get(
@@ -3275,18 +3026,6 @@ class FusionProject:
                 )
 
             return
-
-        #
-        # Ancien format <= v2.9
-        #
-        for part_id, part in self.iter_parts(
-            mix
-        ):
-
-            self.print_part(
-                part_id,
-                part
-            )
 
     def print_part(
         self,
@@ -3409,25 +3148,6 @@ class FusionProject:
             )
         )
 
-    # Mix
-    def iter_parts(
-        self,
-        mix
-    ):
-
-        for part_id in sorted(
-            mix.get(
-                "parts",
-                {}
-            ),
-            key=int
-        ):
-
-            yield (
-                part_id,
-                mix["parts"][part_id]
-            )
-
     #
     # Validation
     #
@@ -3437,14 +3157,6 @@ class FusionProject:
 
         errors.extend(
             self.validate_instruments()
-        )
-
-        errors.extend(
-            self.validate_part_instruments()
-        )
-
-        errors.extend(
-            self.validate_midi_channels()
         )
 
         for mix_id in self.sort_mix_ids(
@@ -3475,25 +3187,6 @@ class FusionProject:
 
         return errors
 
-    def mix_has_parts(
-        self,
-        mix_id
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            return False
-
-        return bool(
-            mix.get(
-                "parts"
-            )
-        )
-
     def mix_has_channels(
         self,
         mix_id
@@ -3507,24 +3200,9 @@ class FusionProject:
 
             return False
 
-        #
-        # Nouveau format v2.10
-        #
-        if "channels" in mix:
-
-            return bool(
-                mix.get(
-                    "channels",
-                    {}
-                )
-            )
-
-        #
-        # Ancien format <= v2.9
-        #
         return bool(
             mix.get(
-                "parts",
+                "channels",
                 {}
             )
         )
@@ -3546,61 +3224,6 @@ class FusionProject:
             }
 
         return mixes[mix_id]
-
-    def replace_mix_parts(
-            self,
-            mix_id,
-            parts,
-            allowed_errors=None
-        ):
-
-            mix = self.get_mix(
-                mix_id
-            )
-
-            if not mix:
-
-                return (
-                    False,
-                    []
-                )
-
-            old_parts = dict(
-                mix.get(
-                    "parts",
-                    {}
-                )
-            )
-
-            mix["parts"] = parts
-
-            errors = self.validate()
-
-            blocking_errors = self.get_blocking_errors(
-                errors
-            )
-
-            if allowed_errors:
-
-                blocking_errors = [
-                    error
-                    for error in blocking_errors
-                    if error not in allowed_errors
-                ]
-
-            if blocking_errors:
-
-                mix["parts"] = old_parts
-
-                return (
-                    False,
-                    blocking_errors
-                )
-
-            return (
-                True,
-                []
-            )
 
     def replace_mix_channels(
         self,
@@ -3634,15 +3257,6 @@ class FusionProject:
         # Nouveau modèle v2.10
         #
         mix["channels"] = channels
-
-        #
-        # Une recapture convertit définitivement
-        # ce MIX vers le nouveau modèle.
-        #
-        mix.pop(
-            "parts",
-            None
-        )
 
         errors = self.get_blocking_errors(
             self.validate()
@@ -3688,76 +3302,22 @@ class FusionProject:
                 "name":
                     f"Fusion Mix {mix_id}",
 
-                "parts": {}
+                "channels": {}
 
             }
 
             return True
 
         if (
-            "parts" in mixes[mix_id]
+            "channels" in mixes[mix_id]
             and
-            mixes[mix_id]["parts"]
+            mixes[mix_id]["channels"]
         ):
 
             return False
 
         return True
 
-    def find_part_by_channel(
-        self,
-        mix_id,
-        midi_channel
-    ):
-
-        parts = self.get_parts(
-            mix_id
-        )
-
-
-        for part_id, part in parts.items():
-
-            if part.get(
-                "midi_channel"
-            ) == midi_channel:
-
-                return (
-                    part_id,
-                    part
-                )
-
-
-        return (
-            None,
-            None
-        )
-
-    def build_channel_map(self):
-
-        channels = {}
-
-        for mix_id, mix in self.iter_mixes():
-
-            for part_id, part in mix.get(
-                "parts",
-                {}
-            ).items():
-
-                ch = part.get(
-                    "midi_channel"
-                )
-
-                if ch is None:
-
-                    continue
-
-                channels[ch] = {
-                    "mix_id": mix_id,
-                    "part_id": part_id,
-                    "part": part
-                }
-
-        return channels
     #
     # Instruments
     #
@@ -3810,37 +3370,6 @@ class FusionProject:
             }
 
         return None
-
-    def set_part_instrument(
-        self,
-        mix_id,
-        part_id,
-        instrument_id
-    ):
-
-        mix = self.get_mix(mix_id)
-
-        if not mix:
-            return False
-
-        part = mix.get("parts", {}).get(str(part_id))
-
-        if not part:
-            return False
-
-        if not self.get_instrument(instrument_id):
-            return False
-
-        part["instrument"] = instrument_id
-
-        for key in (
-            "name",
-            "sf2_bank",
-            "sf2_program"
-        ):
-            part.pop(key, None)
-
-        return True
 
     def list_instruments(self):
 
@@ -3908,9 +3437,12 @@ class FusionProject:
 
         usages = []
 
-        for mix_id, mix in self.iter_mixes():
+        #
+        # PROGRAM
+        #
+        for program_id, program in self.iter_programs():
 
-            for part_id, part in mix.get(
+            for part_id, part in program.get(
                 "parts",
                 {}
             ).items():
@@ -3921,9 +3453,60 @@ class FusionProject:
 
                     usages.append(
                         {
-                            "mix_id": mix_id,
+                            "type": "program",
+                            "program_id": program_id,
                             "part_id": part_id
                         }
                     )
+
+        #
+        # MIX
+        #
+        for mix_id, mix in self.iter_mixes():
+
+            for channel_id, channel in mix.get(
+                "channels",
+                {}
+            ).items():
+
+                if channel.get(
+                    "instrument"
+                ) == instrument_id:
+
+                    usages.append(
+                        {
+                            "type": "mix",
+                            "mix_id": mix_id,
+                            "channel_id": channel_id
+                        }
+                    )
+
+        #
+        # SONG
+        #
+        for song_id, song in self.iter_songs():
+
+            for channel_id, channel in song.get(
+                "channels",
+                {}
+            ).items():
+
+                for program_id, program_data in channel.get(
+                    "programs",
+                    {}
+                ).items():
+
+                    if program_data.get(
+                        "instrument"
+                    ) == instrument_id:
+
+                        usages.append(
+                            {
+                                "type": "song",
+                                "song_id": song_id,
+                                "channel_id": channel_id,
+                                "program_id": program_id
+                            }
+                        )
 
         return usages

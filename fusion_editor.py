@@ -597,94 +597,6 @@ def play_part_preview(project, part):
         instrument
     )
 
-def repair_instrument_errors(
-    project,
-    errors
-):
-
-    allowed_errors = (
-        project.get_blocking_errors(
-            project.validate()
-        )
-    )
-
-    repaired = False
-
-    for error in errors:
-
-        if not isinstance(error, dict):
-
-            continue
-
-        if error.get("type") != "missing_instrument":
-
-            continue
-
-        print()
-
-        print(
-            "Instrument absent :"
-        )
-
-        print(
-            "Mix",
-            error["mix_id"],
-            "PART",
-            error["part_id"]
-        )
-
-        print(
-            error["instrument"]
-        )
-
-        print()
-
-        mix = project.get_mix(
-            error["mix_id"]
-        )
-
-        part = mix["parts"][
-            error["part_id"]
-        ]
-
-        instrument = choose_instrument(
-            project,
-            part,
-            fusion_name=part.get(
-                "fusion_name"
-            ),
-            allowed_errors=allowed_errors
-        )
-
-        if instrument is None:
-
-            continue
-
-        project.set_part_instrument(
-            error["mix_id"],
-            error["part_id"],
-            instrument["id"]
-        )
-
-        repaired = True
-
-        print(
-            "Instrument remplacé."
-        )
-
-    if repaired:
-
-        if not project.save_safe(
-            allowed_errors=allowed_errors
-        ):
-
-            print(
-                "⚠ Sauvegarde non effectuée."
-            )
-            repaired = False
-
-    return repaired
-
 def edit_fusion_name(
     data
 ):
@@ -736,31 +648,13 @@ def edit_mix(project,mix_id):
             print("Test Mix")
             print("====================")
 
-            #
-            # Nouveau format v2.10
-            #
-            if "channels" in mix:
+            print(
+                "1 - Tester un canal"
+            )
 
-                print(
-                    "1 - Tester un canal"
-                )
-
-                print(
-                    "2 - Tous les canaux configurés"
-                )
-
-            #
-            # Ancien format
-            #
-            else:
-
-                print(
-                    "1 - PARTS séparées"
-                )
-
-                print(
-                    "2 - Toutes les PARTS"
-                )
+            print(
+                "2 - Tous les canaux configurés"
+            )
 
             print(
                 "q - Retour"
@@ -772,35 +666,17 @@ def edit_mix(project,mix_id):
 
             if choix == "1":
 
-                if "channels" in mix:
-
-                    test_mix_channel(
-                        project,
-                        mix
-                    )
-
-                else:
-
-                    test_mix_parts(
-                        project,
-                        mix
-                    )
+                test_mix_channel(
+                    project,
+                    mix
+                )
 
             elif choix == "2":
 
-                if "channels" in mix:
-
-                    test_mix_channels_all(
-                        project,
-                        mix
-                    )
-
-                else:
-
-                    test_mix_all(
-                        project,
-                        mix
-                    )
+                test_mix_channels_all(
+                    project,
+                    mix
+                )
 
             elif choix.lower() == "q":
 
@@ -980,21 +856,11 @@ def edit_mix(project,mix_id):
 
         elif choix == "4":
 
-            if "channels" in mix:
-
-                edit_mix_channels(
-                    project,
-                    mix_id,
-                    mix
-                )
-
-            else:
-
-                edit_parts(
-                    project,
-                    mix_id,
-                    mix
-                )
+            edit_mix_channels(
+                project,
+                mix_id,
+                mix
+            )
 
         elif choix.lower() == "q":
 
@@ -1499,231 +1365,6 @@ def edit_mix_channel(
         elif choice.lower() == "q":
 
             return
-
-def edit_parts(
-    project,
-    mix_id,
-    mix
-):
-
-    while True:
-
-        part_id = input(
-            "PART à modifier (q pour quitter) : "
-        )
-
-        if part_id.lower() == "q":
-
-            break
-
-        if part_id not in mix["parts"]:
-
-            print(
-                "PART inconnue"
-            )
-
-            continue
-
-        part = mix["parts"][
-            part_id
-        ]
-
-        while True:
-
-            project.print_part(
-                part_id,
-                part
-            )
-
-            print()
-            print("====================")
-            print("Edition PART")
-            print("====================")
-
-            print(
-                "1 - Modifier instrument"
-            )
-
-            print(
-                "2 - Modifier paramètres PART"
-            )
-
-            print(
-                "3 - Modifier nom Fusion"
-            )
-
-            print(
-                "q - Retour"
-            )
-
-            choix = input(
-                "> "
-            )
-
-            if choix == "1":
-
-                if old_instrument is None:
-
-                    old_instrument = {
-                        "name": "Non configuré",
-                        "sf2_bank": 0,
-                        "sf2_program": 0
-                    }
-
-                allowed_errors = (
-                    project.get_blocking_errors(
-                        project.validate()
-                    )
-                )
-
-                instrument = choose_instrument(
-                    project,
-                    part,
-                    fusion_name=part.get(
-                        "fusion_name"
-                    ),
-                    allowed_errors=allowed_errors
-                )
-
-                if instrument is None:
-
-                    continue
-
-                while True:
-
-                    print()
-
-                    print(
-                        "1 - Tester"
-                    )
-
-                    print(
-                        "2 - Comparer A/B"
-                    )
-
-                    print(
-                        "3 - Garder"
-                    )
-
-                    print(
-                        "q - Annuler"
-                    )
-
-                    rep = input(
-                        "> "
-                    )
-
-                    if rep == "1":
-
-                        play_preview(
-                            part,
-                            instrument
-                        )
-
-                    elif rep == "2":
-
-                        compare_instrument(
-                            part,
-                            old_instrument,
-                            instrument
-                        )
-
-                    elif rep == "3":
-
-                        old_part = dict(
-                            part
-                        )
-
-                        allowed_errors = (
-                            project.get_blocking_errors(
-                                project.validate()
-                            )
-                        )
-
-                        project.set_part_instrument(
-                            mix_id,
-                            part_id,
-                            instrument["id"]
-                        )
-
-                        if not project.save_safe(
-                            allowed_errors=allowed_errors
-                        ):
-
-                            part.clear()
-
-                            part.update(
-                                old_part
-                            )
-
-                            print(
-                                "⚠ Sauvegarde non effectuée."
-                            )
-
-                            input(
-                                "Entrée pour continuer..."
-                            )
-
-                        else:
-
-                            print(
-                                "Instrument affecté."
-                            )
-
-                        break
-
-                    elif rep.lower() == "q":
-
-                        break
-
-            elif choix == "2":
-
-                edit_part_parameters(
-                    project,
-                    mix_id,
-                    part_id,
-                    part
-                )
-
-            elif choix == "3":
-
-                old_part = dict(
-                    part
-                )
-
-                if edit_fusion_name(
-                    part
-                ):
-
-                    allowed_errors = (
-                        project.get_blocking_errors(
-                            project.validate()
-                        )
-                    )
-
-                    if project.save_safe(
-                        allowed_errors=allowed_errors
-                    ):
-
-                        print(
-                            "Nom Fusion modifié."
-                        )
-
-                    else:
-
-                        part.clear()
-
-                        part.update(
-                            old_part
-                        )
-
-                        print(
-                            "⚠ Sauvegarde non effectuée."
-                        )
-
-            elif choix.lower() == "q":
-
-                break
 
 def read_int(
     prompt,
@@ -2234,107 +1875,6 @@ def edit_part_values(
 
     return updates
 
-def edit_part_parameters(
-    project,
-    mix_id,
-    part_id,
-    part
-):
-
-    updates = edit_part_values(
-        part,
-        part_id
-    )
-
-    if not updates:
-
-        return
-
-    success, allowed_errors = project.update_part(
-        mix_id,
-        part_id,
-        updates
-    )
-
-    if not success:
-
-        print(
-            "PART non modifiée."
-        )
-
-        for message in allowed_errors:
-
-            print(
-                "-",
-                message
-            )
-
-        return
-
-    if project.save_safe(
-        allowed_errors=allowed_errors
-    ):
-
-        print(
-            "PART modifiée."
-        )
-
-    else:
-
-        print(
-            "⚠ Sauvegarde non effectuée."
-        )
-
-def test_mix_parts(project, mix):
-
-    print()
-
-    print(
-        "===================="
-    )
-
-    print(
-        "Test du Mix"
-    )
-
-    print(
-        "===================="
-    )
-
-    for part_id, part in mix["parts"].items():
-
-        print()
-
-        print(
-            "PART",
-            part_id
-        )
-
-        instrument = project.resolve_part_instrument(
-            part
-        )
-
-        if not instrument:
-
-            print(
-                "Non configurée"
-            )
-
-            continue
-
-        print(
-            instrument["name"]
-        )
-
-        input(
-            "Entrée pour jouer..."
-        )
-
-        play_part_preview(
-            project,
-            part
-        )
-
 def send_midi_message(
     out,
     message
@@ -2683,164 +2223,6 @@ def test_mix_channel(
             "Erreur lors de l'accès au port MIDI :",
             error
         )
-
-def test_mix_all(project, mix):
-
-    port_name = find_fluidsynth_output()
-
-    if not port_name:
-
-        print(
-            "FluidSynth introuvable"
-        )
-
-        return
-
-    notes = [
-        60,
-        64,
-        67,
-        72
-    ]
-
-    with mido.open_output(port_name) as out:
-
-        print()
-
-        print(
-            "Test toutes les PARTS"
-        )
-
-        #
-        # Préparer tous les sons
-        #
-
-        active_parts = []
-
-        for part_id, part in mix["parts"].items():
-
-            instrument = project.resolve_part_instrument(
-                part
-            )
-
-            if not instrument:
-
-                continue
-
-            ch = (
-                part["midi_channel"] - 1
-            )
-
-            bank = instrument.get(
-                "sf2_bank",
-                0
-            )
-
-            if not 0 <= bank <= 16383:
-
-                print(
-                    "PART",
-                    part_id,
-                    "bank SF2",
-                    bank,
-                    "invalide"
-                )
-
-                continue
-
-            bank_msb = bank // 128
-            bank_lsb = bank % 128
-
-            out.send(
-                mido.Message(
-                    "control_change",
-                    channel=ch,
-                    control=0,
-                    value=bank_msb
-                )
-            )
-
-            out.send(
-                mido.Message(
-                    "control_change",
-                    channel=ch,
-                    control=32,
-                    value=bank_lsb
-                )
-            )
-
-            program = instrument.get(
-                "sf2_program",
-                0
-            )
-
-            if not 0 <= program <= 127:
-
-                print(
-                    "PART",
-                    part_id,
-                    "program SF2",
-                    program,
-                    "non testable directement en MIDI"
-                )
-
-                continue
-
-            out.send(
-                mido.Message(
-                    "program_change",
-                    channel=ch,
-                    program=program
-                )
-            )
-
-            print(
-                "PART",
-                part_id,
-                "CH",
-                part["midi_channel"],
-                instrument["name"]
-            )
-
-            active_parts.append(
-                (
-                    part_id,
-                    part,
-                    ch
-                )
-            )
-
-        time.sleep(0.2)
-
-        #
-        # Jouer l'accord sur toutes les PARTS
-        #
-
-        for note in notes:
-
-            for part_id, part, ch in active_parts:
-
-                out.send(
-                    mido.Message(
-                        "note_on",
-                        channel=ch,
-                        note=note,
-                        velocity=70
-                    )
-                )
-
-            time.sleep(0.5)
-
-            for part_id, part, ch in active_parts:
-
-                out.send(
-                    mido.Message(
-                        "note_off",
-                        channel=ch,
-                        note=note,
-                        velocity=0
-                    )
-                )
 
 def test_mix_channels_all(
     project,
@@ -3566,12 +2948,45 @@ def delete_instrument(
 
         for usage in usages:
 
-            print(
-                "-",
-                usage["mix_id"],
-                "PART",
-                usage["part_id"]
+            usage_type = usage.get(
+                "type"
             )
+
+            if usage_type == "program":
+
+                print(
+                    "- PROGRAM",
+                    usage["program_id"],
+                    "PART",
+                    usage["part_id"]
+                )
+
+            elif usage_type == "mix":
+
+                print(
+                    "- MIX",
+                    usage["mix_id"],
+                    "CH",
+                    usage["channel_id"]
+                )
+
+            elif usage_type == "song":
+
+                print(
+                    "- SONG",
+                    usage["song_id"],
+                    "CH",
+                    usage["channel_id"],
+                    "PROGRAM",
+                    usage["program_id"]
+                )
+
+            else:
+
+                print(
+                    "-",
+                    usage
+                )
 
         return
 
@@ -3688,50 +3103,26 @@ def edit_instrument(project):
             "⚠ Sauvegarde non effectuée."
         )
 
-def validate_and_repair(project):
+def validate_and_repair(
+    project
+):
 
-    while True:
+    errors = project.validate()
 
-        errors = project.validate()
+    if not errors:
 
-        if not errors:
+        return
 
-            return
+    print_validation_errors(
+        project,
+        errors
+    )
 
-        print_validation_errors(
-            project,
-            errors
-        )
+    print()
 
-        repairable = any(
-            isinstance(error, dict)
-            and
-            error.get("type") == "missing_instrument"
-            for error in errors
-        )
-
-        if not repairable:
-
-            print()
-
-            print(
-                "Aucune réparation automatique disponible."
-            )
-
-            return
-
-        choix = input(
-            "Réparer maintenant ? (o/n) : "
-        )
-
-        if choix.lower() != "o":
-
-            return
-
-        repair_instrument_errors(
-            project,
-            errors
-        )
+    print(
+        "Aucune réparation automatique disponible."
+    )
 
 def list_programs(
     project,

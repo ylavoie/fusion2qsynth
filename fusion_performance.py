@@ -131,198 +131,30 @@ def load_mix(
 
         print()
 
-    #
-    # Nouveau format v2.10
-    #
-    if "channels" in mix:
+    channels = mix.get(
+        "channels",
+        {}
+    )
 
-        channels = mix.get(
-            "channels",
-            {}
+    ready_channels = []
+
+    for channel_id, channel in channels.items():
+
+        instrument = (
+            project.resolve_mix_channel_instrument(
+                channel
+            )
         )
 
-        ready_channels = []
+        if instrument:
 
-        for channel_id, channel in channels.items():
-
-            instrument = (
-                project.resolve_mix_channel_instrument(
-                    channel
+            ready_channels.append(
+                (
+                    channel_id,
+                    channel,
+                    instrument
                 )
             )
-
-            if instrument:
-
-                ready_channels.append(
-                    (
-                        channel_id,
-                        channel,
-                        instrument
-                    )
-                )
-
-        state.current_mode = "mix"
-
-        state.current_performance = (
-            mix_id
-        )
-
-        state.current_parts = {}
-
-        state.pending_reload = False
-
-        print_performance_header(
-            "mix",
-            mix_id,
-            mix.get(
-                "name",
-                mix_id
-            )
-        )
-
-        project.print_mix(
-            mix_id
-        )
-
-        print(
-            "======================"
-        )
-
-        panic(
-            out
-        )
-
-        state.active_notes.clear()
-
-        time.sleep(
-            0.1
-        )
-
-        if not ready_channels:
-
-            print()
-
-            print(
-                "MIX",
-                mix_id,
-                "sans canal configuré pour FluidSynth."
-            )
-
-            print()
-
-            print(
-                "Canaux actifs : aucun"
-            )
-
-            print()
-
-            save_last_performance(
-                "mix",
-                mix_id
-            )
-            return
-
-        for (
-            channel_id,
-            channel,
-            instrument
-        ) in ready_channels:
-
-            midi_channel = (
-                int(channel_id) - 1
-            )
-
-            send_program(
-                out,
-                midi_channel,
-                instrument
-            )
-
-            state.current_parts[
-                int(channel_id)
-            ] = channel
-
-            loaded_channels += 1
-
-            log_event(
-                f"CH {channel_id} "
-                f"SF2 "
-                f"{instrument.get('name', 'Non configuré')}"
-            )
-
-        print()
-
-        print(
-            loaded_channels,
-            "canaux chargés dans FluidSynth"
-        )
-
-        print()
-
-        print(
-            "Canaux actifs :"
-        )
-
-        if loaded_channels > 0:
-
-            save_last_performance(
-                "mix",
-                mix_id
-            )
-
-        for channel_id, channel in sorted(
-            state.current_parts.items()
-        ):
-
-            instrument = (
-                project.resolve_mix_channel_instrument(
-                    channel
-                )
-            )
-
-            print(
-                " CH",
-                channel_id,
-                "→",
-                instrument.get(
-                    "name",
-                    "Non configuré"
-                )
-                if instrument
-                else "Non configuré"
-            )
-
-        print()
-
-        return
-
-    #
-    # Ancien format <= v2.9
-    #
-    ready_parts = [
-        (
-            part_id,
-            part
-        )
-        for part_id, part in project.get_parts(
-            mix_id
-        ).items()
-        if project.is_qsynth_ready(
-            part
-        )
-    ]
-
-    if not ready_parts:
-
-        print()
-
-        print(
-            "MIX",
-            mix_id,
-            "sans PART configurée pour FluidSynth."
-        )
-
-        return
 
     state.current_mode = "mix"
 
@@ -361,34 +193,38 @@ def load_mix(
         0.1
     )
 
-    loaded_parts = 0
+    if not ready_channels:
 
-    for part_id, part in project.get_parts(
-        mix_id
-    ).items():
+        print()
 
-        if not project.is_qsynth_ready(
-            part
-        ):
-
-            print(
-                "PART",
-                part_id,
-                "incomplète, ignorée"
-            )
-
-            continue
-
-        midi_channel = (
-            part[
-                "midi_channel"
-            ] - 1
+        print(
+            "MIX",
+            mix_id,
+            "sans canal configuré pour FluidSynth."
         )
 
-        instrument = (
-            project.resolve_part_instrument(
-                part
-            )
+        print()
+
+        print(
+            "Canaux actifs : aucun"
+        )
+
+        print()
+
+        save_last_performance(
+            "mix",
+            mix_id
+        )
+        return
+
+    for (
+        channel_id,
+        channel,
+        instrument
+    ) in ready_channels:
+
+        midi_channel = (
+            int(channel_id) - 1
         )
 
         send_program(
@@ -398,16 +234,13 @@ def load_mix(
         )
 
         state.current_parts[
-            part[
-                "midi_channel"
-            ]
-        ] = part
+            int(channel_id)
+        ] = channel
 
-        loaded_parts += 1
+        loaded_channels += 1
 
         log_event(
-            f"PART {part_id} "
-            f"CH {part['midi_channel']} "
+            f"CH {channel_id} "
             f"SF2 "
             f"{instrument.get('name', 'Non configuré')}"
         )
@@ -415,8 +248,8 @@ def load_mix(
     print()
 
     print(
-        loaded_parts,
-        "PARTS chargées dans FluidSynth"
+        loaded_channels,
+        "canaux chargés dans FluidSynth"
     )
 
     print()
@@ -425,24 +258,26 @@ def load_mix(
         "Canaux actifs :"
     )
 
-    if loaded_parts > 0:
+    if loaded_channels > 0:
 
         save_last_performance(
             "mix",
             mix_id
         )
 
-    for ch, part in state.current_parts.items():
+    for channel_id, channel in sorted(
+        state.current_parts.items()
+    ):
 
         instrument = (
-            project.resolve_part_instrument(
-                part
+            project.resolve_mix_channel_instrument(
+                channel
             )
         )
 
         print(
             " CH",
-            ch,
+            channel_id,
             "→",
             instrument.get(
                 "name",
