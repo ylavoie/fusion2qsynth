@@ -3042,35 +3042,60 @@ class FusionProject:
 
             summary["mixes"]["total"] += 1
 
-            parts = mix.get(
-                "parts",
-                []
+            #
+            # Nouveau format v2.10
+            #
+            if "channels" in mix:
+
+                units = mix.get(
+                    "channels",
+                    []
+                )
+
+            #
+            # Ancien format <= v2.9
+            #
+            else:
+
+                units = mix.get(
+                    "parts",
+                    []
+                )
+
+            total = len(
+                units
             )
 
-            fusion_valid = all(
-                part.get(
+            valid = sum(
+                1
+                for unit in units
+                if unit.get(
                     "fusion_valid",
                     False
                 )
-                for part in parts
             )
 
-            qsynth_configured = (
-                bool(parts)
-                and all(
-                    part.get(
-                        "qsynth_configured",
-                        False
-                    )
-                    for part in parts
+            configured = sum(
+                1
+                for unit in units
+                if unit.get(
+                    "qsynth_configured",
+                    False
                 )
             )
 
-            if not fusion_valid:
+            #
+            # État v2.10
+            #
+            if valid < total:
 
                 summary["mixes"]["error"] += 1
 
-            elif not qsynth_configured:
+            elif (
+                total == 0
+                or
+                configured < total
+            ):
 
                 summary["mixes"]["unconfigured"] += 1
 
@@ -3078,6 +3103,10 @@ class FusionProject:
 
                 summary["mixes"]["ok"] += 1
 
+            #
+            # Information historique :
+            # plusieurs PARTs sur un même canal.
+            #
             if mix.get(
                 "shared_channels"
             ):
