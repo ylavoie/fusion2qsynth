@@ -58,17 +58,30 @@ def choose_song(
             start=1
         ):
 
-            print(
-                index,
-                "-",
-                song.get(
-                    "name",
-                    song_id
-                )
+            label = song_id
+
+            name = song.get(
+                "name"
             )
 
+            if (
+                name
+                and
+                name != song_id
+            ):
+
+                label += (
+                    " - "
+                    + name
+                )
+
+            print(
+                f"{index:3} - {label}"
+            )
+
+        print()
         print(
-            "q - Retour"
+            "  Q - Retour"
         )
 
         print()
@@ -482,7 +495,7 @@ def main():
 
                             if selected_song is None:
 
-                                continue
+                                break
 
                             print()
                             print(

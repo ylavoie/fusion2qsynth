@@ -161,18 +161,6 @@ def load_mix(
                     )
                 )
 
-        if not ready_channels:
-
-            print()
-
-            print(
-                "MIX",
-                mix_id,
-                "sans canal configuré pour FluidSynth."
-            )
-
-            return
-
         state.current_mode = "mix"
 
         state.current_performance = (
@@ -209,6 +197,30 @@ def load_mix(
         time.sleep(
             0.1
         )
+
+        if not ready_channels:
+
+            print()
+
+            print(
+                "MIX",
+                mix_id,
+                "sans canal configuré pour FluidSynth."
+            )
+
+            print()
+
+            print(
+                "Canaux actifs : aucun"
+            )
+
+            print()
+
+            save_last_performance(
+                "mix",
+                mix_id
+            )
+            return
 
         for (
             channel_id,
@@ -787,6 +799,16 @@ def load_song_program(
                     program_id
                 )
 
+            state.current_parts.pop(
+                channel_id,
+                None
+            )
+
+            state.current_song_programs.pop(
+                channel_id,
+                None
+            )
+
             return False
 
         instrument = (
@@ -816,6 +838,16 @@ def load_song_program(
             or
             f"{bank}:{program}" != program_id
         ):
+
+            state.current_parts.pop(
+                channel_id,
+                None
+            )
+
+            state.current_song_programs.pop(
+                channel_id,
+                None
+            )
 
             return False
 
