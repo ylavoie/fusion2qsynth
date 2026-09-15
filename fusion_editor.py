@@ -597,94 +597,6 @@ def play_part_preview(project, part):
         instrument
     )
 
-def repair_instrument_errors(
-    project,
-    errors
-):
-
-    allowed_errors = (
-        project.get_blocking_errors(
-            project.validate()
-        )
-    )
-
-    repaired = False
-
-    for error in errors:
-
-        if not isinstance(error, dict):
-
-            continue
-
-        if error.get("type") != "missing_instrument":
-
-            continue
-
-        print()
-
-        print(
-            "Instrument absent :"
-        )
-
-        print(
-            "Mix",
-            error["mix_id"],
-            "PART",
-            error["part_id"]
-        )
-
-        print(
-            error["instrument"]
-        )
-
-        print()
-
-        mix = project.get_mix(
-            error["mix_id"]
-        )
-
-        part = mix["parts"][
-            error["part_id"]
-        ]
-
-        instrument = choose_instrument(
-            project,
-            part,
-            fusion_name=part.get(
-                "fusion_name"
-            ),
-            allowed_errors=allowed_errors
-        )
-
-        if instrument is None:
-
-            continue
-
-        project.set_part_instrument(
-            error["mix_id"],
-            error["part_id"],
-            instrument["id"]
-        )
-
-        repaired = True
-
-        print(
-            "Instrument remplacé."
-        )
-
-    if repaired:
-
-        if not project.save_safe(
-            allowed_errors=allowed_errors
-        ):
-
-            print(
-                "⚠ Sauvegarde non effectuée."
-            )
-            repaired = False
-
-    return repaired
-
 def edit_fusion_name(
     data
 ):
@@ -736,31 +648,13 @@ def edit_mix(project,mix_id):
             print("Test Mix")
             print("====================")
 
-            #
-            # Nouveau format v2.10
-            #
-            if "channels" in mix:
+            print(
+                "1 - Tester un canal"
+            )
 
-                print(
-                    "1 - Tester un canal"
-                )
-
-                print(
-                    "2 - Tous les canaux configurés"
-                )
-
-            #
-            # Ancien format
-            #
-            else:
-
-                print(
-                    "1 - PARTS séparées"
-                )
-
-                print(
-                    "2 - Toutes les PARTS"
-                )
+            print(
+                "2 - Tous les canaux configurés"
+            )
 
             print(
                 "q - Retour"
@@ -772,35 +666,17 @@ def edit_mix(project,mix_id):
 
             if choix == "1":
 
-                if "channels" in mix:
-
-                    test_mix_channel(
-                        project,
-                        mix
-                    )
-
-                else:
-
-                    test_mix_parts(
-                        project,
-                        mix
-                    )
+                test_mix_channel(
+                    project,
+                    mix
+                )
 
             elif choix == "2":
 
-                if "channels" in mix:
-
-                    test_mix_channels_all(
-                        project,
-                        mix
-                    )
-
-                else:
-
-                    test_mix_all(
-                        project,
-                        mix
-                    )
+                test_mix_channels_all(
+                    project,
+                    mix
+                )
 
             elif choix.lower() == "q":
 
@@ -829,6 +705,10 @@ def edit_mix(project,mix_id):
 
             return
 
+        allowed_errors = project.get_blocking_errors(
+            project.validate()
+        )
+
         ok, errors = project.rename_mix(
             mix_id,
             name
@@ -836,8 +716,9 @@ def edit_mix(project,mix_id):
 
         if ok:
 
-            if project.save_safe():
-
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
                 print(
                     "Mix renommé."
                 )
@@ -871,6 +752,10 @@ def edit_mix(project,mix_id):
 
             return
 
+        allowed_errors = project.get_blocking_errors(
+            project.validate()
+        )
+
         ok, errors = project.duplicate_mix(
             mix_id,
             new_mix_id
@@ -878,8 +763,9 @@ def edit_mix(project,mix_id):
 
         if ok:
 
-            if project.save_safe():
-
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
                 print(
                     "Mix dupliqué :",
                     new_mix_id
@@ -980,21 +866,11 @@ def edit_mix(project,mix_id):
 
         elif choix == "4":
 
-            if "channels" in mix:
-
-                edit_mix_channels(
-                    project,
-                    mix_id,
-                    mix
-                )
-
-            else:
-
-                edit_parts(
-                    project,
-                    mix_id,
-                    mix
-                )
+            edit_mix_channels(
+                project,
+                mix_id,
+                mix
+            )
 
         elif choix.lower() == "q":
 
@@ -1499,231 +1375,6 @@ def edit_mix_channel(
         elif choice.lower() == "q":
 
             return
-
-def edit_parts(
-    project,
-    mix_id,
-    mix
-):
-
-    while True:
-
-        part_id = input(
-            "PART à modifier (q pour quitter) : "
-        )
-
-        if part_id.lower() == "q":
-
-            break
-
-        if part_id not in mix["parts"]:
-
-            print(
-                "PART inconnue"
-            )
-
-            continue
-
-        part = mix["parts"][
-            part_id
-        ]
-
-        while True:
-
-            project.print_part(
-                part_id,
-                part
-            )
-
-            print()
-            print("====================")
-            print("Edition PART")
-            print("====================")
-
-            print(
-                "1 - Modifier instrument"
-            )
-
-            print(
-                "2 - Modifier paramètres PART"
-            )
-
-            print(
-                "3 - Modifier nom Fusion"
-            )
-
-            print(
-                "q - Retour"
-            )
-
-            choix = input(
-                "> "
-            )
-
-            if choix == "1":
-
-                if old_instrument is None:
-
-                    old_instrument = {
-                        "name": "Non configuré",
-                        "sf2_bank": 0,
-                        "sf2_program": 0
-                    }
-
-                allowed_errors = (
-                    project.get_blocking_errors(
-                        project.validate()
-                    )
-                )
-
-                instrument = choose_instrument(
-                    project,
-                    part,
-                    fusion_name=part.get(
-                        "fusion_name"
-                    ),
-                    allowed_errors=allowed_errors
-                )
-
-                if instrument is None:
-
-                    continue
-
-                while True:
-
-                    print()
-
-                    print(
-                        "1 - Tester"
-                    )
-
-                    print(
-                        "2 - Comparer A/B"
-                    )
-
-                    print(
-                        "3 - Garder"
-                    )
-
-                    print(
-                        "q - Annuler"
-                    )
-
-                    rep = input(
-                        "> "
-                    )
-
-                    if rep == "1":
-
-                        play_preview(
-                            part,
-                            instrument
-                        )
-
-                    elif rep == "2":
-
-                        compare_instrument(
-                            part,
-                            old_instrument,
-                            instrument
-                        )
-
-                    elif rep == "3":
-
-                        old_part = dict(
-                            part
-                        )
-
-                        allowed_errors = (
-                            project.get_blocking_errors(
-                                project.validate()
-                            )
-                        )
-
-                        project.set_part_instrument(
-                            mix_id,
-                            part_id,
-                            instrument["id"]
-                        )
-
-                        if not project.save_safe(
-                            allowed_errors=allowed_errors
-                        ):
-
-                            part.clear()
-
-                            part.update(
-                                old_part
-                            )
-
-                            print(
-                                "⚠ Sauvegarde non effectuée."
-                            )
-
-                            input(
-                                "Entrée pour continuer..."
-                            )
-
-                        else:
-
-                            print(
-                                "Instrument affecté."
-                            )
-
-                        break
-
-                    elif rep.lower() == "q":
-
-                        break
-
-            elif choix == "2":
-
-                edit_part_parameters(
-                    project,
-                    mix_id,
-                    part_id,
-                    part
-                )
-
-            elif choix == "3":
-
-                old_part = dict(
-                    part
-                )
-
-                if edit_fusion_name(
-                    part
-                ):
-
-                    allowed_errors = (
-                        project.get_blocking_errors(
-                            project.validate()
-                        )
-                    )
-
-                    if project.save_safe(
-                        allowed_errors=allowed_errors
-                    ):
-
-                        print(
-                            "Nom Fusion modifié."
-                        )
-
-                    else:
-
-                        part.clear()
-
-                        part.update(
-                            old_part
-                        )
-
-                        print(
-                            "⚠ Sauvegarde non effectuée."
-                        )
-
-            elif choix.lower() == "q":
-
-                break
 
 def read_int(
     prompt,
@@ -2234,107 +1885,6 @@ def edit_part_values(
 
     return updates
 
-def edit_part_parameters(
-    project,
-    mix_id,
-    part_id,
-    part
-):
-
-    updates = edit_part_values(
-        part,
-        part_id
-    )
-
-    if not updates:
-
-        return
-
-    success, allowed_errors = project.update_part(
-        mix_id,
-        part_id,
-        updates
-    )
-
-    if not success:
-
-        print(
-            "PART non modifiée."
-        )
-
-        for message in allowed_errors:
-
-            print(
-                "-",
-                message
-            )
-
-        return
-
-    if project.save_safe(
-        allowed_errors=allowed_errors
-    ):
-
-        print(
-            "PART modifiée."
-        )
-
-    else:
-
-        print(
-            "⚠ Sauvegarde non effectuée."
-        )
-
-def test_mix_parts(project, mix):
-
-    print()
-
-    print(
-        "===================="
-    )
-
-    print(
-        "Test du Mix"
-    )
-
-    print(
-        "===================="
-    )
-
-    for part_id, part in mix["parts"].items():
-
-        print()
-
-        print(
-            "PART",
-            part_id
-        )
-
-        instrument = project.resolve_part_instrument(
-            part
-        )
-
-        if not instrument:
-
-            print(
-                "Non configurée"
-            )
-
-            continue
-
-        print(
-            instrument["name"]
-        )
-
-        input(
-            "Entrée pour jouer..."
-        )
-
-        play_part_preview(
-            project,
-            part
-        )
-
 def send_midi_message(
     out,
     message
@@ -2684,164 +2234,6 @@ def test_mix_channel(
             error
         )
 
-def test_mix_all(project, mix):
-
-    port_name = find_fluidsynth_output()
-
-    if not port_name:
-
-        print(
-            "FluidSynth introuvable"
-        )
-
-        return
-
-    notes = [
-        60,
-        64,
-        67,
-        72
-    ]
-
-    with mido.open_output(port_name) as out:
-
-        print()
-
-        print(
-            "Test toutes les PARTS"
-        )
-
-        #
-        # Préparer tous les sons
-        #
-
-        active_parts = []
-
-        for part_id, part in mix["parts"].items():
-
-            instrument = project.resolve_part_instrument(
-                part
-            )
-
-            if not instrument:
-
-                continue
-
-            ch = (
-                part["midi_channel"] - 1
-            )
-
-            bank = instrument.get(
-                "sf2_bank",
-                0
-            )
-
-            if not 0 <= bank <= 16383:
-
-                print(
-                    "PART",
-                    part_id,
-                    "bank SF2",
-                    bank,
-                    "invalide"
-                )
-
-                continue
-
-            bank_msb = bank // 128
-            bank_lsb = bank % 128
-
-            out.send(
-                mido.Message(
-                    "control_change",
-                    channel=ch,
-                    control=0,
-                    value=bank_msb
-                )
-            )
-
-            out.send(
-                mido.Message(
-                    "control_change",
-                    channel=ch,
-                    control=32,
-                    value=bank_lsb
-                )
-            )
-
-            program = instrument.get(
-                "sf2_program",
-                0
-            )
-
-            if not 0 <= program <= 127:
-
-                print(
-                    "PART",
-                    part_id,
-                    "program SF2",
-                    program,
-                    "non testable directement en MIDI"
-                )
-
-                continue
-
-            out.send(
-                mido.Message(
-                    "program_change",
-                    channel=ch,
-                    program=program
-                )
-            )
-
-            print(
-                "PART",
-                part_id,
-                "CH",
-                part["midi_channel"],
-                instrument["name"]
-            )
-
-            active_parts.append(
-                (
-                    part_id,
-                    part,
-                    ch
-                )
-            )
-
-        time.sleep(0.2)
-
-        #
-        # Jouer l'accord sur toutes les PARTS
-        #
-
-        for note in notes:
-
-            for part_id, part, ch in active_parts:
-
-                out.send(
-                    mido.Message(
-                        "note_on",
-                        channel=ch,
-                        note=note,
-                        velocity=70
-                    )
-                )
-
-            time.sleep(0.5)
-
-            for part_id, part, ch in active_parts:
-
-                out.send(
-                    mido.Message(
-                        "note_off",
-                        channel=ch,
-                        note=note,
-                        velocity=0
-                    )
-                )
-
 def test_mix_channels_all(
     project,
     mix
@@ -3138,25 +2530,10 @@ def list_mixes(
             {}
         )
 
-        #
-        # Nouveau format v2.10
-        #
-        if "channels" in mix_diag:
-
-            units = mix_diag.get(
-                "channels",
-                []
-            )
-
-        #
-        # Ancien format <= v2.9
-        #
-        else:
-
-            units = mix_diag.get(
-                "parts",
-                []
-            )
+        units = mix_diag.get(
+            "channels",
+            []
+        )
 
         total = len(
             units
@@ -3181,7 +2558,7 @@ def list_mixes(
         )
 
         #
-        # État v2.10
+        # État de configuration
         #
         if valid < total:
 
@@ -3481,6 +2858,10 @@ def add_instrument(project):
 
         return
 
+    allowed_errors = project.get_blocking_errors(
+        project.validate()
+    )
+
     if not project.add_instrument(
         instrument_id,
         {
@@ -3496,8 +2877,9 @@ def add_instrument(project):
 
         return
 
-    if project.save_safe():
-
+    if project.save_safe(
+        allowed_errors=allowed_errors
+    ):
         print(
             "Instrument ajouté :",
             name
@@ -3566,12 +2948,45 @@ def delete_instrument(
 
         for usage in usages:
 
-            print(
-                "-",
-                usage["mix_id"],
-                "PART",
-                usage["part_id"]
+            usage_type = usage.get(
+                "type"
             )
+
+            if usage_type == "program":
+
+                print(
+                    "- PROGRAM",
+                    usage["program_id"],
+                    "PART",
+                    usage["part_id"]
+                )
+
+            elif usage_type == "mix":
+
+                print(
+                    "- MIX",
+                    usage["mix_id"],
+                    "CH",
+                    usage["channel_id"]
+                )
+
+            elif usage_type == "song":
+
+                print(
+                    "- SONG",
+                    usage["song_id"],
+                    "CH",
+                    usage["channel_id"],
+                    "PROGRAM",
+                    usage["program_id"]
+                )
+
+            else:
+
+                print(
+                    "-",
+                    usage
+                )
 
         return
 
@@ -3688,50 +3103,26 @@ def edit_instrument(project):
             "⚠ Sauvegarde non effectuée."
         )
 
-def validate_and_repair(project):
+def validate_and_repair(
+    project
+):
 
-    while True:
+    errors = project.validate()
 
-        errors = project.validate()
+    if not errors:
 
-        if not errors:
+        return
 
-            return
+    print_validation_errors(
+        project,
+        errors
+    )
 
-        print_validation_errors(
-            project,
-            errors
-        )
+    print()
 
-        repairable = any(
-            isinstance(error, dict)
-            and
-            error.get("type") == "missing_instrument"
-            for error in errors
-        )
-
-        if not repairable:
-
-            print()
-
-            print(
-                "Aucune réparation automatique disponible."
-            )
-
-            return
-
-        choix = input(
-            "Réparer maintenant ? (o/n) : "
-        )
-
-        if choix.lower() != "o":
-
-            return
-
-        repair_instrument_errors(
-            project,
-            errors
-        )
+    print(
+        "Aucune réparation automatique disponible."
+    )
 
 def list_programs(
     project,
@@ -4236,49 +3627,30 @@ def list_songs(
                 "programs"
             )
 
-            #
-            # Nouveau format SONG
-            #
-            if isinstance(
-                programs,
-                dict
-            ):
-
-                if not programs:
-
-                    continue
-
-                channel_configured = True
-
-                for program_id, program_data in programs.items():
-
-                    instrument = project.resolve_song_program_instrument(
-                        program_id,
-                        program_data
-                    )
-
-                    if not instrument:
-
-                        channel_configured = False
-
-                        break
-
-                if channel_configured:
-
-                    configured += 1
+            if not programs:
 
                 continue
 
-            #
-            # Ancien format SONG
-            #
-            instrument = project.resolve_part_instrument(
-                channel
-            )
+            channel_configured = True
 
-            if instrument:
+            for program_id, program_data in programs.items():
+
+                instrument = project.resolve_song_program_instrument(
+                    program_id,
+                    program_data
+                )
+
+                if not instrument:
+
+                    channel_configured = False
+
+                    break
+
+            if channel_configured:
 
                 configured += 1
+
+            continue
 
         fusion_valid = all(
             channel.get(
@@ -4377,139 +3749,77 @@ def list_songs(
                 "programs"
             )
 
-            #
-            # Nouveau format SONG
-            #
-            if isinstance(
-                programs,
-                dict
-            ):
+            if not programs:
 
-                if not programs:
-
-                    print(
-                        f" CH {str(channel_id):<2}"
-                        " → Aucun PROGRAM"
-                    )
-
-                    continue
-
-                first = True
-
-                for program_id, program_data in programs.items():
-
-                    try:
-
-                        bank_str, program_str = (
-                            program_id.split(
-                                ":",
-                                1
-                            )
-                        )
-
-                        bank = int(
-                            bank_str
-                        )
-
-                        program = int(
-                            program_str
-                        )
-
-                    except (
-                        ValueError,
-                        AttributeError
-                    ):
-
-                        bank = None
-                        program = None
-
-                    instrument = project.resolve_song_program_instrument(
-                        program_id,
-                        program_data
-                    )
-
-                    instrument_name = (
-                        instrument.get(
-                            "name",
-                            "Non configuré"
-                        )
-                        if instrument
-                        else "Non configuré"
-                    )
-
-                    bank_name = (
-                        fusion_program_bank_name(
-                            bank
-                        )
-                        if bank is not None
-                        else "?"
-                    )
-
-                    channel_label = (
-                        f"CH {channel_id}"
-                        if first
-                        else ""
-                    )
-
-                    print(
-                        f" {channel_label:<5}"
-                        f" → {instrument_name:<20}"
-                        f" | {bank_name:<20}"
-                        f" | {program_id:>6}"
-                    )
-
-                    first = False
+                print(
+                    f" CH {str(channel_id):<2}"
+                    " → Aucun PROGRAM"
+                )
 
                 continue
 
-            #
-            # Ancien format SONG
-            #
-            instrument = project.resolve_part_instrument(
-                channel
-            )
+            first = True
 
-            instrument_name = (
-                instrument.get(
-                    "name",
-                    "Non configuré"
+            for program_id, program_data in programs.items():
+
+                try:
+
+                    bank_str, _ = (
+                        program_id.split(
+                            ":",
+                            1
+                        )
+                    )
+
+                    bank = int(
+                        bank_str
+                    )
+
+                except (
+                    ValueError,
+                    AttributeError
+                ):
+
+                    bank = None
+
+                instrument = project.resolve_song_program_instrument(
+                    program_id,
+                    program_data
                 )
-                if instrument
-                else "Non configuré"
-            )
 
-            bank = channel.get(
-                "bank"
-            )
-
-            program = channel.get(
-                "program"
-            )
-
-            bank_name = (
-                fusion_program_bank_name(
-                    bank
+                instrument_name = (
+                    instrument.get(
+                        "name",
+                        "Non configuré"
+                    )
+                    if instrument
+                    else "Non configuré"
                 )
-                if bank is not None
-                else "?"
-            )
 
-            fusion_program = (
-                f"{bank}:{program}"
-                if (
-                    bank is not None
-                    and
-                    program is not None
+                bank_name = (
+                    fusion_program_bank_name(
+                        bank
+                    )
+                    if bank is not None
+                    else "?"
                 )
-                else "?"
-            )
 
-            print(
-                f" CH {str(channel_id):<2}"
-                f" → {instrument_name:<20}"
-                f" | {bank_name:<20}"
-                f" | {fusion_program:>6}"
-            )
+                channel_label = (
+                    f"CH {channel_id}"
+                    if first
+                    else ""
+                )
+
+                print(
+                    f" {channel_label:<5}"
+                    f" → {instrument_name:<20}"
+                    f" | {bank_name:<20}"
+                    f" | {program_id:>6}"
+                )
+
+                first = False
+
+            continue
 
         print()
 
@@ -4788,92 +4098,51 @@ def edit_song(
         ):
 
             programs = channel.get(
-                "programs"
+                "programs",
+                {}
             )
 
-            #
-            # Nouveau format SONG
-            #
-            if isinstance(
-                programs,
-                dict
-            ):
+            if not programs:
 
-                if not programs:
-
-                    print(
-                        f"CH {channel_id} - Aucun PROGRAM"
-                    )
-
-                    continue
-
-                first = True
-
-                for program_id, program_data in programs.items():
-
-                    instrument = project.resolve_song_program_instrument(
-                        program_id,
-                        program_data
-                    )
-
-                    instrument_name = (
-                        instrument.get(
-                            "name",
-                            "Non configuré"
-                        )
-                        if instrument
-                        else "Non configuré"
-                    )
-
-                    channel_label = (
-                        f"CH {channel_id}"
-                        if first
-                        else ""
-                    )
-
-                    print(
-                        f"{channel_label:<5}"
-                        f" - {instrument_name:<20}"
-                        f" ({program_id})"
-                    )
-
-                    first = False
+                print(
+                    f"CH {channel_id} - Aucun PROGRAM"
+                )
 
                 continue
 
-            #
-            # Ancien format SONG
-            #
-            instrument = project.resolve_part_instrument(
-                channel
-            )
+            first = True
 
-            bank = channel.get(
-                "bank"
-            )
+            for program_id, program_data in programs.items():
 
-            bank_name = (
-                fusion_program_bank_name(
-                    bank
+                instrument = project.resolve_song_program_instrument(
+                    program_id,
+                    program_data
                 )
-                if bank is not None
-                else "?"
-            )
 
-            print(
-                "CH",
-                channel_id,
-                "-",
-                instrument.get(
-                    "name",
-                    "Non configuré"
+                instrument_name = (
+                    instrument.get(
+                        "name",
+                        "Non configuré"
+                    )
+                    if instrument
+                    else "Non configuré"
                 )
-                if instrument
-                else "Non configuré",
-                f"({bank_name} "
-                f"{bank if bank is not None else '?'}:"
-                f"{channel.get('program', '?')})"
-            )
+
+                channel_label = (
+                    f"CH {channel_id}"
+                    if first
+                    else ""
+                )
+
+                print(
+                    f"{channel_label:<5}"
+                    f" - {instrument_name:<20}"
+                    f" ({program_id})"
+                )
+
+                first = False
+
+            continue
 
         print()
 
@@ -4898,19 +4167,14 @@ def edit_song(
             continue
 
         programs = channel.get(
-            "programs"
+            "programs",
+            {}
         )
 
-        selected_program_id = None
-        program_data = None
+        while True:
 
-        #
-        # Nouveau format SONG
-        #
-        if isinstance(
-            programs,
-            dict
-        ):
+            selected_program_id = None
+            program_data = None
 
             if not programs:
 
@@ -5017,423 +4281,397 @@ def edit_song(
 
                     if selected_program_id is None:
 
-                        continue
+                        break
 
                 program_data = programs[
                     selected_program_id
                 ]
 
-        #
-        # Ancien format SONG
-        #
-        else:
+            return_to_channel = False
 
-            program_data = channel
-
-        while True:
-
-            print()
-
-            #
-            # Nouveau format avec PROGRAM
-            #
-            if selected_program_id is not None:
-
-                bank_str, program_str = (
-                    selected_program_id.split(
-                        ":",
-                        1
-                    )
-                )
-
-                bank = int(
-                    bank_str
-                )
-
-                print(
-                    "Fusion Bank    :",
-                    f"{fusion_program_bank_name(bank)} ({bank})"
-                )
-
-                print(
-                    "Fusion Program :",
-                    program_str
-                )
-
-                global_program = project.get_program(
-                    selected_program_id
-                )
-
-                global_fusion_name = (
-                    global_program.get(
-                        "name"
-                    )
-                    if global_program
-                    else None
-                )
-
-                print(
-                    "Nom Fusion global :",
-                    global_fusion_name
-                    or "PROGRAM inconnu"
-                )
-
-                local_instrument = project.resolve_part_instrument(
-                    program_data
-                )
-
-                inherited_instrument = project.resolve_program_instrument(
-                    selected_program_id
-                )
+            while True:
 
                 print()
 
-                print(
-                    "Instrument hérité :",
-                    (
-                        inherited_instrument.get(
-                            "name",
-                            "Non configuré"
+                #
+                # Nouveau format avec PROGRAM
+                #
+                if selected_program_id is not None:
+
+                    bank_str, program_str = (
+                        selected_program_id.split(
+                            ":",
+                            1
                         )
-                        if inherited_instrument
-                        else "Non configuré"
                     )
-                )
 
-                print(
-                    "Instrument local  :",
-                    (
-                        local_instrument.get(
-                            "name",
-                            "Aucun"
-                        )
-                        if local_instrument
-                        else "Aucun"
+                    bank = int(
+                        bank_str
                     )
-                )
-            #
-            # Nouveau format sans PROGRAM
-            #
-            elif isinstance(
-                programs,
-                dict
-            ):
 
-                print(
-                    "Aucun PROGRAM capturé "
-                    "sur ce canal."
-                )
-
-            #
-            # Ancien format SONG
-            #
-            else:
-
-                bank = channel.get(
-                    "bank"
-                )
-
-                print(
-                    "Fusion Bank    :",
-                    (
+                    print(
+                        "Fusion Bank    :",
                         f"{fusion_program_bank_name(bank)} ({bank})"
-                        if bank is not None
-                        else "?"
                     )
-                )
-
-                print(
-                    "Fusion Program :",
-                    channel.get(
-                        "program",
-                        "?"
-                    )
-                )
-
-            print()
-            print("====================")
-            print("Edition canal SONG")
-            print("====================")
-
-            if program_data is not None:
-
-                print(
-                    "1 - Modifier l'instrument local du PROGRAM"
-                )
-
-            print(
-                "2 - Modifier les paramètres du canal"
-            )
-
-            print(
-                "3 - Modifier le canal MIDI"
-            )
-
-            if program_data is not None:
-
-                if "instrument" in program_data:
 
                     print(
-                        "4 - Supprimer l'instrument local"
-                    )
-
-            print(
-                "q - Retour"
-            )
-
-            choice = input(
-                "> "
-            )
-
-            if choice == "1":
-
-                if program_data is None:
-
-                    print(
-                        "Aucun PROGRAM à modifier."
-                    )
-
-                    continue
-
-                global_program = project.get_program(
-                    selected_program_id
-                )
-
-                fusion_name = None
-
-                if global_program:
-
-                    fusion_name = global_program.get(
-                        "name"
-                    )
-
-                allowed_errors = project.get_blocking_errors(
-                    project.validate()
-                )
-
-                instrument = choose_instrument(
-                    project,
-                    program_data,
-                    fusion_name=fusion_name,
-                    fusion_program=int(
+                        "Fusion Program :",
                         program_str
-                    ),
-                    allowed_errors=allowed_errors
-                )
-
-                if instrument is None:
-
-                    continue
-
-                old_program_data = dict(
-                    program_data
-                )
-
-                program_data[
-                    "instrument"
-                ] = instrument[
-                    "id"
-                ]
-
-                if project.save_safe(
-                    allowed_errors=allowed_errors
-                ):
-
-                    print(
-                        "Instrument affecté."
                     )
 
-                else:
-
-                    program_data.clear()
-
-                    program_data.update(
-                        old_program_data
+                    global_program = project.get_program(
+                        selected_program_id
                     )
 
-                    print(
-                        "⚠ Sauvegarde non effectuée."
-                    )
-
-            elif choice == "2":
-
-                edit_song_channel_parameters(
-                    project,
-                    channel_id,
-                    channel
-                )
-
-            elif choice == "3":
-
-                new_channel = read_int(
-                    "Nouveau canal MIDI : ",
-                    1,
-                    16
-                )
-
-                if new_channel is None:
-
-                    continue
-
-                new_channel_id = str(
-                    new_channel
-                )
-
-                if new_channel_id == channel_id:
-
-                    print(
-                        "Canal inchangé."
-                    )
-
-                    continue
-
-                if new_channel_id in channels:
-
-                    print(
-                        "Canal MIDI déjà utilisé."
-                    )
-
-                    continue
-
-                old_channels = dict(
-                    channels
-                )
-
-                before_errors = project.get_blocking_errors(
-                    project.validate()
-                )
-
-                channels[
-                    new_channel_id
-                ] = channels.pop(
-                    channel_id
-                )
-
-                after_errors = project.get_blocking_errors(
-                    project.validate()
-                )
-
-                new_errors = [
-                    error
-                    for error in after_errors
-                    if error not in before_errors
-                ]
-
-                if new_errors:
-
-                    channels.clear()
-
-                    channels.update(
-                        old_channels
-                    )
-
-                    print(
-                        "Canal MIDI non modifié."
-                    )
-
-                    print_error_messages(
-                        new_errors
-                    )
-
-                    continue
-
-                if project.save_safe(
-                    allowed_errors=before_errors
-                ):
-
-                    print(
-                        "Canal MIDI modifié :",
-                        channel_id,
-                        "→",
-                        new_channel_id
-                    )
-
-                    channel_id = new_channel_id
-                    channel = channels[
-                        new_channel_id
-                    ]
-
-                else:
-
-                    channels.clear()
-
-                    channels.update(
-                        old_channels
-                    )
-
-                    print(
-                        "⚠ Sauvegarde non effectuée."
-                    )
-
-            elif choice == "4":
-
-                if (
-                    program_data is None
-                    or
-                    "instrument" not in program_data
-                ):
-
-                    print(
-                        "Aucun instrument local à supprimer."
-                    )
-
-                    continue
-
-                old_program_data = dict(
-                    program_data
-                )
-
-                allowed_errors = project.get_blocking_errors(
-                    project.validate()
-                )
-
-                del program_data[
-                    "instrument"
-                ]
-
-                if project.save_safe(
-                    allowed_errors=allowed_errors
-                ):
-
-                    print(
-                        "Instrument local supprimé."
-                    )
-
-                    inherited_instrument = (
-                        project.resolve_program_instrument(
-                            selected_program_id
+                    global_fusion_name = (
+                        global_program.get(
+                            "name"
                         )
+                        if global_program
+                        else None
                     )
 
-                    if inherited_instrument:
+                    print(
+                        "Nom Fusion global :",
+                        global_fusion_name
+                        or "PROGRAM inconnu"
+                    )
 
-                        print(
-                            "Instrument hérité :",
+                    local_instrument = project.resolve_part_instrument(
+                        program_data
+                    )
+
+                    inherited_instrument = project.resolve_program_instrument(
+                        selected_program_id
+                    )
+
+                    print()
+
+                    print(
+                        "Instrument hérité :",
+                        (
                             inherited_instrument.get(
                                 "name",
                                 "Non configuré"
                             )
+                            if inherited_instrument
+                            else "Non configuré"
+                        )
+                    )
+
+                    print(
+                        "Instrument local  :",
+                        (
+                            local_instrument.get(
+                                "name",
+                                "Aucun"
+                            )
+                            if local_instrument
+                            else "Aucun"
+                        )
+                    )
+                #
+                # Nouveau format sans PROGRAM
+                #
+                else:
+
+                    print(
+                        "Aucun PROGRAM capturé "
+                        "sur ce canal."
+                    )
+
+                print()
+                print("====================")
+                print("Edition canal SONG")
+                print("====================")
+
+                if program_data is not None:
+
+                    print(
+                        "1 - Modifier l'instrument local du PROGRAM"
+                    )
+
+                print(
+                    "2 - Modifier les paramètres du canal"
+                )
+
+                print(
+                    "3 - Modifier le canal MIDI"
+                )
+
+                if program_data is not None:
+
+                    if "instrument" in program_data:
+
+                        print(
+                            "4 - Supprimer l'instrument local"
+                        )
+
+                print(
+                    "q - Retour"
+                )
+
+                choice = input(
+                    "> "
+                )
+
+                if choice == "1":
+
+                    if program_data is None:
+
+                        print(
+                            "Aucun PROGRAM à modifier."
+                        )
+
+                        continue
+
+                    global_program = project.get_program(
+                        selected_program_id
+                    )
+
+                    fusion_name = None
+
+                    if global_program:
+
+                        fusion_name = global_program.get(
+                            "name"
+                        )
+
+                    allowed_errors = project.get_blocking_errors(
+                        project.validate()
+                    )
+
+                    instrument = choose_instrument(
+                        project,
+                        program_data,
+                        fusion_name=fusion_name,
+                        fusion_program=int(
+                            program_str
+                        ),
+                        allowed_errors=allowed_errors
+                    )
+
+                    if instrument is None:
+
+                        continue
+
+                    old_program_data = dict(
+                        program_data
+                    )
+
+                    program_data[
+                        "instrument"
+                    ] = instrument[
+                        "id"
+                    ]
+
+                    if project.save_safe(
+                        allowed_errors=allowed_errors
+                    ):
+
+                        print(
+                            "Instrument affecté."
                         )
 
                     else:
 
-                        print(
-                            "Instrument hérité : Non configuré"
+                        program_data.clear()
+
+                        program_data.update(
+                            old_program_data
                         )
 
-                else:
+                        print(
+                            "⚠ Sauvegarde non effectuée."
+                        )
 
-                    program_data.clear()
+                elif choice == "2":
 
-                    program_data.update(
-                        old_program_data
+                    edit_song_channel_parameters(
+                        project,
+                        channel_id,
+                        channel
                     )
 
-                    print(
-                        "⚠ Sauvegarde non effectuée."
+                elif choice == "3":
+
+                    new_channel = read_int(
+                        "Nouveau canal MIDI : ",
+                        1,
+                        16
                     )
 
-            elif choice.lower() == "q":
+                    if new_channel is None:
+
+                        continue
+
+                    new_channel_id = str(
+                        new_channel
+                    )
+
+                    if new_channel_id == channel_id:
+
+                        print(
+                            "Canal inchangé."
+                        )
+
+                        continue
+
+                    if new_channel_id in channels:
+
+                        print(
+                            "Canal MIDI déjà utilisé."
+                        )
+
+                        continue
+
+                    old_channels = dict(
+                        channels
+                    )
+
+                    before_errors = project.get_blocking_errors(
+                        project.validate()
+                    )
+
+                    channels[
+                        new_channel_id
+                    ] = channels.pop(
+                        channel_id
+                    )
+
+                    after_errors = project.get_blocking_errors(
+                        project.validate()
+                    )
+
+                    new_errors = [
+                        error
+                        for error in after_errors
+                        if error not in before_errors
+                    ]
+
+                    if new_errors:
+
+                        channels.clear()
+
+                        channels.update(
+                            old_channels
+                        )
+
+                        print(
+                            "Canal MIDI non modifié."
+                        )
+
+                        print_error_messages(
+                            new_errors
+                        )
+
+                        continue
+
+                    if project.save_safe(
+                        allowed_errors=before_errors
+                    ):
+
+                        print(
+                            "Canal MIDI modifié :",
+                            channel_id,
+                            "→",
+                            new_channel_id
+                        )
+
+                        channel_id = new_channel_id
+                        channel = channels[
+                            new_channel_id
+                        ]
+
+                    else:
+
+                        channels.clear()
+
+                        channels.update(
+                            old_channels
+                        )
+
+                        print(
+                            "⚠ Sauvegarde non effectuée."
+                        )
+
+                elif choice == "4":
+
+                    if (
+                        program_data is None
+                        or
+                        "instrument" not in program_data
+                    ):
+
+                        print(
+                            "Aucun instrument local à supprimer."
+                        )
+
+                        continue
+
+                    old_program_data = dict(
+                        program_data
+                    )
+
+                    allowed_errors = project.get_blocking_errors(
+                        project.validate()
+                    )
+
+                    del program_data[
+                        "instrument"
+                    ]
+
+                    if project.save_safe(
+                        allowed_errors=allowed_errors
+                    ):
+
+                        print(
+                            "Instrument local supprimé."
+                        )
+
+                        inherited_instrument = (
+                            project.resolve_program_instrument(
+                                selected_program_id
+                            )
+                        )
+
+                        if inherited_instrument:
+
+                            print(
+                                "Instrument hérité :",
+                                inherited_instrument.get(
+                                    "name",
+                                    "Non configuré"
+                                )
+                            )
+
+                        else:
+
+                            print(
+                                "Instrument hérité : Non configuré"
+                            )
+
+                    else:
+
+                        program_data.clear()
+
+                        program_data.update(
+                            old_program_data
+                        )
+
+                        print(
+                            "⚠ Sauvegarde non effectuée."
+                        )
+
+                elif choice.lower() == "q":
+
+                    if len(programs) <= 1:
+
+                        return_to_channel = True
+
+                    break
+
+            if return_to_channel:
 
                 break
 
@@ -5491,7 +4729,7 @@ def main():
             for mix_id, mix in project.iter_mixes():
 
                 if not mix.get(
-                    "parts",
+                    "channels",
                     {}
                 ):
 
@@ -5529,6 +4767,10 @@ def main():
 
                 return
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             ok, removed = project.delete_empty_mixes()
 
             if ok:
@@ -5543,8 +4785,9 @@ def main():
 
                     return
 
-                if project.save_safe():
-
+                if project.save_safe(
+                    allowed_errors=allowed_errors
+                ):
                     print()
 
                     print(
@@ -5613,10 +4856,10 @@ def main():
             )
 
             print(
-                "PARTS :",
+                "Canaux :",
                 len(
                     mix.get(
-                        "parts",
+                        "channels",
                         {}
                     )
                 )
@@ -5630,6 +4873,10 @@ def main():
 
                 return
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             ok, errors = project.delete_mix(
                 mix_id
             )
@@ -5640,9 +4887,15 @@ def main():
                     "Suppression refusée."
                 )
 
+                print_error_messages(
+                    errors
+                )
+
                 return
 
-            if project.save_safe():
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
 
                 print(
                     "MIX supprimé."
@@ -5805,6 +5058,10 @@ def main():
 
                 return
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             ok, errors = project.rename_program(
                 program_id,
                 new_name
@@ -5822,7 +5079,9 @@ def main():
 
                 return
 
-            if project.save_safe():
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
 
                 print(
                     "PROGRAM renommé."
@@ -5888,6 +5147,10 @@ def main():
 
                 return
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             ok, errors = project.delete_program(
                 program_id
             )
@@ -5904,8 +5167,9 @@ def main():
 
                 return
 
-            if project.save_safe():
-
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
                 print(
                     "PROGRAM supprimé."
                 )
@@ -6075,6 +5339,10 @@ def main():
 
                 return
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             ok, errors = project.rename_song(
                 song_id,
                 new_name
@@ -6092,8 +5360,9 @@ def main():
 
                 return
 
-            if project.save_safe():
-
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
                 print(
                     "SONG renommée."
                 )
@@ -6152,6 +5421,10 @@ def main():
 
                 return
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             ok, errors = project.delete_song(
                 song_id
             )
@@ -6162,10 +5435,15 @@ def main():
                     "Suppression refusée."
                 )
 
+                print_error_messages(
+                    errors
+                )
+
                 return
 
-            if project.save_safe():
-
+            if project.save_safe(
+                allowed_errors=allowed_errors
+            ):
                 print(
                     "SONG supprimée."
                 )

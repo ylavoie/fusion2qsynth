@@ -133,8 +133,9 @@ def capture_program(
                             }
                         }
 
-                        if project.save_safe():
-
+                        if project.save_safe(
+                            allowed_errors=allowed_errors
+                        ):
                             print(
                                 "Program sauvegardé."
                             )
@@ -181,6 +182,10 @@ def capture_program(
                         and
                         msg.channel == fusion_default_channel
                     ):
+
+                        allowed_errors = project.get_blocking_errors(
+                            project.validate()
+                        )
 
                         current_program_bank = bank
                         current_program_number = msg.program
@@ -622,6 +627,13 @@ def capture_song(
         "Sélectionne une Song Fusion"
     )
 
+    channels = {}
+    capture_active = False
+
+    allowed_errors = project.get_blocking_errors(
+        project.validate()
+    )
+
     print(
         "Démarre la Song pour lancer la capture"
     )
@@ -791,65 +803,10 @@ def capture_song(
 
                         if old_channel:
 
-                            existing_programs = old_channel.get(
-                                "programs"
+                            old_programs = old_channel.get(
+                                "programs",
+                                {}
                             )
-
-                            #
-                            # Nouveau format SONG
-                            #
-                            if isinstance(
-                                existing_programs,
-                                dict
-                            ):
-
-                                old_programs = existing_programs
-
-                            #
-                            # Ancien format SONG
-                            #
-                            else:
-
-                                old_bank = old_channel.get(
-                                    "bank"
-                                )
-
-                                old_program = old_channel.get(
-                                    "program"
-                                )
-
-                                if (
-                                    old_bank is not None
-                                    and
-                                    old_program is not None
-                                ):
-
-                                    old_program_id = (
-                                        f"{old_bank}:"
-                                        f"{old_program}"
-                                    )
-
-                                    old_program_data = {}
-
-                                    if "fusion_name" in old_channel:
-
-                                        old_program_data[
-                                            "fusion_name"
-                                        ] = old_channel[
-                                            "fusion_name"
-                                        ]
-
-                                    if "instrument" in old_channel:
-
-                                        old_program_data[
-                                            "instrument"
-                                        ] = old_channel[
-                                            "instrument"
-                                        ]
-
-                                    old_programs[
-                                        old_program_id
-                                    ] = old_program_data
 
                         #
                         # Identifier les PROGRAMs inconnus
@@ -1097,8 +1054,9 @@ def capture_song(
 
                     song["channels"] = merged_channels
 
-                    if project.save_safe():
-
+                    if project.save_safe(
+                        allowed_errors=allowed_errors
+                    ):
                         print()
                         print(
                             "SONG sauvegardée :",

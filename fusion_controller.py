@@ -257,53 +257,17 @@ def print_mode_diagnostic(
                 mix["name"]
             )
 
-            #
-            # Nouveau format v2.10
-            #
-            if "channels" in mix:
-
-                for channel in mix[
-                    "channels"
-                ]:
-
-                    print(
-                        " CH",
-                        channel["channel"],
-                        "Fusion:",
-                        (
-                            "OK"
-                            if channel[
-                                "fusion_valid"
-                            ]
-                            else "ERREUR"
-                        ),
-                        "QSynth:",
-                        (
-                            "OK"
-                            if channel[
-                                "qsynth_configured"
-                            ]
-                            else "Non configuré"
-                        )
-                    )
-
-                continue
-
-            #
-            # Ancien format <= v2.9
-            #
-            for part in mix.get(
-                "parts",
-                []
-            ):
+            for channel in mix[
+                "channels"
+            ]:
 
                 print(
-                    " PART",
-                    part["part"],
+                    " CH",
+                    channel["channel"],
                     "Fusion:",
                     (
                         "OK"
-                        if part[
+                        if channel[
                             "fusion_valid"
                         ]
                         else "ERREUR"
@@ -311,7 +275,7 @@ def print_mode_diagnostic(
                     "QSynth:",
                     (
                         "OK"
-                        if part[
+                        if channel[
                             "qsynth_configured"
                         ]
                         else "Non configuré"

@@ -150,80 +150,13 @@ def print_validation_errors(
 
     for error in structured_errors:
 
-        if error.get(
-            "type"
-        ) == "missing_instrument":
-
-            print()
-            print(
-                "⚠ Instrument absent"
+        print(
+            "-",
+            error.get(
+                "message",
+                error
             )
-
-            print(
-                "Mix        :",
-                error["mix_id"]
-            )
-
-            print(
-                "PART       :",
-                error["part_id"]
-            )
-
-            print(
-                "Canal MIDI :",
-                error.get(
-                    "channel",
-                    "?"
-                )
-            )
-
-            print(
-                "Instrument :",
-                error["instrument"]
-            )
-
-        elif error.get(
-            "type"
-        ) == "midi_channel_conflict":
-
-            print()
-            print("INFORMATION")
-            print("-----------")
-
-            print(
-                "⚠ Canal MIDI partagé"
-            )
-
-            print(
-                "Mix        :",
-                error["mix_id"]
-            )
-
-            print(
-                "Canal MIDI :",
-                error["channel"]
-            )
-
-            print(
-                "PARTS      :",
-                ", ".join(
-                    error["parts"]
-                )
-            )
-
-            print(
-                "Note : ce partage peut être volontaire."
-            )
-
-        else:
-
-            print(
-                "-",
-                error.get(
-                    "message",
-                    error
-                )
-            )
+        )
 
 def print_error_messages(
     errors
