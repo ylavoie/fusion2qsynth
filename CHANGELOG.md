@@ -1757,3 +1757,110 @@ La version 2.8 poursuit la consolidation de Fusion2QSynth en unifiant le systèm
 * 1221 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
 * Les cas `Program 1` et `TransForce` demeurent sans suggestion connue et ne constituent pas des erreurs de validation.
 * Validation syntaxique finale des modules du contrôleur avec `py_compile`.
+
+---
+
+## Fusion2QSynth v2.11
+
+### Migration définitive des MIX
+
+* Migration automatique des MIX de l'ancien format `parts` vers le modèle `channels` introduit en v2.10.
+* Conservation du canal MIDI observé et des éventuelles surcharges locales d'instrument lors de la migration.
+* Abandon des anciennes informations redondantes `bank`, `program` et `fusion_name` des PARTs MIX.
+* Migration effectuée automatiquement au chargement du projet puis sauvegardée de manière sécurisée.
+* Migration atomique : aucune modification du projet n'est appliquée lorsqu'une incohérence empêche la conversion complète.
+* Migration idempotente : un projet déjà converti n'est pas migré de nouveau.
+* Validation finale de 139 MIX au nouveau format `channels` et absence de MIX restant à l'ancien format.
+
+### Suppression de la compatibilité historique MIX
+
+* Suppression du support runtime des MIX basés sur `parts`.
+* Suppression des chemins de compatibilité historiques dans la validation, le diagnostic, l'éditeur, la capture et le Contrôleur Live.
+* Suppression des fonctions devenues inutiles pour la manipulation des anciens PARTs MIX.
+* Simplification du diagnostic et du résumé global afin d'utiliser exclusivement le modèle `channels`.
+* Simplification du test MIDI MIX afin d'utiliser exclusivement les canaux du nouveau modèle.
+* Conservation de `PROGRAM.parts`, qui demeure le modèle normal des PROGRAMs et n'est pas concerné par cette migration.
+
+### Migration définitive des SONG
+
+* Migration automatique des anciens canaux SONG utilisant directement `bank` et `program` vers le modèle `programs`.
+* Conversion d'un ancien couple `bank` / `program` en référence `bank:program` dans la collection `programs` du canal.
+* Conservation des paramètres statiques de canal `volume`, `pan`, `expression`, `reverb` et `chorus`.
+* Conservation des surcharges locales d'instrument lorsqu'elles étaient présentes dans l'ancien format.
+* Les canaux sans `bank` ni `program` deviennent des canaux valides avec `programs: {}` et demeurent non configurés.
+* Une ancienne définition contenant seulement `bank` ou seulement `program` est considérée incohérente et n'est pas convertie en inventant la valeur manquante.
+* Migration effectuée automatiquement au chargement du projet puis sauvegardée de manière sécurisée.
+* Migration atomique et idempotente.
+* Validation finale de 109 canaux SONG au nouveau format `programs` et absence de canal restant à l'ancien format.
+
+### Suppression de la compatibilité historique SONG
+
+* Suppression du support runtime des canaux SONG utilisant directement `bank` et `program`.
+* Suppression des chemins de compatibilité historiques dans la validation, le diagnostic, l'éditeur, la capture et le Contrôleur Live.
+* Le chargement d'une SONG prépare désormais les paramètres statiques des canaux puis attend les `PROGRAM_CHANGE` réellement transmis par le Fusion.
+* La résolution dynamique des instruments utilise exclusivement les occurrences présentes dans `channel.programs`.
+* Aucune valeur `bank`, `program` ou instrument n'est inventée pour un canal dont le Fusion ne transmet pas l'information.
+
+### Validation différentielle
+
+* Généralisation de la validation différentielle aux opérations de modification du projet.
+* Les erreurs déjà présentes avant une opération sont tolérées lorsqu'elles ne sont pas aggravées par cette opération.
+* Toute nouvelle erreur introduite par une modification demeure bloquante.
+* Application de ce mécanisme aux opérations de renommage, duplication et suppression des PROGRAMs, MIX et SONG.
+* Application de la validation différentielle aux captures PROGRAM, MIX et SONG.
+* Application de la validation différentielle à la création et à la modification des instruments SoundFont.
+* Une duplication reproduisant une erreur existante sous un nouvel identifiant est correctement détectée comme une nouvelle erreur.
+* La suppression d'un PROGRAM global encore référencé par un MIX ou une SONG demeure interdite.
+
+### Sauvegarde, archives et restauration
+
+* Correction de la détection des archives afin qu'une archive JSON structurellement valide demeure disponible même si le projet qu'elle contient possède des erreurs de validation préexistantes.
+* Séparation de la validité d'une archive et de la validité métier du projet contenu dans cette archive.
+* Correction de la restauration afin que les erreurs préexistantes n'empêchent plus la récupération d'une archive lisible.
+* Le chargement suivant une restauration applique automatiquement les migrations de format nécessaires.
+* Validation de la restauration complète d'un projet contenant des erreurs préexistantes autorisées.
+
+### Éditeur SONG
+
+* Adaptation définitive de l'éditeur au modèle `channel.programs`.
+* Support uniforme des canaux sans PROGRAM, avec un PROGRAM ou avec plusieurs PROGRAMs.
+* Correction de la navigation avec `q` afin de revenir au niveau logique précédent selon le nombre de PROGRAMs disponibles.
+* Conservation et édition correcte des surcharges locales d'instrument.
+* Résolution correcte des instruments hérités depuis les PROGRAMs globaux.
+
+### Capture PROGRAM et SONG
+
+* Correction de la capture PROGRAM afin que les erreurs préexistantes du projet ne bloquent pas une capture valide.
+* Correction équivalente de la capture SONG.
+* Conservation du mécanisme de rollback lorsqu'une capture introduit une nouvelle erreur.
+* Validation de la recapture partielle d'une SONG avec conservation des PROGRAMs existants, des surcharges locales et des contrôleurs statiques non remplacés.
+
+### Contrôleur Live — SONG
+
+* Validation du fonctionnement du Contrôleur Live avec le modèle SONG définitif basé sur `programs`.
+* Validation des changements dynamiques de PROGRAM pendant l'exécution d'une SONG.
+* Validation de l'héritage depuis les PROGRAMs globaux et des surcharges locales d'instrument.
+* Les PROGRAMs non configurés sont correctement détectés et les canaux concernés demeurent silencieux.
+* Validation d'une SONG contenant un canal sans PROGRAM connu sans invention de PROGRAM ni d'instrument.
+* Validation du fonctionnement sans dépendance envers l'ancien format SONG.
+
+### Nettoyage du projet
+
+* Suppression du script temporaire `migration_mix_test.py` après intégration et validation de la migration dans `FusionProject`.
+* Suppression des fonctions et chemins d'exécution devenus inutiles après la disparition des formats historiques MIX et SONG.
+* Réduction du code de compatibilité tout en conservant les mécanismes de migration nécessaires à l'ouverture d'anciens projets.
+* Les MIX vides demeurent valides et sont conservés ; leur suppression reste une opération volontaire de nettoyage.
+
+### Validation globale
+
+* Adaptation de `integration-globale.py` afin d'utiliser `PROGRAM.name` comme source canonique des noms de PROGRAM Fusion.
+* Le test global couvre désormais l'ensemble du catalogue de PROGRAMs ROM importé dans le projet plutôt que seulement les anciens noms observés dans les structures capturées.
+* 1164 noms de PROGRAM Fusion uniques validés.
+* 952 noms reconnus par hint GM.
+* 27 noms classés uniquement par famille.
+* 185 noms demeurent sans suggestion connue.
+* Aucun hint non respecté, meilleur hint incorrect, famille seule incorrecte, suggestion invalide ou suggestion en doublon détecté.
+* Aucun preset avec champ manquant, score mal ordonné ou aberrant, limite dépassée ou instabilité Top 1 ou Top N détecté.
+* 1221 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
+* Validation syntaxique finale de l'ensemble des modules modifiés avec `py_compile`.
+* Validation finale du diff avec `git diff --check`.
