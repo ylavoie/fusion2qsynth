@@ -8683,6 +8683,105 @@ FUSION_FAMILY_OVERRIDES = {
     "orchestra kit": {
         "drums"
     },
+    #
+    # ROM:SYNTH DRUM - Kicks
+    #
+    "atlas kick": {
+        "drums"
+    },
+    "attacker kick": {
+        "drums"
+    },
+    "bang theory kick": {
+        "drums"
+    },
+    "breadbox kick": {
+        "drums"
+    },
+    "capacitor kick": {
+        "drums"
+    },
+    "clop kick": {
+        "drums"
+    },
+    "coin kick": {
+        "drums"
+    },
+    "dance attack kick": {
+        "drums"
+    },
+    "deep click kick": {
+        "drums"
+    },
+    "echo kick": {
+        "drums"
+    },
+    "empty room kick": {
+        "drums"
+    },
+    "emptybox kick": {
+        "drums"
+    },
+    "fm noiz kick": {
+        "drums"
+    },
+    "fuzzy kick": {
+        "drums"
+    },
+    "hi club kick": {
+        "drums"
+    },
+    "in the club kick": {
+        "drums"
+    },
+    "insector kick": {
+        "drums"
+    },
+    "lo club kick": {
+        "drums"
+    },
+    "md club kick": {
+        "drums"
+    },
+    "monster kick": {
+        "drums"
+    },
+    "plastic kick": {
+        "drums"
+    },
+    "rattlebox kick": {
+        "drums"
+    },
+    "rounder kick": {
+        "drums"
+    },
+    "sawed off kick": {
+        "drums"
+    },
+    "squared off kick": {
+        "drums"
+    },
+    "squish kick": {
+        "drums"
+    },
+    "super zap kick": {
+        "drums"
+    },
+    "thumper kick": {
+        "drums"
+    },
+    "tick boom kick": {
+        "drums"
+    },
+    "velo zap kick": {
+        "drums"
+    },
+    "wheezy kick": {
+        "drums"
+    },
+    "zap kick": {
+        "drums"
+    }
 }
 
 FUSION_GM_HINTS = {}
