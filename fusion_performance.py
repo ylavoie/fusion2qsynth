@@ -473,7 +473,6 @@ def load_song(
     )
 
     prepared_channels = 0
-    loaded_channels = 0
 
     controls = {
         7: "volume",
@@ -514,58 +513,12 @@ def load_song(
 
         prepared_channels += 1
 
-        programs = channel.get(
-            "programs"
-        )
-
-        #
-        # Nouveau format SONG :
-        # le PROGRAM sera choisi en temps réel
-        # par les PROGRAM_CHANGE du Fusion.
-        #
-        if isinstance(
-            programs,
-            dict
-        ):
-
-            continue
-
-        #
-        # Ancien format SONG :
-        # conserver le comportement historique.
-        #
-        instrument = project.resolve_part_instrument(
-            channel
-        )
-
-        if not instrument:
-
-            continue
-
-        send_program(
-            out,
-            midi_channel,
-            instrument
-        )
-
-        state.current_parts[
-            int(channel_id)
-        ] = channel
-
-        loaded_channels += 1
 
     print()
     print(
         prepared_channels,
         "canaux SONG préparés"
     )
-
-    if loaded_channels:
-
-        print(
-            loaded_channels,
-            "canaux ancien format chargés dans FluidSynth"
-        )
 
     save_last_performance(
         "song",
@@ -611,84 +564,39 @@ def load_song_program(
         "programs"
     )
 
-    #
-    # Nouveau format SONG
-    #
-    if isinstance(
-        programs,
-        dict
-    ):
+    program_data = programs.get(
+        program_id
+    )
 
-        program_data = programs.get(
-            program_id
-        )
+    if program_data is None:
 
-        if program_data is None:
+        if DEBUG:
 
-            if DEBUG:
-
-                print(
-                    "PROGRAM SONG ignoré",
-                    "CH",
-                    channel_id,
-                    program_id
-                )
-
-            state.current_parts.pop(
+            print(
+                "PROGRAM SONG ignoré",
+                "CH",
                 channel_id,
-                None
+                program_id
             )
 
-            state.current_song_programs.pop(
-                channel_id,
-                None
-            )
-
-            return False
-
-        instrument = (
-            project.resolve_song_program_instrument(
-                program_id,
-                program_data
-            )
+        state.current_parts.pop(
+            channel_id,
+            None
         )
 
-    #
-    # Ancien format SONG
-    #
-    else:
-
-        bank = channel.get(
-            "bank"
+        state.current_song_programs.pop(
+            channel_id,
+            None
         )
 
-        program = channel.get(
-            "program"
+        return False
+
+    instrument = (
+        project.resolve_song_program_instrument(
+            program_id,
+            program_data
         )
-
-        if (
-            bank is None
-            or
-            program is None
-            or
-            f"{bank}:{program}" != program_id
-        ):
-
-            state.current_parts.pop(
-                channel_id,
-                None
-            )
-
-            state.current_song_programs.pop(
-                channel_id,
-                None
-            )
-
-            return False
-
-        instrument = project.resolve_part_instrument(
-            channel
-        )
+    )
 
     if not instrument:
 

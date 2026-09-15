@@ -26,26 +26,6 @@ presets = [
 names = set()
 
 #
-# MIX
-#
-for mix in project.data.get(
-    "mixes",
-    {}
-).values():
-
-    for part in mix.get(
-        "parts",
-        {}
-    ).values():
-
-        name = part.get(
-            "fusion_name"
-        )
-
-        if name:
-            names.add(name)
-
-#
 # PROGRAM
 #
 for program in project.data.get(
@@ -53,38 +33,13 @@ for program in project.data.get(
     {}
 ).values():
 
-    for part in program.get(
-        "parts",
-        {}
-    ).values():
+    name = program.get(
+        "name"
+    )
 
-        name = part.get(
-            "fusion_name"
-        )
+    if name:
 
-        if name:
-            names.add(name)
-
-#
-# SONG
-#
-for song in project.data.get(
-    "songs",
-    {}
-).values():
-
-    for channel in song.get(
-        "channels",
-        {}
-    ).values():
-
-        name = channel.get(
-            "fusion_name"
-        )
-
-        if name:
-            names.add(name)
-
+        names.add(name)
 
 FAMILY_COMPATIBILITY = {
     "brass": {

@@ -83,19 +83,46 @@ class FusionProject:
             self.validate()
         )
 
-        migration = self.migrate_legacy_mixes()
+        mix_migration = (
+            self.migrate_legacy_mixes()
+        )
+        song_migration = (
+            self.migrate_legacy_songs()
+        )
 
-        if migration["mixes"] > 0:
+        migration_needed = (
+            mix_migration["mixes"] > 0
+            or
+            song_migration["songs"] > 0
+        )
+
+        if mix_migration["mixes"] > 0:
 
             print(
-                "Migration MIX :",
-                migration["mixes"],
+                "mix_migration MIX :",
+                mix_migration["mixes"],
                 "MIX migrés,",
-                migration["channels"],
+                mix_migration["channels"],
                 "canaux reconstruits,",
-                migration["instruments"],
+                mix_migration["instruments"],
                 "instruments conservés."
             )
+
+        if song_migration["songs"] > 0:
+
+            print(
+                "Migration SONG :",
+                song_migration["songs"],
+                "SONG migrées,",
+                song_migration["channels"],
+                "canaux migrés,",
+                song_migration["programs"],
+                "PROGRAM créés,",
+                song_migration["instruments"],
+                "instruments conservés."
+            )
+
+        if migration_needed:
 
             if not self.save_safe(
                 allowed_errors=allowed_errors
@@ -103,7 +130,7 @@ class FusionProject:
 
                 raise RuntimeError(
                     "Impossible de sauvegarder "
-                    "la migration des MIX."
+                    "la migration du projet."
                 )
 
     def restore_backup(self):
@@ -434,6 +461,21 @@ class FusionProject:
             errors
         )
 
+    def get_new_blocking_errors(
+        self,
+        before_errors
+    ):
+
+        after_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        return [
+            error
+            for error in after_errors
+            if error not in before_errors
+        ]
+
     def save_safe(
         self,
         allowed_errors=None
@@ -658,23 +700,14 @@ class FusionProject:
                     f
                 )
 
-            project = cls.__new__(
-                cls
-            )
+            if not isinstance(
+                data,
+                dict
+            ):
 
-            project.filename = filename
-            project.data = data
-            project.file_time = 0
+                return False
 
-            errors = project.validate()
-
-            blocking_errors = (
-                project.get_blocking_errors(
-                    errors
-                )
-            )
-
-            return not blocking_errors
+            return True
 
         except (
             OSError,
@@ -718,16 +751,6 @@ class FusionProject:
                 )
 
             project.data = data
-
-            errors = project.validate()
-
-            blocking_errors = project.get_blocking_errors(
-                errors
-            )
-
-            if blocking_errors:
-
-                return None
 
             #
             # Protéger le fichier actuel avant restauration
@@ -1057,15 +1080,17 @@ class FusionProject:
             "name"
         )
 
-        mix["name"] = name
-
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        before_errors = self.get_blocking_errors(
+            self.validate()
         )
 
-        if blocking_errors:
+        mix["name"] = name
+
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
+
+        if new_errors:
 
             if old_name is None:
 
@@ -1080,7 +1105,7 @@ class FusionProject:
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -1128,15 +1153,17 @@ class FusionProject:
             source.get('name', source_mix_id)
         )
 
-        mixes[new_mix_id] = new_mix
-
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        before_errors = self.get_blocking_errors(
+            self.validate()
         )
 
-        if blocking_errors:
+        mixes[new_mix_id] = new_mix
+
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
+
+        if new_errors:
 
             mixes.pop(
                 new_mix_id,
@@ -1145,7 +1172,7 @@ class FusionProject:
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -1194,6 +1221,10 @@ class FusionProject:
 
         mixes = self.get_mixes()
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         backup = copy.deepcopy(
             self.data
         )
@@ -1215,19 +1246,17 @@ class FusionProject:
 
                 del mixes[mix_id]
 
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if blocking_errors:
+        if new_errors:
 
             self.data = backup
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -1242,7 +1271,7 @@ class FusionProject:
 
         mixes = self.get_mixes()
 
-        if not mix_id in mixes:
+        if mix_id not in mixes:
 
             return (
                 False,
@@ -1251,25 +1280,29 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         backup = copy.deepcopy(
             self.data
         )
 
-        del mixes[mix_id]
+        del mixes[
+            mix_id
+        ]
 
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if blocking_errors:
+        if new_errors:
 
             self.data = backup
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -1825,19 +1858,21 @@ class FusionProject:
                 []
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_name = program.get(
             "name"
         )
 
         program["name"] = name
 
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if blocking_errors:
+        if new_errors:
 
             if old_name is None:
 
@@ -1852,7 +1887,7 @@ class FusionProject:
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -1878,6 +1913,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         backup = copy.deepcopy(
             self.data
         )
@@ -1886,19 +1925,17 @@ class FusionProject:
             program_id
         ]
 
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if blocking_errors:
+        if new_errors:
 
             self.data = backup
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -2006,6 +2043,170 @@ class FusionProject:
             str(song_id)
         )
 
+    def migrate_legacy_songs(
+        self
+    ):
+
+        migrated_songs = 0
+        migrated_channels = 0
+        migrated_programs = 0
+        preserved_instruments = 0
+
+        songs = self.data.get(
+            "songs",
+            {}
+        )
+
+        #
+        # Préparer toute la migration avant
+        # de modifier self.data
+        #
+        migrated_data = {}
+
+        for song_id, song in songs.items():
+
+            channels = song.get(
+                "channels",
+                {}
+            )
+
+            new_channels = {}
+            song_changed = False
+
+            for channel_id, channel in channels.items():
+
+                #
+                # Déjà au format v2.9+
+                #
+                if "programs" in channel:
+
+                    new_channels[
+                        channel_id
+                    ] = channel
+
+                    continue
+
+                new_channel = {}
+
+                #
+                # Conserver les paramètres statiques
+                #
+                for field in (
+                    "volume",
+                    "pan",
+                    "expression",
+                    "reverb",
+                    "chorus"
+                ):
+
+                    if field in channel:
+
+                        new_channel[
+                            field
+                        ] = channel[
+                            field
+                        ]
+
+                has_bank = (
+                    "bank" in channel
+                )
+
+                has_program = (
+                    "program" in channel
+                )
+
+                #
+                # Format ancien incohérent :
+                # ne rien inventer.
+                #
+                if has_bank != has_program:
+
+                    raise ValueError(
+                        f"{song_id} CH {channel_id} : "
+                        "bank/program incomplets."
+                    )
+
+                programs = {}
+
+                if has_bank:
+
+                    bank = channel[
+                        "bank"
+                    ]
+
+                    program = channel[
+                        "program"
+                    ]
+
+                    program_id = (
+                        f"{bank}:{program}"
+                    )
+
+                    program_data = {}
+
+                    #
+                    # Instrument local = override
+                    #
+                    if "instrument" in channel:
+
+                        program_data[
+                            "instrument"
+                        ] = channel[
+                            "instrument"
+                        ]
+
+                        preserved_instruments += 1
+
+                    programs[
+                        program_id
+                    ] = program_data
+
+                    migrated_programs += 1
+
+                new_channel[
+                    "programs"
+                ] = programs
+
+                new_channels[
+                    channel_id
+                ] = new_channel
+
+                migrated_channels += 1
+                song_changed = True
+
+            if song_changed:
+
+                new_song = dict(
+                    song
+                )
+
+                new_song[
+                    "channels"
+                ] = new_channels
+
+                migrated_data[
+                    song_id
+                ] = new_song
+
+                migrated_songs += 1
+
+        #
+        # Appliquer seulement une fois toute
+        # la migration préparée avec succès
+        #
+        for song_id, song in migrated_data.items():
+
+            songs[
+                song_id
+            ] = song
+
+        return {
+            "songs": migrated_songs,
+            "channels": migrated_channels,
+            "programs": migrated_programs,
+            "instruments": preserved_instruments
+        }
+
     def rename_song(
         self,
         song_id,
@@ -2027,15 +2228,17 @@ class FusionProject:
             "name"
         )
 
-        song["name"] = name
-
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        before_errors = self.get_blocking_errors(
+            self.validate()
         )
 
-        if blocking_errors:
+        song["name"] = name
+
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
+
+        if new_errors:
 
             if old_name is None:
 
@@ -2050,7 +2253,7 @@ class FusionProject:
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -2080,6 +2283,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         backup = copy.deepcopy(
             self.data
         )
@@ -2088,19 +2295,17 @@ class FusionProject:
             song_id
         ]
 
-        errors = self.validate()
-
-        blocking_errors = self.get_blocking_errors(
-            errors
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if blocking_errors:
+        if new_errors:
 
             self.data = backup
 
             return (
                 False,
-                blocking_errors
+                new_errors
             )
 
         return (
@@ -2181,118 +2386,48 @@ class FusionProject:
             "programs"
         )
 
-        #
-        # Nouveau format SONG
-        #
-        if programs is not None:
+        if not isinstance(
+            programs,
+            dict
+        ):
 
-            if not isinstance(
-                programs,
-                dict
-            ):
+            errors.append(
+                f"{song_id} CH {channel_id} : "
+                "programs invalide."
+            )
 
-                errors.append(
-                    f"{song_id} CH {channel_id} : "
-                    "programs invalide."
-                )
-
-            else:
-
-                for program_id, program_data in programs.items():
-
-                    try:
-
-                        bank_str, program_str = (
-                            program_id.split(
-                                ":",
-                                1
-                            )
-                        )
-
-                        bank = int(
-                            bank_str
-                        )
-
-                        program = int(
-                            program_str
-                        )
-
-                    except (
-                        ValueError,
-                        AttributeError
-                    ):
-
-                        errors.append(
-                            f"{song_id} CH {channel_id} : "
-                            f"PROGRAM invalide ({program_id})."
-                        )
-
-                        continue
-
-                    if not (
-                        0 <= bank <= 16383
-                    ):
-
-                        errors.append(
-                            f"{song_id} CH {channel_id} : "
-                            f"Bank invalide ({bank})."
-                        )
-
-                    if not (
-                        0 <= program <= 127
-                    ):
-
-                        errors.append(
-                            f"{song_id} CH {channel_id} : "
-                            f"Program invalide ({program})."
-                        )
-
-                    if not isinstance(
-                        program_data,
-                        dict
-                    ):
-
-                        errors.append(
-                            f"{song_id} CH {channel_id} : "
-                            f"PROGRAM {program_id} invalide."
-                        )
-
-        #
-        # Ancien format SONG
-        #
         else:
 
-            has_bank = (
-                "bank" in channel
-            )
+            for program_id, program_data in programs.items():
 
-            has_program = (
-                "program" in channel
-            )
+                try:
 
-            if (
-                has_bank
-                and
-                not has_program
-            ):
+                    bank_str, program_str = (
+                        program_id.split(
+                            ":",
+                            1
+                        )
+                    )
 
-                errors.append(
-                    f"{song_id} CH {channel_id} : Program absent."
-                )
+                    bank = int(
+                        bank_str
+                    )
 
-            if (
-                has_program
-                and
-                not has_bank
-            ):
+                    program = int(
+                        program_str
+                    )
 
-                errors.append(
-                    f"{song_id} CH {channel_id} : Bank absente."
-                )
+                except (
+                    ValueError,
+                    AttributeError
+                ):
 
-            if has_bank:
+                    errors.append(
+                        f"{song_id} CH {channel_id} : "
+                        f"PROGRAM invalide ({program_id})."
+                    )
 
-                bank = channel["bank"]
+                    continue
 
                 if not (
                     0 <= bank <= 16383
@@ -2303,10 +2438,6 @@ class FusionProject:
                         f"Bank invalide ({bank})."
                     )
 
-            if has_program:
-
-                program = channel["program"]
-
                 if not (
                     0 <= program <= 127
                 ):
@@ -2314,6 +2445,16 @@ class FusionProject:
                     errors.append(
                         f"{song_id} CH {channel_id} : "
                         f"Program invalide ({program})."
+                    )
+
+                if not isinstance(
+                    program_data,
+                    dict
+                ):
+
+                    errors.append(
+                        f"{song_id} CH {channel_id} : "
+                        f"PROGRAM {program_id} invalide."
                     )
 
         for field in (
@@ -2713,9 +2854,6 @@ class FusionProject:
                     "programs"
                 )
 
-                #
-                # Nouveau format SONG
-                #
                 if isinstance(
                     programs,
                     dict
@@ -2745,21 +2883,6 @@ class FusionProject:
 
                                 qsynth_configured = False
                                 break
-
-                #
-                # Ancien format SONG
-                #
-                else:
-
-                    instrument = (
-                        self.resolve_part_instrument(
-                            channel
-                        )
-                    )
-
-                    qsynth_configured = (
-                        instrument is not None
-                    )
 
                 song_diagnostic[
                     "channels"
