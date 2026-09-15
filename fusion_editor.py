@@ -2558,7 +2558,7 @@ def list_mixes(
         )
 
         #
-        # État v2.10
+        # État de configuration
         #
         if valid < total:
 

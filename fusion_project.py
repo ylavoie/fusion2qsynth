@@ -1523,7 +1523,7 @@ class FusionProject:
             return errors
 
         #
-        # Seulement les champs v2.10 autorisés
+        # Champs autorisés
         #
         allowed_fields = {
             "program",
@@ -2962,7 +2962,7 @@ class FusionProject:
             )
 
             #
-            # État v2.10
+            # État de configuration
             #
             if valid < total:
 
@@ -3377,7 +3377,7 @@ class FusionProject:
         )
 
         #
-        # Nouveau modèle v2.10
+        # Modèle MIX par canal
         #
         mix["channels"] = channels
 
