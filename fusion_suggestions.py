@@ -60,7 +60,12 @@ def detect_gm_drum_kit(
 
 def normalize_name(name):
 
-    #TODO Considérer les CamelCase
+    name = re.sub(
+        r"(?<=[a-z])(?=[A-Z])",
+        " ",
+        name
+    )
+
     name = name.lower()
 
     name = re.sub(
