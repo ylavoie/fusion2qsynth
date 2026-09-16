@@ -6992,13 +6992,6 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "shimmer bells",
-        ),
-        "bells",
-        14,
-    ),
-    (
-        (
             "fat cab 1",
         ),
         "guitar",
