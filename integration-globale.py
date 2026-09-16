@@ -28,10 +28,21 @@ names = set()
 #
 # PROGRAM
 #
-for program in project.data.get(
+for program_id, program in project.data.get(
     "programs",
     {}
-).values():
+).items():
+
+    bank = int(
+        program_id.split(
+            ":",
+            1
+        )[0]
+    )
+
+    if bank == 8:
+
+        continue
 
     name = program.get(
         "name"
@@ -39,7 +50,9 @@ for program in project.data.get(
 
     if name:
 
-        names.add(name)
+        names.add(
+            name
+        )
 
 FAMILY_COMPATIBILITY = {
     "brass": {

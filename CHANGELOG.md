@@ -1864,3 +1864,57 @@ La version 2.8 poursuit la consolidation de Fusion2QSynth en unifiant le systèm
 * 1221 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
 * Validation syntaxique finale de l'ensemble des modules modifiés avec `py_compile`.
 * Validation finale du diff avec `git diff --check`.
+
+---
+
+## Fusion2QSynth v2.12
+
+### Catalogue des PROGRAMs Fusion
+
+* Audit systématique du catalogue de PROGRAMs ROM du Fusion.
+* Analyse et classification des PROGRAMs encore inconnus à partir de leur nom, de leur banque d'origine et, lorsque nécessaire, d'une validation directe à l'écoute.
+* Enrichissement de `FUSION_GM_DATA` avec de nouveaux mappings vers les programmes General MIDI correspondant aux PROGRAMs Fusion identifiés avec suffisamment de précision.
+* Enrichissement de `FUSION_FAMILY_OVERRIDES` pour les PROGRAMs dont la famille instrumentale peut être déterminée sans imposer un programme GM trop précis.
+* Conservation des identifications SoundFont existantes lorsqu'elles sont plus précises ou plus appropriées qu'une approximation GM.
+* Correction de plusieurs classifications existantes après vérification directe du caractère sonore des PROGRAMs.
+* Les PROGRAMs ambigus ne reçoivent pas de mapping GM artificiel lorsque l'écoute ne permet pas une identification suffisamment fiable.
+
+### Reconnaissance et suggestions d'instruments
+
+* Extension importante des aliases et hints utilisés pour reconnaître les noms de PROGRAMs Fusion.
+* Amélioration de la couverture des synth basses, leads, pads, effets, percussions synthétiques, claviers, guitares et autres familles rencontrées dans les banques ROM.
+* Classification complète de la banque `ROM:SYNTH DRUM`.
+* Audit et classification de la banque `ROM:MORE`, incluant plusieurs PROGRAMs dont l'identification a nécessité une validation à l'écoute.
+* Conservation de la distinction entre un hint GM précis et une classification uniquement par famille.
+* Ajout d'un rappel de développement concernant une éventuelle prise en charge future des noms CamelCase dans `normalize_name()`.
+
+### Optimisation des suggestions
+
+* Optimisation de `detect_families()` par mise en cache des résultats de classification.
+* Optimisation de `detect_gm_hint()` par mise en cache des résultats de détection des hints GM.
+* Utilisation de représentations immuables dans les caches afin d'éviter qu'un appelant puisse modifier les données mémorisées.
+* Conservation de l'interface existante grâce au retour de nouvelles structures modifiables à chaque appel.
+* Réduction majeure du temps d'exécution de `integration-globale.py`, d'environ quatre minutes à quelques secondes, sans modification des résultats fonctionnels.
+
+### Validation du catalogue ROM
+
+* Adaptation de `integration-globale.py` afin d'exclure les PROGRAMs de la banque `HD:USER` de la validation du catalogue ROM.
+* Identification de la banque à partir de l'identifiant canonique `bank:program` du PROGRAM.
+* Les PROGRAMs utilisateur demeurent pleinement supportés par le projet mais ne sont plus considérés comme des PROGRAMs ROM devant posséder une classification connue.
+* Suppression des faux inconnus provenant des PROGRAMs de test et des PROGRAMs propres à l'utilisateur.
+
+### Validation globale
+
+* 1157 noms de PROGRAM Fusion ROM uniques validés.
+* 1019 noms reconnus par hint GM.
+* 138 noms classés uniquement par famille.
+* Aucun PROGRAM ROM inconnu.
+* Aucun PROGRAM ROM sans suggestion.
+* Aucun hint non respecté, meilleur hint incorrect ou famille seule incorrecte.
+* Aucune suggestion invalide ou suggestion en doublon détectée.
+* Aucun preset avec champ manquant.
+* Aucun score mal ordonné ou aberrant.
+* Aucune limite dépassée et aucune erreur du paramètre `limit`.
+* Aucune instabilité Top 1 ou Top N détectée.
+* 1285 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
+* Validation finale du diff avec `git diff --check`.

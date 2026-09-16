@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from functools import lru_cache
 import re
 from difflib import SequenceMatcher
 
@@ -59,6 +60,7 @@ def detect_gm_drum_kit(
 
 def normalize_name(name):
 
+    #TODO Considérer les CamelCase
     name = name.lower()
 
     name = re.sub(
@@ -117,7 +119,10 @@ def contains_term(
 
     return False
 
-def detect_gm_hint(
+@lru_cache(
+    maxsize=None
+)
+def _detect_gm_hint_cached(
     name
 ):
 
@@ -127,7 +132,9 @@ def detect_gm_hint(
 
     if gm_program is not None:
 
-        return gm_program
+        return tuple(
+            gm_program.items()
+        )
 
     normalized_name = normalize_name(
         name
@@ -159,11 +166,32 @@ def detect_gm_hint(
 
         return None
 
-    return dict(
-        best_match[1]
+    return tuple(
+        best_match[1].items()
     )
 
-def detect_families(name):
+
+def detect_gm_hint(
+    name
+):
+
+    result = _detect_gm_hint_cached(
+        name
+    )
+
+    if result is None:
+
+        return None
+
+    return dict(
+        result
+    )
+@lru_cache(
+    maxsize=None
+)
+def _detect_families_cached(
+    name
+):
 
     normalized_name = normalize_name(
         name
@@ -175,7 +203,7 @@ def detect_families(name):
 
     if override is not None:
 
-        return set(
+        return frozenset(
             override
         )
 
@@ -232,9 +260,11 @@ def detect_families(name):
         families.add(
             "bass"
         )
+
     #
     # Spécialisations
     #
+
     if "contrabass" in families:
 
         families.discard(
@@ -252,9 +282,11 @@ def detect_families(name):
         families.discard(
             "flute"
         )
+
     #
     # Square
     #
+
     if "square_wave" in families:
 
         families.discard(
@@ -267,7 +299,18 @@ def detect_families(name):
                 "square_lead"
             )
 
-    return families
+    return frozenset(
+        families
+    )
+
+def detect_families(
+    name
+):
+    return set(
+        _detect_families_cached(
+            name
+        )
+    )
 
 def similarity(
     name1,
