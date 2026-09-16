@@ -332,13 +332,9 @@ def matches_for_family(
     fusion_program,
     sf2_presets,
     family,
+    gm_hint,
     limit=3
 ):
-
-    gm_hint = detect_gm_hint(
-        fusion_program["name"]
-    )
-
     candidates = []
     expected_bank = 0
 
@@ -485,6 +481,7 @@ def suggest_instruments(
             fusion_program,
             sf2_presets,
             family,
+            gm_hint,
             limit=limit
         )
 
