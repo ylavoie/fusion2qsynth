@@ -1263,7 +1263,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "digisequencer 1",
+            "digi sequencer 1",
         ),
         "lead",
         81,
@@ -1271,7 +1271,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "digisequencer 2",
+            "digi sequencer 2",
         ),
         "lead",
         80,
@@ -1903,7 +1903,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "acoustilectric piano",
+            "acousti lectric piano",
         ),
         "electric_piano",
         2,
@@ -2233,7 +2233,7 @@ FUSION_GM_DATA = [
     (
         (
             "big classical brass",
-            "2 pole saw2thbrass",
+            "2 pole saw2th brass",
         ),
         "brass",
         62,
@@ -3424,7 +3424,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "4 pole saw2thbrass",
+            "4 pole saw2th brass",
         ),
         "brass",
         63,
@@ -3756,7 +3756,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "hiphop kit 1",
+            "hip hop kit 1",
             "kick menu",
         ),
         "drums",
@@ -4912,7 +4912,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "hiphop kit 2",
+            "hip hop kit 2",
             "rock kit",
             "snare menu",
         ),
@@ -5568,7 +5568,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "espressivo celloviola",
+            "espressivo cello viola",
         ),
         "cello",
         42,
@@ -5576,7 +5576,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "sweet violincello",
+            "sweet violin cello",
         ),
         "violin",
         40,
@@ -5711,7 +5711,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "the synthbrass at",
+            "the synth brass at",
         ),
         "brass",
         63,
@@ -5794,7 +5794,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "windvoxmix reel",
+            "wind vox mix reel",
         ),
         "voice",
         54,
@@ -5846,7 +5846,7 @@ FUSION_GM_DATA = [
     (
         (
             "finger on the pulse",
-            "highpass fun",
+            "high pass fun",
         ),
         "square_lead",
         80,
@@ -5976,7 +5976,7 @@ FUSION_GM_DATA = [
     (
         (
             "khatmandu heights",
-            "dynaslide sitar",
+            "dyna slide sitar",
         ),
         "sitar",
         104,
@@ -6670,7 +6670,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "guitharpin",
+            "guit harpin",
         ),
         "keyboard",
         6,
@@ -6733,7 +6733,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "einstein",
+            "ein stein",
         ),
         "lead",
         83,
@@ -6782,14 +6782,14 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "fm dnb bass",
+            "fm dn b bass",
         ),
         "bass",
         39,
     ),
     (
         (
-            "electroharmonics",
+            "electro harmonics",
         ),
         "pad",
         90,
@@ -7035,7 +7035,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "chorus elgrand",
+            "chorus el grand",
             "electric grand",
         ),
         "piano",
@@ -7154,7 +7154,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "omniglobe",
+            "omni globe",
         ),
         "fx",
         100,
@@ -7198,7 +7198,7 @@ FUSION_GM_DATA = [
     (
         (
             "vocks conti",
-            "farcheeza",
+            "far cheeza",
         ),
         "organ",
         17,
@@ -7246,7 +7246,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "iix marblock",
+            "iix mar block",
         ),
         "marimba",
         12,
@@ -7254,7 +7254,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "iix violsus",
+            "iix viol sus",
         ),
         "strings",
         48,
@@ -7378,8 +7378,8 @@ FUSION_GM_DATA = [
 
     (
         (
-            "pea pg throatwave",
-            "pea pg throatperc",
+            "pea pg throat wave",
+            "pea pg throat perc",
         ),
         "fx",
         101,
@@ -7421,7 +7421,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "spacestation",
+            "space station",
         ),
         "fx",
         103,
@@ -7536,7 +7536,7 @@ FUSION_GM_DATA = [
     ),
     (
         (
-            "kraftperk",
+            "kraft perk",
             "hs 8 oh 8",
         ),
         "drums",
@@ -7547,8 +7547,8 @@ FUSION_GM_DATA = [
     #
     (
         (
-            "superstrings",
-            "superstrings 2",
+            "super strings",
+            "super strings 2",
         ),
         "strings",
         50,
@@ -7646,7 +7646,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "superpad",
+            "super pad",
         ),
         "pad",
         88,
@@ -7688,7 +7688,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "digichoir",
+            "digi choir",
         ),
         "voice",
         54,
@@ -7787,7 +7787,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "duckbass",
+            "duck bass",
         ),
         "bass",
         39,
@@ -7811,7 +7811,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "monobass",
+            "mono bass",
             "rubber bass",
         ),
         "bass",
@@ -7844,7 +7844,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "benshimr",
+            "ben shimr",
         ),
         "pad",
         93,
@@ -8072,7 +8072,7 @@ FUSION_GM_DATA = [
         (
             "d you know sweep",
             "d you know env sweep",
-            "sawfilt sweep",
+            "saw filt sweep",
         ),
         "pad",
         95,
@@ -8150,8 +8150,8 @@ FUSION_GM_DATA = [
     (
         (
             "prologue",
-            "velopad",
-            "memmogue pad",
+            "velo pad",
+            "mem mogue pad",
         ),
         "pad",
         89,
@@ -8183,7 +8183,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "velovoxbel",
+            "velo vox bel",
             "glass pad",
             "frosted glass",
         ),
@@ -8203,7 +8203,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "minimogue strings",
+            "mini mogue strings",
         ),
         "strings",
         50,
@@ -8228,8 +8228,8 @@ FUSION_GM_DATA = [
 
     (
         (
-            "mogue trilead1",
-            "mogue trilead2",
+            "mogue tri lead1",
+            "mogue tri lead2",
         ),
         "lead",
         84,
@@ -8237,7 +8237,7 @@ FUSION_GM_DATA = [
 
     (
         (
-            "mogue squlead",
+            "mogue squ lead",
         ),
         "square_lead",
         80,
@@ -9094,7 +9094,7 @@ FUSION_FAMILY_OVERRIDES = {
     "vintage drum machine sd": {
 		"drums"
 	},
-    "acoustilectric piano": {
+    "acousti lectric piano": {
         "electric_piano"
     },
     "log drum": {
@@ -9341,7 +9341,7 @@ FUSION_FAMILY_OVERRIDES = {
     "rezzo kiss": {"drums"},
     "woody rattle": {"drums"},
     #
-    "fallenonhardtines": {"electric_piano"},
+    "fallen on hard tines": {"electric_piano"},
     "notch worlds": {"pad"},
 }
 

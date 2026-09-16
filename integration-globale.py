@@ -3,6 +3,7 @@ from fusion_suggestions import (
     detect_families,
     detect_gm_hint,
     detect_gm_drum_kit,
+    normalize_name,
     suggest_instruments,
 )
 from fusion_gm_map import FUSION_GM_DATA
@@ -52,6 +53,66 @@ for program_id, program in project.data.get(
 
         names.add(
             name
+        )
+
+#
+# Validation normalisation des noms
+#
+
+normalization_tests = {
+    #
+    # Comportement historique
+    #
+    "Nice & Simple":
+        "nice simple",
+
+    "Analog FM'er":
+        "analog fm er",
+
+    "Drum-N-Bass":
+        "drum n bass",
+
+    "Sync The HP Filter":
+        "sync the hp filter",
+
+    #
+    # CamelCase
+    #
+    "FallenOnHardTines":
+        "fallen on hard tines",
+
+    "DuckBass":
+        "duck bass",
+
+    "SuperStrings":
+        "super strings",
+
+    "DigiChoir":
+        "digi choir",
+
+    "HighPass Fun":
+        "high pass fun",
+
+    "Espressivo CelloViola":
+        "espressivo cello viola",
+}
+
+normalization_errors = []
+
+for name, expected in normalization_tests.items():
+
+    result = normalize_name(
+        name
+    )
+
+    if result != expected:
+
+        normalization_errors.append(
+            (
+                name,
+                expected,
+                result,
+            )
         )
 
 FAMILY_COMPATIBILITY = {
@@ -1102,6 +1163,25 @@ for (
 
 print()
 print("====================")
+print("VALIDATION NORMALISATION")
+print("====================")
+
+for (
+    name,
+    expected,
+    result,
+) in normalization_errors:
+
+    print(
+        name,
+        "→ attendu:",
+        expected,
+        "obtenu:",
+        result
+    )
+
+print()
+print("====================")
 print("RÉSUMÉ")
 print("====================")
 
@@ -1203,4 +1283,11 @@ print(
 print(
     "Erreurs FUSION_GM_DATA:",
     len(all_hint_failures)
+)
+
+print(
+    "Erreurs normalisation:",
+    len(
+        normalization_errors
+    )
 )

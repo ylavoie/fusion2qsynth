@@ -60,7 +60,12 @@ def detect_gm_drum_kit(
 
 def normalize_name(name):
 
-    #TODO Considérer les CamelCase
+    name = re.sub(
+        r"(?<=[a-z])(?=[A-Z])",
+        " ",
+        name
+    )
+
     name = name.lower()
 
     name = re.sub(
@@ -91,6 +96,9 @@ def normalize_preset_name(
         words
     )
 
+@lru_cache(
+    maxsize=None
+)
 def contains_term(
     normalized_name,
     term
@@ -327,10 +335,10 @@ def matches_for_family(
     fusion_program,
     sf2_presets,
     family,
+    gm_hint,
     limit=3
 ):
-
-    gm_hint = detect_gm_hint(
+    normalized_fusion_name = normalize_name(
         fusion_program["name"]
     )
 
@@ -364,9 +372,7 @@ def matches_for_family(
 
         score = SequenceMatcher(
             None,
-            normalize_name(
-                fusion_program["name"]
-            ),
+            normalized_fusion_name,
             normalize_preset_name(
                 preset["name"]
             )
@@ -458,20 +464,6 @@ def suggest_instruments(
         fusion_program["name"]
     )
 
-    normalized_name = normalize_name(
-        fusion_program["name"]
-    )
-
-    override = FUSION_FAMILY_OVERRIDES.get(
-        normalized_name
-    )
-
-    if override is not None:
-
-        families = set(
-            override
-        )
-
     gm_hint = detect_gm_hint(
         fusion_program["name"]
     )
@@ -494,6 +486,7 @@ def suggest_instruments(
             fusion_program,
             sf2_presets,
             family,
+            gm_hint,
             limit=limit
         )
 
