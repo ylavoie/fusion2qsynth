@@ -96,6 +96,9 @@ def normalize_preset_name(
         words
     )
 
+@lru_cache(
+    maxsize=None
+)
 def contains_term(
     normalized_name,
     term
