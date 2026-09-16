@@ -4253,6 +4253,7 @@ FUSION_GM_DATA = [
     (
         (
             "friendly tramp",
+            "millennium fm epno",
         ),
         "electric_piano",
         5,
@@ -5332,798 +5333,797 @@ FUSION_GM_DATA = [
         114,
     ),
 
-    # Nouveau PRESET 4
-#
-# ROM:PRESET 4
-#
+    #
+    # ROM:PRESET 4
+    #
 
-# A — Pianos
-(
+    # A — Pianos
     (
-        "rock roll piano",
+        (
+            "rock roll piano",
+        ),
+        "piano",
+        1,
     ),
-    "piano",
-    1,
-),
 
-(
     (
-        "nightclub piano",
-        "mellow mood pno s2",
+        (
+            "nightclub piano",
+            "mellow mood pno s2",
+        ),
+        "piano",
+        0,
     ),
-    "piano",
-    0,
-),
 
-(
     (
-        "suitcase pan",
-        "fm worldly",
-        "fm expressive ep",
-        "fm crystal ep",
+        (
+            "suitcase pan",
+            "fm worldly",
+            "fm expressive ep",
+            "fm crystal ep",
+        ),
+        "electric_piano",
+        4,
     ),
-    "electric_piano",
-    4,
-),
 
-(
     (
-        "back in the day",
+        (
+            "back in the day",
+        ),
+        "electric_piano",
+        5,
     ),
-    "electric_piano",
-    5,
-),
 
-# B — Claviers / percussions chromatiques
-(
+    # B — Claviers / percussions chromatiques
     (
-        "clavinet three",
-        "wondrous clavinet",
+        (
+            "clavinet three",
+            "wondrous clavinet",
+        ),
+        "clavinet",
+        7,
     ),
-    "clavinet",
-    7,
-),
 
-(
     (
-        "punchy harpsi three",
+        (
+            "punchy harpsi three",
+        ),
+        "harpsichord",
+        6,
     ),
-    "harpsichord",
-    6,
-),
 
-(
     (
-        "orchestral glockenspiel",
+        (
+            "orchestral glockenspiel",
+        ),
+        "glockenspiel",
+        9,
     ),
-    "glockenspiel",
-    9,
-),
 
-(
     (
-        "xylo velo",
+        (
+            "xylo velo",
+        ),
+        "woodblock",
+        13,
     ),
-    "woodblock",
-    13,
-),
 
-(
     (
-        "tubular fm wave",
-        "sawblade bell",
+        (
+            "tubular fm wave",
+            "sawblade bell",
+        ),
+        "bells",
+        14,
     ),
-    "bells",
-    14,
-),
 
-(
     (
-        "fm pvc pipe",
+        (
+            "fm pvc pipe",
+        ),
+        "marimba",
+        12,
     ),
-    "marimba",
-    12,
-),
 
-# C — Orgues
-(
+    # C — Orgues
     (
-        "really full drawbars",
-        "warm toasty b",
+        (
+            "really full drawbars",
+            "warm toasty b",
+        ),
+        "organ",
+        16,
     ),
-    "organ",
-    16,
-),
 
-(
     (
-        "rock organ click",
+        (
+            "rock organ click",
+        ),
+        "organ",
+        18,
     ),
-    "organ",
-    18,
-),
 
-(
     (
-        "q perc organ",
+        (
+            "q perc organ",
+        ),
+        "organ",
+        17,
     ),
-    "organ",
-    17,
-),
 
-(
     (
-        "pulling ranks",
-        "principale pipe organ",
-        "positiv pipe organ",
-        "trompette pipe organ",
+        (
+            "pulling ranks",
+            "principale pipe organ",
+            "positiv pipe organ",
+            "trompette pipe organ",
+        ),
+        "organ",
+        19,
     ),
-    "organ",
-    19,
-),
 
-# D — Guitares
-(
+    # D — Guitares
     (
-        "velo switch acoustic",
-        "vel switch slide acoustic",
+        (
+            "velo switch acoustic",
+            "vel switch slide acoustic",
+        ),
+        "guitar",
+        25,
     ),
-    "guitar",
-    25,
-),
 
-(
     (
-        "andalusia",
-        "nylon harmonics",
+        (
+            "andalusia",
+            "nylon harmonics",
+        ),
+        "guitar",
+        24,
     ),
-    "guitar",
-    24,
-),
 
-(
     (
-        "soft jazz guitar",
+        (
+            "soft jazz guitar",
+        ),
+        "guitar",
+        26,
     ),
-    "guitar",
-    26,
-),
 
-(
     (
-        "single coil multi velo",
+        (
+            "single coil multi velo",
+        ),
+        "guitar",
+        27,
     ),
-    "guitar",
-    27,
-),
 
-(
     (
-        "rock harm guitar vsw",
+        (
+            "rock harm guitar vsw",
+        ),
+        "guitar",
+        29,
     ),
-    "guitar",
-    29,
-),
 
-(
     (
-        "shredder lead",
+        (
+            "shredder lead",
+        ),
+        "guitar",
+        30,
     ),
-    "guitar",
-    30,
-),
 
-# E — Basses
-(
+    # E — Basses
     (
-        "warm bass harmonic",
+        (
+            "warm bass harmonic",
+        ),
+        "bass",
+        33,
     ),
-    "bass",
-    33,
-),
 
-(
     (
-        "big fretless tone",
-        "fat wave fretless",
-        "fm fretless bass",
+        (
+            "big fretless tone",
+            "fat wave fretless",
+            "fm fretless bass",
+        ),
+        "bass",
+        35,
     ),
-    "bass",
-    35,
-),
 
-(
     (
-        "bass popper",
+        (
+            "bass popper",
+        ),
+        "bass",
+        37,
     ),
-    "bass",
-    37,
-),
 
-(
     (
-        "funk synth bass",
-        "mikro pluck bass",
+        (
+            "funk synth bass",
+            "mikro pluck bass",
+        ),
+        "bass",
+        38,
     ),
-    "bass",
-    38,
-),
 
-(
     (
-        "punchy wave bass",
+        (
+            "punchy wave bass",
+        ),
+        "bass",
+        39,
     ),
-    "bass",
-    39,
-),
 
-# F — Cordes
-(
+    # F — Cordes
     (
-        "sorrowful legato",
+        (
+            "sorrowful legato",
+        ),
+        "strings",
+        48,
     ),
-    "strings",
-    48,
-),
 
-(
     (
-        "espressivo celloviola",
+        (
+            "espressivo celloviola",
+        ),
+        "cello",
+        42,
     ),
-    "cello",
-    42,
-),
 
-(
     (
-        "sweet violincello",
+        (
+            "sweet violincello",
+        ),
+        "violin",
+        40,
     ),
-    "violin",
-    40,
-),
 
-(
     (
-        "britannia harp",
+        (
+            "britannia harp",
+        ),
+        "harp",
+        46,
     ),
-    "harp",
-    46,
-),
 
-(
     (
-        "molto marcato",
+        (
+            "molto marcato",
+        ),
+        "strings",
+        45,
     ),
-    "strings",
-    45,
-),
 
-(
     (
-        "watcher strings",
-        "string machine",
+        (
+            "watcher strings",
+            "string machine",
+        ),
+        "strings",
+        50,
     ),
-    "strings",
-    50,
-),
 
-(
     (
-        "tangerine strings",
+        (
+            "tangerine strings",
+        ),
+        "strings",
+        51,
     ),
-    "strings",
-    51,
-),
 
-# G — Voix / pads
-(
+    # G — Voix / pads
     (
-        "breathy choir",
+        (
+            "breathy choir",
+        ),
+        "pad",
+        91,
     ),
-    "pad",
-    91,
-),
 
-(
     (
-        "binsonized vox",
-        "refurbished f light",
+        (
+            "binsonized vox",
+            "refurbished f light",
+        ),
+        "voice",
+        54,
     ),
-    "voice",
-    54,
-),
 
-(
     (
-        "murmuring choir",
+        (
+            "murmuring choir",
+        ),
+        "voice",
+        53,
     ),
-    "voice",
-    53,
-),
 
-(
     (
-        "the singers",
-        "subtle ensemble",
+        (
+            "the singers",
+            "subtle ensemble",
+        ),
+        "choir",
+        52,
     ),
-    "choir",
-    52,
-),
 
-(
     (
-        "movie tragedy scene",
+        (
+            "movie tragedy scene",
+        ),
+        "pad",
+        92,
     ),
-    "pad",
-    92,
-),
 
-(
     (
-        "mythodea ensemble",
+        (
+            "mythodea ensemble",
+        ),
+        "pad",
+        88,
     ),
-    "pad",
-    88,
-),
 
-# H — Cuivres
-(
+    # H — Cuivres
     (
-        "sfz brass to mod",
+        (
+            "sfz brass to mod",
+        ),
+        "brass",
+        61,
     ),
-    "brass",
-    61,
-),
 
-(
     (
-        "orch brass mf mw",
-        "brite stab brass",
+        (
+            "orch brass mf mw",
+            "brite stab brass",
+        ),
+        "brass",
+        62,
     ),
-    "brass",
-    62,
-),
 
-(
     (
-        "solo trumpet mf at",
-        "lead trumpet",
+        (
+            "solo trumpet mf at",
+            "lead trumpet",
+        ),
+        "trumpet",
+        56,
     ),
-    "trumpet",
-    56,
-),
 
-(
     (
-        "velo trombone",
+        (
+            "velo trombone",
+        ),
+        "trombone",
+        57,
     ),
-    "trombone",
-    57,
-),
 
-(
     (
-        "tuba solo",
+        (
+            "tuba solo",
+        ),
+        "brass",
+        58,
     ),
-    "brass",
-    58,
-),
 
-(
     (
-        "the synthbrass at",
+        (
+            "the synthbrass at",
+        ),
+        "brass",
+        63,
     ),
-    "brass",
-    63,
-),
 
-# I — Bois / saxophones
-(
+    # I — Bois / saxophones
     (
-        "blackwood reed",
+        (
+            "blackwood reed",
+        ),
+        "clarinet",
+        71,
     ),
-    "clarinet",
-    71,
-),
 
-(
     (
-        "treehouse reed",
+        (
+            "treehouse reed",
+        ),
+        "oboe",
+        68,
     ),
-    "oboe",
-    68,
-),
 
-(
     (
-        "reed lead 2",
+        (
+            "reed lead 2",
+        ),
+        "sax",
+        64,
     ),
-    "sax",
-    64,
-),
 
-(
     (
-        "whisper reed",
+        (
+            "whisper reed",
+        ),
+        "english_horn",
+        69,
     ),
-    "english_horn",
-    69,
-),
 
-(
     (
-        "alto sax velo",
+        (
+            "alto sax velo",
+        ),
+        "sax",
+        65,
     ),
-    "sax",
-    65,
-),
 
-(
     (
-        "breathy tenor sax",
+        (
+            "breathy tenor sax",
+        ),
+        "sax",
+        66,
     ),
-    "sax",
-    66,
-),
 
-(
     (
-        "sax and brass",
+        (
+            "sax and brass",
+        ),
+        "brass",
+        61,
     ),
-    "brass",
-    61,
-),
 
-(
     (
-        "bassoon celli",
+        (
+            "bassoon celli",
+        ),
+        "bassoon",
+        70,
     ),
-    "bassoon",
-    70,
-),
 
-# J — Flûtes / vents
-(
+    # J — Flûtes / vents
     (
-        "reedy flute",
-        "woody flute",
+        (
+            "reedy flute",
+            "woody flute",
+        ),
+        "flute",
+        73,
     ),
-    "flute",
-    73,
-),
 
-(
     (
-        "windvoxmix reel",
+        (
+            "windvoxmix reel",
+        ),
+        "voice",
+        54,
     ),
-    "voice",
-    54,
-),
 
-(
     (
-        "traveling flute",
-        "flute of lotos",
+        (
+            "traveling flute",
+            "flute of lotos",
+        ),
+        "flute",
+        75,
     ),
-    "flute",
-    75,
-),
 
-(
     (
-        "4 recorders",
+        (
+            "4 recorders",
+        ),
+        "flute",
+        74,
     ),
-    "flute",
-    74,
-),
 
-(
     (
-        "highland ensemble",
+        (
+            "highland ensemble",
+        ),
+        "bagpipe",
+        109,
     ),
-    "bagpipe",
-    109,
-),
 
-(
     (
-        "wood metal",
+        (
+            "wood metal",
+        ),
+        "marimba",
+        12,
     ),
-    "marimba",
-    12,
-),
 
-# K — Leads
-(
+    # K — Leads
     (
-        "favorite lead",
-        "filter lfo lead",
+        (
+            "favorite lead",
+            "filter lfo lead",
+        ),
+        "lead",
+        81,
     ),
-    "lead",
-    81,
-),
 
-(
     (
-        "finger on the pulse",
-        "highpass fun",
+        (
+            "finger on the pulse",
+            "highpass fun",
+        ),
+        "square_lead",
+        80,
     ),
-    "square_lead",
-    80,
-),
 
-(
     (
-        "triangle lead 4",
-        "orbital leads",
+        (
+            "triangle lead 4",
+            "orbital leads",
+        ),
+        "lead",
+        84,
     ),
-    "lead",
-    84,
-),
 
-(
     (
-        "lunar lead 1",
+        (
+            "lunar lead 1",
+        ),
+        "fx",
+        103,
     ),
-    "fx",
-    103,
-),
 
-(
     (
-        "fm heavy lead",
+        (
+            "fm heavy lead",
+        ),
+        "lead",
+        87,
     ),
-    "lead",
-    87,
-),
 
-# L — Pads
-(
+    # L — Pads
     (
-        "syn attack pad",
-        "draw the waveform",
+        (
+            "syn attack pad",
+            "draw the waveform",
+        ),
+        "pad",
+        90,
     ),
-    "pad",
-    90,
-),
 
-(
     (
-        "fantastique",
+        (
+            "fantastique",
+        ),
+        "pad",
+        88,
     ),
-    "pad",
-    88,
-),
 
-(
     (
-        "icy snowflakes",
-        "additive wavechime",
+        (
+            "icy snowflakes",
+            "additive wavechime",
+        ),
+        "pad",
+        93,
     ),
-    "pad",
-    93,
-),
 
-(
     (
-        "x pad motion",
-        "cognitive sweeper",
+        (
+            "x pad motion",
+            "cognitive sweeper",
+        ),
+        "pad",
+        95,
     ),
-    "pad",
-    95,
-),
 
-(
     (
-        "vienna tram",
+        (
+            "vienna tram",
+        ),
+        "pad",
+        92,
     ),
-    "pad",
-    92,
-),
 
-# M — Pads / FX / Brass
-(
+    # M — Pads / FX / Brass
     (
-        "fm worlds",
-        "polar calm",
+        (
+            "fm worlds",
+            "polar calm",
+        ),
+        "pad",
+        93,
     ),
-    "pad",
-    93,
-),
 
-(
     (
-        "soft evolver",
+        (
+            "soft evolver",
+        ),
+        "pad",
+        89,
     ),
-    "pad",
-    89,
-),
 
-(
     (
-        "moonset in enoland",
+        (
+            "moonset in enoland",
+        ),
+        "pad",
+        88,
     ),
-    "pad",
-    88,
-),
 
-(
     (
-        "spurl",
-        "men on mars",
+        (
+            "spurl",
+            "men on mars",
+        ),
+        "fx",
+        103,
     ),
-    "fx",
-    103,
-),
 
-(
     (
-        "behemoth",
+        (
+            "behemoth",
+        ),
+        "brass",
+        62,
     ),
-    "brass",
-    62,
-),
 
-(
     (
-        "wave swirls",
+        (
+            "wave swirls",
+        ),
+        "pad",
+        95,
     ),
-    "pad",
-    95,
-),
 
-# N — Ethniques
-(
+    # N — Ethniques
     (
-        "khatmandu heights",
-        "dynaslide sitar",
+        (
+            "khatmandu heights",
+            "dynaslide sitar",
+        ),
+        "sitar",
+        104,
     ),
-    "sitar",
-    104,
-),
 
-(
     (
-        "steel drum 3",
+        (
+            "steel drum 3",
+        ),
+        "woodblock",
+        114,
     ),
-    "woodblock",
-    114,
-),
 
-(
     (
-        "la dulcinea",
+        (
+            "la dulcinea",
+        ),
+        "ethnic",
+        106,
     ),
-    "ethnic",
-    106,
-),
 
-(
     (
-        "banjo player",
+        (
+            "banjo player",
+        ),
+        "banjo",
+        105,
     ),
-    "banjo",
-    105,
-),
 
-(
     (
-        "dulcimer ray",
+        (
+            "dulcimer ray",
+        ),
+        "koto",
+        107,
     ),
-    "koto",
-    107,
-),
 
-(
     (
-        "gizeh",
+        (
+            "gizeh",
+        ),
+        "pad",
+        88,
     ),
-    "pad",
-    88,
-),
 
-(
     (
-        "bluesy harmonica",
+        (
+            "bluesy harmonica",
+        ),
+        "harmonica",
+        22,
     ),
-    "harmonica",
-    22,
-),
 
-# O — Drum Kits
-(
+    # O — Drum Kits
     (
-        "bang theory kit",
+        (
+            "bang theory kit",
+        ),
+        "drums",
+        25,
     ),
-    "drums",
-    25,
-),
 
-(
     (
-        "electrolove kit",
-        "perc kit experimental",
-        "12 bit is it kit",
+        (
+            "electrolove kit",
+            "perc kit experimental",
+            "12 bit is it kit",
+        ),
+        "drums",
+        24,
     ),
-    "drums",
-    24,
-),
 
-(
     (
-        "perc kit ethnics",
-        "funky kit",
+        (
+            "perc kit ethnics",
+            "funky kit",
+        ),
+        "drums",
+        0,
     ),
-    "drums",
-    0,
-),
 
-(
     (
-        "modern hard rock kit",
+        (
+            "modern hard rock kit",
+        ),
+        "drums",
+        16,
     ),
-    "drums",
-    16,
-),
 
-(
     (
-        "orchestra set",
+        (
+            "orchestra set",
+        ),
+        "drums",
+        48,
     ),
-    "drums",
-    48,
-),
 
-# P — FX
-(
+    # P — FX
     (
-        "sound fx kit gs gm2",
-        "sound fx kit movie",
-        "sound fx kit noise",
+        (
+            "sound fx kit gs gm2",
+            "sound fx kit movie",
+            "sound fx kit noise",
+        ),
+        "drums",
+        56,
     ),
-    "drums",
-    56,
-),
 
-(
     (
-        "guitar fx kit",
+        (
+            "guitar fx kit",
+        ),
+        "fx",
+        120,
     ),
-    "fx",
-    120,
-),
 
-(
     (
-        "amazonas atmo",
+        (
+            "amazonas atmo",
+        ),
+        "fx",
+        122,
     ),
-    "fx",
-    122,
-),
 
-(
     (
-        "tappy glass atmo",
+        (
+            "tappy glass atmo",
+        ),
+        "fx",
+        102,
     ),
-    "fx",
-    102,
-),
 
-(
     (
-        "orbital launch",
+        (
+            "orbital launch",
+        ),
+        "fx",
+        125,
     ),
-    "fx",
-    125,
-),
 
-(
     (
-        "martian modulation",
+        (
+            "martian modulation",
+        ),
+        "fx",
+        103,
     ),
-    "fx",
-    103,
-),
     #
     # ROM:SYNTH DRUM - Kicks
     #
@@ -6566,6 +6566,460 @@ FUSION_GM_DATA = [
         ),
         "bass",
         38,
+    ),
+    #
+    # ROM:MORE
+    #
+    (
+        (
+            "tight lead",
+        ),
+        "lead",
+        80,
+    ),
+    (
+        (
+            "metal shop",
+        ),
+        "pad",
+        93,
+    ),
+    (
+        (
+            "attacker",
+        ),
+        "lead",
+        81,
+    ),
+    (
+        (
+            "powerplant",
+        ),
+        "pad",
+        90,
+    ),
+    (
+        (
+            "electro seq",
+        ),
+        "lead",
+        81,
+    ),
+    (
+        (
+            "nasty bass",
+        ),
+        "bass",
+        39,
+    ),
+    (
+        (
+            "workflow",
+        ),
+        "pad",
+        89,
+    ),
+    (
+        (
+            "crazy snake",
+        ),
+        "lead",
+        84,
+    ),
+    (
+        (
+            "pop musique",
+        ),
+        "pad",
+        90,
+    ),
+    (
+        (
+            "growling bass",
+        ),
+        "bass",
+        38,
+    ),
+    (
+        (
+            "the big one",
+        ),
+        "pad",
+        90,
+    ),
+    (
+        (
+            "pop bells",
+        ),
+        "bells",
+        8,
+    ),
+    (
+        (
+            "ice pad",
+        ),
+        "pad",
+        93,
+    ),
+    (
+        (
+            "noise zaps",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "guitharpin",
+        ),
+        "keyboard",
+        6,
+    ),
+    (
+        (
+            "breakz bass",
+        ),
+        "bass",
+        39,
+    ),
+    (
+        (
+            "moving man",
+        ),
+        "pad",
+        95,
+    ),
+    (
+        (
+            "fun monster",
+        ),
+        "fx",
+        101,
+    ),
+    (
+        (
+            "nice simple",
+        ),
+        "pad",
+        89,
+    ),
+    (
+        (
+            "wild wild lead",
+        ),
+        "lead",
+        84,
+    ),
+    (
+        (
+            "analog fm er",
+        ),
+        "pad",
+        93,
+    ),
+    (
+        (
+            "big papa bass",
+        ),
+        "bass",
+        38,
+    ),
+    (
+        (
+            "weird lfo sync",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "einstein",
+        ),
+        "lead",
+        83,
+    ),
+    (
+        (
+            "woofer synth",
+        ),
+        "bass",
+        38,
+    ),
+    (
+        (
+            "electro bass",
+        ),
+        "bass",
+        39,
+    ),
+    (
+        (
+            "rewind",
+        ),
+        "fx",
+        102,
+    ),
+    (
+        (
+            "trip bass",
+        ),
+        "bass",
+        39,
+    ),
+    (
+        (
+            "club cathedral",
+        ),
+        "organ",
+        19,
+    ),
+    (
+        (
+            "ring mod seq",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "fm dnb bass",
+        ),
+        "bass",
+        39,
+    ),
+    (
+        (
+            "electroharmonics",
+        ),
+        "pad",
+        90,
+    ),
+    (
+        (
+            "pulse station",
+        ),
+        "pad",
+        88,
+    ),
+    (
+        (
+            "metalworkers",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "slow morph lead",
+        ),
+        "lead",
+        87,
+    ),
+    (
+        (
+            "slow morph pad",
+        ),
+        "pad",
+        95,
+    ),
+    (
+        (
+            "slow morph bell",
+        ),
+        "pad",
+        93,
+    ),
+    (
+        (
+            "vaguely silver",
+        ),
+        "pad",
+        94,
+    ),
+    (
+        (
+            "pulse pluck comp",
+        ),
+        "keyboard",
+        7,
+    ),
+    (
+        (
+            "saw pluck comp",
+        ),
+        "pad",
+        90,
+    ),
+    (
+        (
+            "slinky purr",
+        ),
+        "fx",
+        101,
+    ),
+    (
+        (
+            "primordial soup",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "aggroworm slo",
+        ),
+        "lead",
+        87,
+    ),
+    (
+        (
+            "wormhole",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "no restraints",
+        ),
+        "lead",
+        81,
+    ),
+    (
+        (
+            "melancholy",
+        ),
+        "pad",
+        89,
+    ),
+    (
+        (
+            "high grit",
+        ),
+        "lead",
+        87,
+    ),
+    (
+        (
+            "sandpaper",
+        ),
+        "fx",
+        121,
+    ),
+    (
+        (
+            "expressions",
+        ),
+        "pad",
+        89,
+    ),
+    (
+        (
+            "pitched rez noise",
+        ),
+        "fx",
+        101,
+    ),
+    (
+        (
+            "nostalgia",
+        ),
+        "pad",
+        89,
+    ),
+    (
+        (
+            "slow morph comp",
+        ),
+        "pad",
+        90,
+    ),
+    (
+        (
+            "filtered pluck",
+        ),
+        "lead",
+        80,
+    ),
+    (
+        (
+            "space whales",
+        ),
+        "fx",
+        103,
+    ),
+    (
+        (
+            "jaunty bots",
+        ),
+        "fx",
+        101,
+    ),
+    (
+        (
+            "reed whacker",
+        ),
+        "woodwind",
+        68,
+    ),
+    (
+        (
+            "music of the spheres",
+        ),
+        "pad",
+        88,
+    ),
+    (
+        (
+            "wind across wires",
+        ),
+        "pad",
+        92,
+    ),
+    (
+        (
+            "spaghetti solo",
+        ),
+        "lead",
+        84,
+    ),
+    (
+        (
+            "woodwind ambience",
+        ),
+        "pad",
+        91,
+    ),
+    (
+        (
+            "shimmer bells",
+        ),
+        "bells",
+        14,
+    ),
+    (
+        (
+            "fat cab 1",
+        ),
+        "guitar",
+        30,
+    ),
+    (
+        (
+            "fat cab 2",
+        ),
+        "guitar",
+        29,
+    ),
+    #
+    # ROM:ELECTRONICA
+    #
+    (
+        (
+            "aquariani",
+        ),
+        "fx",
+        103,
     ),
     #
     # HD:Hollow Sun 01
@@ -8781,7 +9235,121 @@ FUSION_FAMILY_OVERRIDES = {
     },
     "zap kick": {
         "drums"
-    }
+    },
+    #
+    # ROM:SYNTH DRUM - Snares
+    #
+    "ana snare": {"drums"},
+    "big beef snare": {"drums"},
+    "big body snare": {"drums"},
+    "box snare": {"drums"},
+    "brusher snare": {"drums"},
+    "clapper snare": {"drums"},
+    "classic fm snare": {"drums"},
+    "code snare": {"drums"},
+    "combat snare": {"drums"},
+    "crackpot snare": {"drums"},
+    "deep air snare": {"drums"},
+    "gray snare": {"drums"},
+    "hy tyte snare": {"drums"},
+    "injector snare": {"drums"},
+    "jar snare": {"drums"},
+    "pop snare": {"drums"},
+    "resonator snare": {"drums"},
+    "sonar snare": {"drums"},
+    "splak snare": {"drums"},
+    "tail air snare": {"drums"},
+    "thick snare": {"drums"},
+    "tyte snare": {"drums"},
+    #
+    # ROM:SYNTH DRUM - Hi-Hats
+    #
+    "classic fm hat cl": {"drums"},
+    "classic fm hat op": {"drums"},
+    "classic hat cl": {"drums"},
+    "classic hat op": {"drums"},
+    "clay hat cl": {"drums"},
+    "clay hat op": {"drums"},
+    "fem hat cl": {"drums"},
+    "fem hat op": {"drums"},
+    "fried hat cl": {"drums"},
+    "fried hat op": {"drums"},
+    "gritty hat cl": {"drums"},
+    "gritty hat op": {"drums"},
+    "jet hat cl": {"drums"},
+    "jet hat op": {"drums"},
+    "laser hat cl": {"drums"},
+    "laser hat op": {"drums"},
+    "machinery hat cl": {"drums"},
+    "machinery hat op": {"drums"},
+    "metallic hat cl": {"drums"},
+    "metallic hat op": {"drums"},
+    "mod hat cl": {"drums"},
+    "mod hat op": {"drums"},
+    "noisy fm hat cl": {"drums"},
+    "noisy fm hat op": {"drums"},
+    "rapier hat cl": {"drums"},
+    "rapier hat op": {"drums"},
+    "salty hat cl": {"drums"},
+    "salty hat op": {"drums"},
+    "saw this hat cl": {"drums"},
+    "saw this hat op": {"drums"},
+    "sproing hat cl": {"drums"},
+    "sproing hat op": {"drums"},
+    "sssh hat cl": {"drums"},
+    "sssh hat op": {"drums"},
+    "steam hat cl": {"drums"},
+    "steam hat op": {"drums"},
+    "synthy hat cl": {"drums"},
+    "synthy hat op": {"drums"},
+    "thin hat cl": {"drums"},
+    "thin hat op": {"drums"},
+    "try angle hat cl": {"drums"},
+    "try angle hat op": {"drums"},
+    "turbo hat cl": {"drums"},
+    "turbo hat op": {"drums"},
+    #
+    # ROM:SYNTH DRUM - Toms
+    #
+    "clay tom": {"drums"},
+    "clean tom": {"drums"},
+    "ricochet tom": {"drums"},
+    "rounder tom": {"drums"},
+    "simula tom": {"drums"},
+    "springy tom": {"drums"},
+    "sprongy tom": {"drums"},
+    "sym tom": {"drums"},
+    "tech tom": {"drums"},
+    "tite tom": {"drums"},
+    #
+    # ROM:SYNTH DRUM - Crashes
+    #
+    "classic crash": {"drums"},
+    "clay crash": {"drums"},
+    "jet crash": {"drums"},
+    "metallic crash": {"drums"},
+    "noisy fm crash": {"drums"},
+    "noizer crash": {"drums"},
+    "rough crash": {"drums"},
+    "slap crash": {"drums"},
+    "swirly crash": {"drums"},
+    #
+    # ROM:SYNTH DRUM - Claps
+    #
+    "box clap": {"drums"},
+    "hi ana clap": {"drums"},
+    "lo ana clap": {"drums"},
+    #
+    # ROM:SYNTH DRUM - Other percussion
+    #
+    "ana guiro": {"drums"},
+    "noiz block": {"drums"},
+    "noiz clop": {"drums"},
+    "rezzo kiss": {"drums"},
+    "woody rattle": {"drums"},
+    #
+    "fallenonhardtines": {"electric_piano"},
+    "notch worlds": {"pad"},
 }
 
 FUSION_GM_HINTS = {}
