@@ -335,6 +335,10 @@ def matches_for_family(
     gm_hint,
     limit=3
 ):
+    normalized_fusion_name = normalize_name(
+        fusion_program["name"]
+    )
+
     candidates = []
     expected_bank = 0
 
@@ -365,9 +369,7 @@ def matches_for_family(
 
         score = SequenceMatcher(
             None,
-            normalize_name(
-                fusion_program["name"]
-            ),
+            normalized_fusion_name,
             normalize_preset_name(
                 preset["name"]
             )
