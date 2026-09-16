@@ -1918,3 +1918,52 @@ La version 2.8 poursuit la consolidation de Fusion2QSynth en unifiant le systèm
 * Aucune instabilité Top 1 ou Top N détectée.
 * 1285 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
 * Validation finale du diff avec `git diff --check`.
+
+---
+
+## Fusion2QSynth v2.13
+
+### Normalisation des noms de PROGRAMs Fusion
+
+* Ajout de la reconnaissance des frontières CamelCase dans `normalize_name()`.
+* Séparation automatique des mots lorsqu'une lettre minuscule est suivie d'une lettre majuscule.
+* Migration des clés correspondantes dans `FUSION_GM_DATA` et `FUSION_FAMILY_OVERRIDES` afin de préserver les classifications existantes.
+* Validation de la migration sur les noms CamelCase réellement présents dans le catalogue Fusion.
+* Conservation d'une règle de normalisation générale et déterministe sans ajout d'exceptions spécifiques aux noms particuliers du catalogue.
+* Ajout de tests permanents de normalisation dans `integration-globale.py`.
+* Validation des formes avec ponctuation, espaces, CamelCase et noms composés représentatifs du catalogue.
+
+### Robustesse du moteur de suggestions
+
+* Suppression d'un traitement redondant de `FUSION_FAMILY_OVERRIDES` dans `suggest_instruments()`, la sélection des overrides étant déjà centralisée dans `detect_families()`.
+* Réutilisation du hint GM calculé par `suggest_instruments()` lors de la recherche des candidats par `matches_for_family()`.
+* Suppression du recalcul du même hint GM pour chaque famille examinée.
+* Réutilisation du nom du PROGRAM Fusion normalisé dans `matches_for_family()` au lieu de le normaliser à nouveau pour chaque preset SoundFont.
+* Conservation du comportement existant de classement et de sélection des suggestions.
+
+### Optimisation du moteur de suggestions
+
+* Mise en cache de `contains_term()` avec `lru_cache`.
+* Réduction d'environ 39 % du nombre d'exécutions réelles de `contains_term()` lors de la validation globale.
+* Réduction d'environ 38 % du nombre d'opérations `split()` associées à la recherche de termes.
+* Réduction mesurée du coût cumulé de `contains_term()` d'environ 37 %.
+* Réduction supplémentaire du temps d'exécution global de `integration-globale.py` sans modification des résultats fonctionnels.
+* Audit des principaux coûts résiduels du moteur de suggestions ; conservation de `SequenceMatcher` et de la logique actuelle de détection des hints afin de ne pas modifier le comportement de classement.
+
+### Validation globale
+
+* 1157 noms de PROGRAM Fusion ROM uniques validés.
+* 1019 noms reconnus par hint GM.
+* 138 noms classés uniquement par famille.
+* Aucun PROGRAM ROM inconnu.
+* Aucun PROGRAM ROM sans suggestion.
+* Aucun hint non respecté, meilleur hint incorrect ou famille seule incorrecte.
+* Aucune suggestion invalide ou suggestion en doublon détectée.
+* Aucun preset avec champ manquant.
+* Aucun score mal ordonné ou aberrant.
+* Aucune limite dépassée et aucune erreur du paramètre `limit`.
+* Aucune instabilité Top 1 ou Top N détectée.
+* 1285 aliases GM testés sans erreur dans `FUSION_GM_DATA`.
+* Aucun échec des tests de normalisation.
+* Validation de l'ensemble des modules Python avec `py_compile`.
+* Validation finale du diff avec `git diff --check`.
