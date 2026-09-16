@@ -463,20 +463,6 @@ def suggest_instruments(
         fusion_program["name"]
     )
 
-    normalized_name = normalize_name(
-        fusion_program["name"]
-    )
-
-    override = FUSION_FAMILY_OVERRIDES.get(
-        normalized_name
-    )
-
-    if override is not None:
-
-        families = set(
-            override
-        )
-
     gm_hint = detect_gm_hint(
         fusion_program["name"]
     )
