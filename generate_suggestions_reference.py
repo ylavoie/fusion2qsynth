@@ -34,13 +34,7 @@ def sha256_file(filename):
     return digest.hexdigest()
 
 
-def main():
-
-    if REFERENCE_FILE.exists():
-
-        raise SystemExit(
-            f"Référence déjà présente : {REFERENCE_FILE}"
-        )
+def build_reference():
 
     project = FusionProject()
 
@@ -169,6 +163,25 @@ def main():
         "programs": reference,
     }
 
+    return output
+
+
+def main():
+
+    if REFERENCE_FILE.exists():
+
+        raise SystemExit(
+            f"Référence déjà présente : {REFERENCE_FILE}"
+        )
+
+    output = build_reference()
+
+    reference = output["programs"]
+
+    presets_count = len(
+        load_library()["presets"]
+    )
+
     # Mode exclusif : aucune référence existante
     # ne peut être écrasée.
     try:
@@ -206,7 +219,7 @@ def main():
 
     print(
         "Presets SF2 :",
-        len(presets)
+        presets_count
     )
 
     print(
