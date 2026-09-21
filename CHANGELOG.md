@@ -1,6 +1,50 @@
 # Changelog Fusion2QSynth
 
-## Fusion2QSynth v2.13
+## Fusion2QSynth v2.14
+
+### Référence des suggestions
+
+* Création de `generate_suggestions_reference.py` pour générer une référence des suggestions du moteur.
+* Enregistrement des familles, de l'ordre des presets, de leurs identifiants banque/programme et de leurs scores complets.
+* Utilisation du numéro réel de chaque PROGRAM Fusion pour préserver le calcul du bonus de correspondance.
+* Exclusion de la banque `HD:USER` afin de limiter la référence au catalogue ROM.
+* Génération de `suggestions_reference.json` avec 1171 PROGRAMs ROM et 309 presets SoundFont.
+* Conservation des 1157 noms distincts et des 14 noms présents deux fois dans le catalogue.
+* Association de la référence à la SoundFont `MuseScore_General.sf2`.
+* Enregistrement des empreintes SHA-256 de la bibliothèque SF2 et du catalogue Fusion.
+* Protection contre l'écrasement accidentel d'une référence existante.
+
+### Comparaison et détection des régressions
+
+* Création de `compare_suggestions_reference.py`.
+* Extraction de `build_reference()` afin de partager la logique de génération entre le générateur et le comparateur.
+* Vérification des métadonnées et des empreintes avant la comparaison des suggestions.
+* Détection des familles ajoutées ou supprimées.
+* Détection des modifications du nombre de suggestions, de leur ordre et de leurs identifiants de presets.
+* Détection des modifications de scores avec une tolérance absolue de `1e-12`.
+* Conservation de la référence versionnée sans régénération automatique lors des comparaisons.
+
+### Intégration à la validation globale
+
+* Intégration du comparateur dans `integration-globale.py`.
+* Ajout du détail des régressions et de leur nombre au rapport de validation.
+* Retour du code de sortie `1` lorsqu'une régression est détectée.
+* Conservation du code de sortie `0` lorsque la référence est respectée.
+
+### Tests de validation
+
+* Comparaison des 1171 PROGRAMs ROM sans aucun écart.
+* Vérification de l'identité entre la référence enregistrée et celle reconstruite par `build_reference()`.
+* Détection confirmée d'une modification volontaire de score.
+* Détection confirmée de la suppression d'une famille.
+* Détection confirmée d'une inversion de classement entre deux presets.
+* Vérification du blocage de la comparaison lorsque l'une des empreintes des catalogues est modifiée.
+* Validation des codes de sortie `0` et `1`.
+* Aucun changement fonctionnel apporté au moteur de suggestions.
+
+---
+
+  ## Fusion2QSynth v2.13
 
 ### Normalisation des noms de PROGRAMs Fusion
 
