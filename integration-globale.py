@@ -6,6 +6,16 @@ from fusion_suggestions import (
     normalize_name,
     suggest_instruments,
 )
+from compare_suggestions_reference import (
+    compare_references,
+)
+from generate_suggestions_reference import (
+    REFERENCE_FILE,
+    build_reference,
+)
+
+import json
+
 from fusion_gm_map import FUSION_GM_DATA
 from sf2_library import list_presets
 
@@ -1016,6 +1026,24 @@ for (
         preset,
     )
 
+#
+# Validation de la référence des suggestions
+#
+
+with open(
+    REFERENCE_FILE,
+    encoding="utf-8"
+) as f:
+
+    expected_reference = json.load(f)
+
+actual_reference = build_reference()
+
+suggestion_regressions = compare_references(
+    expected_reference,
+    actual_reference
+)
+
 print()
 print("====================")
 print("SCORES MAL ORDONNÉS")
@@ -1180,6 +1208,22 @@ for (
         result
     )
 
+#
+# Détail des régressions
+#
+
+if suggestion_regressions:
+
+    print()
+    print("Régressions des suggestions :")
+
+    for error in suggestion_regressions:
+
+        print(
+            "ERREUR :",
+            error
+        )
+
 print()
 print("====================")
 print("RÉSUMÉ")
@@ -1291,3 +1335,16 @@ print(
         normalization_errors
     )
 )
+
+print(
+    "Régressions suggestions:",
+    len(suggestion_regressions)
+)
+
+#
+# Échec de la validation des suggestions
+#
+
+if suggestion_regressions:
+
+    raise SystemExit(1)
