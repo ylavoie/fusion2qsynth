@@ -14,10 +14,26 @@ from generate_suggestions_reference import (
     build_reference,
 )
 
+import argparse
 import json
 
 from fusion_gm_map import FUSION_GM_DATA
 from sf2_library import list_presets
+
+parser = argparse.ArgumentParser(
+    description="Validation globale de Fusion2QSynth"
+)
+
+parser.add_argument(
+    "-v",
+    "--verbose",
+    action="store_true",
+    help="Afficher tous les détails des validations"
+)
+
+args = parser.parse_args()
+
+verbose = args.verbose
 
 project = FusionProject()
 hint_program_mismatch = []
@@ -832,199 +848,213 @@ for aliases, family, gm_program in FUSION_GM_DATA:
                 )
             )
 
-print()
-print("====================")
-print("HINT GM")
-print("====================")
+if verbose:
+    print()
+    print("====================")
+    print("HINT GM")
+    print("====================")
 
-for name, hint, families in with_hint:
-
-    print(
-        f"{name:<32}",
-        hint,
-        families
-    )
-
-print()
-print("====================")
-print("FAMILLE SEULEMENT")
-print("====================")
-
-for name, families in family_only:
-
-    print(
-        f"{name:<32}",
-        families
-    )
-
-print()
-print("====================")
-print("INCONNUS")
-print("====================")
-
-for name in unknown:
-
-    print(name)
-
-print()
-print("====================")
-print("AUCUNE SUGGESTION")
-print("====================")
-
-for name in empty_suggestions:
-
-    print(name)
-
-print()
-print("====================")
-print("HINT / FAMILLE À VÉRIFIER")
-print("====================")
-
-for name, hint, families in conflicts:
-
-    print(
-        f"{name:<32}",
-        hint,
-        families
-    )
-
-print()
-print("====================")
-print("HINT GM NON RESPECTÉ")
-print("====================")
-
-for (
-    name,
-    gm_hint,
-    suggestions,
-) in hint_program_mismatches:
-
-    print(
-        name,
-        gm_hint,
-    )
-
-    for family, matches in suggestions.items():
+    for name, hint, families in with_hint:
 
         print(
-            "   ",
-            family,
-            [
-                (
-                    preset["bank"],
-                    preset["program"],
-                    preset["name"],
-                )
-                for score, preset in matches
-            ]
+            f"{name:<32}",
+            hint,
+            sorted(families)
         )
 
-print()
-print("====================")
-print("MEILLEUR HINT GM INCORRECT")
-print("====================")
+if verbose:
+    print()
+    print("====================")
+    print("FAMILLE SEULEMENT")
+    print("====================")
 
-for (
-    name,
-    gm_hint,
-    score,
-    preset,
-) in hint_top_mismatches:
+    for name, families in family_only:
 
-    print(
+        print(
+            f"{name:<32}",
+            sorted(families)
+        )
+
+if verbose or unknown:
+
+    print()
+    print("====================")
+    print("INCONNUS")
+    print("====================")
+
+    for name in unknown:
+
+        print(name)
+
+if verbose or empty_suggestions:
+
+    print()
+    print("====================")
+    print("AUCUNE SUGGESTION")
+    print("====================")
+
+    for name in empty_suggestions:
+
+        print(name)
+
+if verbose or conflicts:
+
+    print()
+    print("====================")
+    print("HINT / FAMILLE À VÉRIFIER")
+    print("====================")
+
+    for name, hint, families in conflicts:
+
+        print(
+            f"{name:<32}",
+            hint,
+            sorted(families)
+        )
+
+if verbose or hint_program_mismatches:
+    print()
+    print("====================")
+    print("HINT GM NON RESPECTÉ")
+    print("====================")
+
+    for (
         name,
         gm_hint,
-        "→",
-        (
-            preset["bank"],
-            preset["program"],
-            preset["name"],
-        ),
-        "score:",
-        round(score, 3),
-    )
+        suggestions,
+    ) in hint_program_mismatches:
 
-print()
-print("====================")
-print("FAMILLE SEULEMENT À VÉRIFIER")
-print("====================")
-
-for (
-    name,
-    family,
-    detail,
-) in family_only_mismatches:
-
-    print(
-        name,
-        family,
-        "→",
-        detail,
-    )
-
-print()
-print("====================")
-print("SUGGESTIONS INVALIDES")
-print("====================")
-
-for (
-    name,
-    family,
-    bank,
-    program,
-    preset_name,
-) in invalid_suggestions:
-
-    print(
-        name,
-        family,
-        "→",
-        (
-            bank,
-            program,
-            preset_name,
+        print(
+            name,
+            gm_hint,
         )
-    )
 
-print()
-print("====================")
-print("SUGGESTIONS EN DOUBLON")
-print("====================")
+        for family, matches in suggestions.items():
 
-for (
-    name,
-    family,
-    key,
-    preset_name,
-) in duplicate_suggestions:
+            print(
+                "   ",
+                family,
+                [
+                    (
+                        preset["bank"],
+                        preset["program"],
+                        preset["name"],
+                    )
+                    for score, preset in matches
+                ]
+            )
 
-    print(
+if verbose or hint_top_mismatches:
+    print()
+    print("====================")
+    print("MEILLEUR HINT GM INCORRECT")
+    print("====================")
+
+    for (
+        name,
+        gm_hint,
+        score,
+        preset,
+    ) in hint_top_mismatches:
+
+        print(
+            name,
+            gm_hint,
+            "→",
+            (
+                preset["bank"],
+                preset["program"],
+                preset["name"],
+            ),
+            "score:",
+            round(score, 3),
+        )
+
+if verbose or family_only_mismatches:
+    print()
+    print("====================")
+    print("FAMILLE SEULEMENT À VÉRIFIER")
+    print("====================")
+
+    for (
         name,
         family,
-        "→",
+        detail,
+    ) in family_only_mismatches:
+
+        print(
+            name,
+            family,
+            "→",
+            detail,
+        )
+
+if verbose or invalid_suggestions:
+    print()
+    print("====================")
+    print("SUGGESTIONS INVALIDES")
+    print("====================")
+
+    for (
+        name,
+        family,
+        bank,
+        program,
+        preset_name,
+    ) in invalid_suggestions:
+
+        print(
+            name,
+            family,
+            "→",
+            (
+                bank,
+                program,
+                preset_name,
+            )
+        )
+
+if verbose or duplicate_suggestions:
+    print()
+    print("====================")
+    print("SUGGESTIONS EN DOUBLON")
+    print("====================")
+
+    for (
+        name,
+        family,
         key,
         preset_name,
-    )
+    ) in duplicate_suggestions:
 
-print()
-print("====================")
-print("CHAMPS MANQUANTS")
-print("====================")
+        print(
+            name,
+            family,
+            "→",
+            key,
+            preset_name,
+        )
 
-for (
-    name,
-    family,
-    missing,
-    preset,
-) in missing_fields:
+if verbose or missing_fields:
+    print()
+    print("====================")
+    print("CHAMPS MANQUANTS")
+    print("====================")
 
-    print(
+    for (
         name,
         family,
-        "→",
         missing,
         preset,
-    )
+    ) in missing_fields:
+
+        print(
+            name,
+            family,
+            "→",
+            missing,
+            preset,
+        )
 
 #
 # Validation de la référence des suggestions
@@ -1044,175 +1074,183 @@ suggestion_regressions = compare_references(
     actual_reference
 )
 
-print()
-print("====================")
-print("SCORES MAL ORDONNÉS")
-print("====================")
+if verbose or unsorted_suggestions:
+    print()
+    print("====================")
+    print("SCORES MAL ORDONNÉS")
+    print("====================")
 
-for (
-    name,
-    family,
-    scores,
-) in unsorted_suggestions:
-
-    print(
+    for (
         name,
         family,
-        "→",
         scores,
-    )
+    ) in unsorted_suggestions:
 
-print()
-print("====================")
-print("SCORES ABERRANTS")
-print("====================")
+        print(
+            name,
+            family,
+            "→",
+            scores,
+        )
 
-for (
-    name,
-    family,
-    score,
-    preset_name,
-) in abnormal_scores:
+if verbose or abnormal_scores:
+    print()
+    print("====================")
+    print("SCORES ABERRANTS")
+    print("====================")
 
-    print(
+    for (
         name,
         family,
-        "→",
         score,
         preset_name,
-    )
+    ) in abnormal_scores:
 
-print()
-print("====================")
-print("LIMIT DÉPASSÉE")
-print("====================")
+        print(
+            name,
+            family,
+            "→",
+            score,
+            preset_name,
+        )
 
-for (
-    name,
-    family,
-    count,
-) in limit_violations:
+if verbose or limit_violations:
+    print()
+    print("====================")
+    print("LIMIT DÉPASSÉE")
+    print("====================")
 
-    print(
+    for (
         name,
         family,
-        "→",
         count,
-        "suggestions",
-    )
+    ) in limit_violations:
 
-print()
-print("====================")
-print("LIMIT PARAMÈTRE INCORRECT")
-print("====================")
+        print(
+            name,
+            family,
+            "→",
+            count,
+            "suggestions",
+        )
 
-for (
-    name,
-    family,
-    expected_limit,
-    actual_count,
-) in limit_test_failures:
+if verbose or limit_test_failures:
+    print()
+    print("====================")
+    print("LIMIT PARAMÈTRE INCORRECT")
+    print("====================")
 
-    print(
+    for (
         name,
         family,
-        "→ limit",
         expected_limit,
-        "retourne",
         actual_count,
-    )
+    ) in limit_test_failures:
 
-print()
-print("====================")
-print("TOP 1 INSTABLE")
-print("====================")
+        print(
+            name,
+            family,
+            "→ limit",
+            expected_limit,
+            "retourne",
+            actual_count,
+        )
 
-for (
-    name,
-    family,
-    results,
-) in unstable_top_suggestions:
+if verbose or unstable_top_suggestions:
+    print()
+    print("====================")
+    print("TOP 1 INSTABLE")
+    print("====================")
 
-    print(
+    for (
         name,
         family,
-        "→",
         results,
-    )
+    ) in unstable_top_suggestions:
 
-print()
-print("====================")
-print("TOP N INSTABLE")
-print("====================")
+        print(
+            name,
+            family,
+            "→",
+            results,
+        )
 
-for (
-    name,
-    family,
-    top_2,
-    first_2_of_3,
-) in unstable_top_n:
+if verbose or unstable_top_n:
+    print()
+    print("====================")
+    print("TOP N INSTABLE")
+    print("====================")
 
-    print(
+    for (
         name,
         family,
-        "→ limit=2:",
         top_2,
-        "limit=3:",
         first_2_of_3,
-    )
+    ) in unstable_top_n:
 
-print()
-print("====================")
-print("VALIDATION FUSION_GM_DATA")
-print("====================")
+        print(
+            name,
+            family,
+            "→ limit=2:",
+            top_2,
+            "limit=3:",
+            first_2_of_3,
+        )
 
-for (
-    alias,
-    error_type,
-    expected,
-    actual,
-) in all_hint_failures:
+if verbose or all_hint_failures:
+    print()
+    print("====================")
+    print("VALIDATION FUSION_GM_DATA")
+    print("====================")
 
-    print(
+    for (
         alias,
-        "→",
         error_type,
-    )
-
-    print(
-        "   attendu:",
         expected,
-    )
-
-    print(
-        "   obtenu :",
         actual,
-    )
+    ) in all_hint_failures:
 
-print()
-print("====================")
-print("VALIDATION NORMALISATION")
-print("====================")
+        print(
+            alias,
+            "→",
+            error_type,
+        )
 
-for (
-    name,
-    expected,
-    result,
-) in normalization_errors:
+        print(
+            "   attendu:",
+            expected,
+        )
 
-    print(
+        print(
+            "   obtenu :",
+            actual,
+        )
+
+if verbose or normalization_errors:
+    print()
+    print("====================")
+    print("VALIDATION NORMALISATION")
+    print("====================")
+
+    for (
         name,
-        "→ attendu:",
         expected,
-        "obtenu:",
-        result
-    )
+        result,
+    ) in normalization_errors:
+
+        print(
+            name,
+            "→ attendu:",
+            expected,
+            "obtenu:",
+            result
+        )
 
 #
 # Détail des régressions
 #
 
-if suggestion_regressions:
+if verbose or suggestion_regressions:
 
     print()
     print("Régressions des suggestions :")
