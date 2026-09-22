@@ -337,7 +337,7 @@ def matches_for_family(
 
     for preset in sf2_presets:
 
-        preset_families = detect_families(
+        preset_families = _detect_families_cached(
             preset["name"]
         )
 
