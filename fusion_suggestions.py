@@ -313,6 +313,20 @@ def matches_for_family(
         fusion_program["name"]
     )
 
+    fusion_program_number = fusion_program["program"]
+
+    gm_family_match = (
+        gm_hint
+        and
+        gm_hint.get("family") == family
+    )
+
+    gm_program_number = (
+        gm_hint.get("gm_program")
+        if gm_family_match
+        else None
+    )
+
     candidates = []
     expected_bank = 0
 
@@ -323,12 +337,9 @@ def matches_for_family(
         )
 
         gm_match = (
-            gm_hint
+            gm_family_match
             and
-            gm_hint.get("family") == family
-            and
-            gm_hint.get("gm_program")
-            == preset["program"]
+            gm_program_number == preset["program"]
             and
             preset["bank"] == expected_bank
         )
@@ -354,7 +365,7 @@ def matches_for_family(
             score += 0.40
 
         if (
-            fusion_program["program"]
+            fusion_program_number
             ==
             preset["program"]
         ):
