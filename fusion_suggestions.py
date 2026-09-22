@@ -64,6 +64,7 @@ def detect_gm_drum_kit(
         "sf2_program": program,
     }
 
+@lru_cache(maxsize=None)
 def normalize_name(name):
 
     name = re.sub(
@@ -84,6 +85,7 @@ def normalize_name(name):
         name.split()
     )
 
+@lru_cache(maxsize=None)
 def normalize_preset_name(
     name
 ):
