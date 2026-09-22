@@ -152,6 +152,14 @@ def _detect_gm_hint_cached(
 
     for term, hint in FUSION_GM_HINTS.items():
 
+        if (
+            best_match is not None
+            and
+            len(term) <= len(best_match[0])
+        ):
+
+            continue
+
         if not contains_term(
             normalized_name,
             term
@@ -177,7 +185,6 @@ def _detect_gm_hint_cached(
     return tuple(
         best_match[1].items()
     )
-
 
 def detect_gm_hint(
     name
