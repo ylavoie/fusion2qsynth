@@ -12,6 +12,12 @@ from fusion_gm_map import (
     FUSION_FAMILY_OVERRIDES
 )
 
+SORTED_GM_HINTS = sorted(
+    FUSION_GM_HINTS.items(),
+    key=lambda item: len(item[0]),
+    reverse=True
+)
+
 def detect_gm_program(
     name
 ):
@@ -148,43 +154,18 @@ def _detect_gm_hint_cached(
         name
     )
 
-    best_match = None
+    for term, hint in SORTED_GM_HINTS:
 
-    for term, hint in FUSION_GM_HINTS.items():
-
-        if (
-            best_match is not None
-            and
-            len(term) <= len(best_match[0])
-        ):
-
-            continue
-
-        if not contains_term(
+        if contains_term(
             normalized_name,
             term
         ):
 
-            continue
-
-        if (
-            best_match is None
-            or
-            len(term) > len(best_match[0])
-        ):
-
-            best_match = (
-                term,
-                hint
+            return tuple(
+                hint.items()
             )
 
-    if best_match is None:
-
-        return None
-
-    return tuple(
-        best_match[1].items()
-    )
+    return None
 
 def detect_gm_hint(
     name
