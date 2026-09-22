@@ -104,36 +104,17 @@ def normalize_preset_name(
         words
     )
 
-@lru_cache(
-    maxsize=None
-)
+@lru_cache(maxsize=None)
 def contains_term(
     normalized_name,
     term
 ):
 
-    words = normalized_name.split()
-    term_words = term.split()
-
-    if len(term_words) == 1:
-
-        return term in words
-
-    size = len(term_words)
-
-    for i in range(
-        len(words) - size + 1
-    ):
-
-        if (
-            words[i:i + size]
-            ==
-            term_words
-        ):
-
-            return True
-
-    return False
+    return (
+        f" {term} "
+        in
+        f" {normalized_name} "
+    )
 
 @lru_cache(
     maxsize=None
