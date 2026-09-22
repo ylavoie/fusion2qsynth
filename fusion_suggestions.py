@@ -12,6 +12,12 @@ from fusion_gm_map import (
     FUSION_FAMILY_OVERRIDES
 )
 
+SORTED_GM_HINTS = sorted(
+    FUSION_GM_HINTS.items(),
+    key=lambda item: len(item[0]),
+    reverse=True
+)
+
 def detect_gm_program(
     name
 ):
@@ -58,6 +64,7 @@ def detect_gm_drum_kit(
         "sf2_program": program,
     }
 
+@lru_cache(maxsize=None)
 def normalize_name(name):
 
     name = re.sub(
@@ -78,6 +85,7 @@ def normalize_name(name):
         name.split()
     )
 
+@lru_cache(maxsize=None)
 def normalize_preset_name(
     name
 ):
@@ -96,36 +104,17 @@ def normalize_preset_name(
         words
     )
 
-@lru_cache(
-    maxsize=None
-)
+@lru_cache(maxsize=None)
 def contains_term(
     normalized_name,
     term
 ):
 
-    words = normalized_name.split()
-    term_words = term.split()
-
-    if len(term_words) == 1:
-
-        return term in words
-
-    size = len(term_words)
-
-    for i in range(
-        len(words) - size + 1
-    ):
-
-        if (
-            words[i:i + size]
-            ==
-            term_words
-        ):
-
-            return True
-
-    return False
+    return (
+        f" {term} "
+        in
+        f" {normalized_name} "
+    )
 
 @lru_cache(
     maxsize=None
@@ -148,36 +137,18 @@ def _detect_gm_hint_cached(
         name
     )
 
-    best_match = None
+    for term, hint in SORTED_GM_HINTS:
 
-    for term, hint in FUSION_GM_HINTS.items():
-
-        if not contains_term(
+        if contains_term(
             normalized_name,
             term
         ):
 
-            continue
-
-        if (
-            best_match is None
-            or
-            len(term) > len(best_match[0])
-        ):
-
-            best_match = (
-                term,
-                hint
+            return tuple(
+                hint.items()
             )
 
-    if best_match is None:
-
-        return None
-
-    return tuple(
-        best_match[1].items()
-    )
-
+    return None
 
 def detect_gm_hint(
     name
@@ -342,22 +313,33 @@ def matches_for_family(
         fusion_program["name"]
     )
 
+    fusion_program_number = fusion_program["program"]
+
+    gm_family_match = (
+        gm_hint
+        and
+        gm_hint.get("family") == family
+    )
+
+    gm_program_number = (
+        gm_hint.get("gm_program")
+        if gm_family_match
+        else None
+    )
+
     candidates = []
     expected_bank = 0
 
     for preset in sf2_presets:
 
-        preset_families = detect_families(
+        preset_families = _detect_families_cached(
             preset["name"]
         )
 
         gm_match = (
-            gm_hint
+            gm_family_match
             and
-            gm_hint.get("family") == family
-            and
-            gm_hint.get("gm_program")
-            == preset["program"]
+            gm_program_number == preset["program"]
             and
             preset["bank"] == expected_bank
         )
@@ -383,7 +365,7 @@ def matches_for_family(
             score += 0.40
 
         if (
-            fusion_program["program"]
+            fusion_program_number
             ==
             preset["program"]
         ):

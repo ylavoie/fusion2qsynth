@@ -1,5 +1,51 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.15
+
+### Optimisation de la détection des hints GM
+
+* Réduction des recherches inutiles dans `FUSION_GM_HINTS` après identification d'un terme correspondant.
+* Classement préalable des hints GM par longueur décroissante afin de sélectionner directement le premier terme correspondant.
+* Conservation de l'ordre initial des termes de même longueur et du comportement de sélection existant.
+* Remplacement des découpages répétés de chaînes dans `contains_term()` par une recherche de séquences de mots délimitées par des espaces.
+* Vérification de la normalisation des 1318 termes configurés, sans anomalie détectée.
+
+### Optimisation des calculs du moteur de suggestions
+
+* Mise en cache des résultats de `normalize_name()` et `normalize_preset_name()` avec `lru_cache`.
+* Réutilisation directe des familles mises en cache dans `matches_for_family()`, sans création répétée de copies de `set`.
+* Extraction hors de la boucle des informations du PROGRAM Fusion et des conditions de correspondance du hint GM.
+* Réduction des accès aux dictionnaires et des évaluations répétées lors de la recherche des presets candidats.
+* Conservation de `SequenceMatcher`, des bonus, des pénalités et des critères de classement existants.
+
+### Amélioration de la validation globale
+
+* Réduction de l'affichage par défaut de `integration-globale.py` afin de présenter principalement les anomalies et le résumé.
+* Ajout de l'option `-v` / `--verbose` pour conserver l'affichage détaillé.
+* Affichage systématique des sections contenant des anomalies, même sans l'option `--verbose`.
+* Tri des familles affichées pour garantir un ordre déterministe entre les exécutions.
+* Conservation des validations, du calcul des régressions et des codes de sortie existants.
+
+### Performances mesurées
+
+* Réduction du temps moyen d'exécution de `integration-globale.py` de 4,42 à 2,38 secondes, soit environ 46 %.
+* Réduction du temps total sous profilage de 11,037 à 4,817 secondes.
+* Réduction du coût cumulé de `contains_term()` de 1,387 à 0,212 seconde après optimisation de la recherche.
+* Réduction du temps propre de `matches_for_family()` de 1,424 à 0,755 seconde lors de la dernière optimisation.
+* Conservation des 71969 comparaisons `SequenceMatcher.ratio()` et de leur comportement.
+
+### Tests de validation
+
+* Comparaison des 1171 PROGRAMs ROM avec `suggestions_reference.json` : aucun écart.
+* Conservation des familles, des presets, de leur ordre et de leurs scores.
+* Validation globale réussie après les optimisations.
+* Aucun PROGRAM ROM inconnu ou sans suggestion.
+* Aucune suggestion invalide, aucun score aberrant et aucune instabilité Top 1 ou Top N.
+* Aucune régression détectée dans les suggestions.
+* Validation de la syntaxe Python des modules modifiés.
+
+---
+
 ## Fusion2QSynth v2.14
 
 ### Référence des suggestions
@@ -44,7 +90,7 @@
 
 ---
 
-  ## Fusion2QSynth v2.13
+## Fusion2QSynth v2.13
 
 ### Normalisation des noms de PROGRAMs Fusion
 
