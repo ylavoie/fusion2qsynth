@@ -113,30 +113,20 @@ def capture_program(
                             current_program
                         )
 
-                        program["parts"] = {
-                            "1": {
-                                "midi_channel":
-                                    fusion_default_channel + 1,
+                        part = program["parts"].setdefault(
+                            "1",
+                            {}
+                        )
 
-                                "bank":
-                                    bank,
-
-                                "program":
-                                    current_program_number,
-
-                                "note_min":
-                                    note_min,
-
-                                "note_max":
-                                    note_max,
-
-                                "velocity_min":
-                                    velocity_min,
-
-                                "velocity_max":
-                                    velocity_max
-                            }
-                        }
+                        part.update({
+                            "midi_channel": fusion_default_channel + 1,
+                            "bank": current_program_bank,
+                            "program": current_program_number,
+                            "note_min": note_min,
+                            "note_max": note_max,
+                            "velocity_min": velocity_min,
+                            "velocity_max": velocity_max
+                        })
 
                         if project.save_safe(
                             allowed_errors=allowed_errors
