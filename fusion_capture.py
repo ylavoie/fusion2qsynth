@@ -447,6 +447,12 @@ def capture_mix(
                                     channel_id
                                 ] = {}
 
+                            original_data = copy.deepcopy(
+                                project.data
+                            )
+                            project.ensure_mix(
+                                current_mix
+                            )
                             success, errors = (
                                 project.replace_mix_channels(
                                     current_mix,
@@ -479,9 +485,16 @@ def capture_mix(
 
                             else:
 
+                                project.data = original_data
+
                                 print(
                                     "Le Mix n'a pas été sauvegardé."
                                 )
+
+                                print(
+                                    "État du projet restauré en mémoire."
+                                )
+
                 #
                 # Poll MIDI
                 #
@@ -517,10 +530,6 @@ def capture_mix(
 
                             parts_seen = {}
                             notes_seen = {}
-
-                            mix = project.ensure_mix(
-                                current_mix
-                            )
 
                             capture_active = True
 
