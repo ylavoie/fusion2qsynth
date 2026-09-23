@@ -7,6 +7,7 @@ Constantes globales Fusion2QSynth
 PROJECT = "Fusion2QSynth"
 
 VERSION = "2.15.0"
+PROJECT_FORMAT_VERSION = 2
 
 
 # Fichiers

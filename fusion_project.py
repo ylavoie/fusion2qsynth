@@ -10,6 +10,7 @@ import re
 from fusion_lib import (
     note_name, note_range
 )
+from fusion_constants import PROJECT_FORMAT_VERSION
 
 from fusion_gm_map import fusion_program_bank_name
 
@@ -80,6 +81,9 @@ class FusionProject:
                 f"Fichier {self.filename} invalide."
             )
 
+        self.validate_format_version()
+        self.validate_root_structure()
+
         allowed_errors = self.get_blocking_errors(
             self.validate()
         )
@@ -133,6 +137,103 @@ class FusionProject:
                     "Impossible de sauvegarder "
                     "la migration du projet."
                 )
+
+    def validate_format_version(
+        self
+    ):
+
+        if not isinstance(
+            self.data,
+            dict
+        ):
+
+            raise RuntimeError(
+                "Structure racine de fusion.json invalide."
+            )
+
+        format_version = self.data.get(
+            "format_version"
+        )
+
+        if format_version is None:
+
+            raise RuntimeError(
+                "format_version absent dans fusion.json."
+            )
+
+        if type(format_version) is not int:
+
+            raise RuntimeError(
+                "format_version invalide dans fusion.json."
+            )
+
+        if format_version > PROJECT_FORMAT_VERSION:
+
+            raise RuntimeError(
+                f"Format fusion.json {format_version} "
+                f"plus récent que le format supporté "
+                f"({PROJECT_FORMAT_VERSION})."
+            )
+
+        if format_version < PROJECT_FORMAT_VERSION:
+
+            raise RuntimeError(
+                f"Format fusion.json {format_version} "
+                f"plus ancien que le format supporté "
+                f"({PROJECT_FORMAT_VERSION})."
+            )
+
+    def validate_root_structure(
+        self
+    ):
+
+        required_sections = (
+            "instruments",
+            "mixes",
+            "programs",
+            "songs"
+        )
+
+        for section in required_sections:
+
+            if section not in self.data:
+
+                raise RuntimeError(
+                    f"Section {section} absente "
+                    "dans fusion.json."
+                )
+
+            if not isinstance(
+                self.data[section],
+                dict
+            ):
+
+                raise RuntimeError(
+                    f"Section {section} invalide "
+                    "dans fusion.json."
+                )
+
+        allowed_sections = {
+            "format_version",
+            "instruments",
+            "mixes",
+            "programs",
+            "songs"
+        }
+
+        unknown_sections = (
+            set(self.data)
+            - allowed_sections
+        )
+
+        for section in sorted(
+            unknown_sections
+        ):
+
+            raise RuntimeError(
+                f"Section {section} inconnue "
+                "dans fusion.json."
+            )
 
     def restore_backup(self):
 
