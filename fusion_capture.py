@@ -2,6 +2,7 @@
 
 import mido
 import time
+import copy
 
 from fusion_lib import (
     find_fusion_input,
@@ -767,8 +768,8 @@ def capture_song(
 
                     capture_active = False
 
-                    song = project.ensure_song(
-                        song_id
+                    original_data = copy.deepcopy(
+                        project.data
                     )
 
                     if not channels:
@@ -778,10 +779,13 @@ def capture_song(
                             "Aucun canal détecté : "
                             "SONG non sauvegardée."
                         )
-
                         song_id = None
 
                         continue
+
+                    song = project.ensure_song(
+                        song_id
+                    )
 
                     old_channels = song.get(
                         "channels",
@@ -1080,8 +1084,14 @@ def capture_song(
 
                     else:
 
+                        project.data = original_data
+
                         print(
                             "⚠ Sauvegarde non effectuée."
+                        )
+
+                        print(
+                            "État du projet restauré en mémoire."
                         )
 
                     continue
