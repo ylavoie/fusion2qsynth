@@ -5,6 +5,7 @@ import json
 import shutil
 import time
 import copy
+import re
 
 from fusion_lib import (
     note_name, note_range
@@ -1420,48 +1421,151 @@ class FusionProject:
             )
         )
 
+    def validate_instrument(
+        self,
+        instrument_id
+    ):
+
+        errors = []
+
+        instrument = self.get_instrument(
+            instrument_id
+        )
+
+        prefix = f"Instrument {instrument_id}"
+
+        if (
+            not isinstance(
+                instrument_id,
+                str
+            )
+            or
+            not re.fullmatch(
+                r"[a-z0-9]+(?:_[a-z0-9]+)*",
+                instrument_id
+            )
+        ):
+
+            errors.append(
+                f"{prefix} : identifiant invalide"
+            )
+
+        if not isinstance(
+            instrument,
+            dict
+        ):
+
+            errors.append(
+                f"{prefix} : définition invalide"
+            )
+
+            return errors
+
+        allowed_fields = {
+            "name",
+            "sf2_bank",
+            "sf2_program"
+        }
+
+        unknown_fields = (
+            set(instrument)
+            - allowed_fields
+        )
+
+        for field in sorted(
+            unknown_fields
+        ):
+
+            errors.append(
+                f"{prefix} : champ inconnu {field}"
+            )
+
+        name = instrument.get(
+            "name"
+        )
+
+        if name is None:
+
+            errors.append(
+                f"{prefix} : nom absent"
+            )
+
+        elif (
+            not isinstance(
+                name,
+                str
+            )
+            or
+            not name.strip()
+        ):
+
+            errors.append(
+                f"{prefix} : nom invalide"
+            )
+
+        if "sf2_bank" not in instrument:
+
+            errors.append(
+                f"{prefix} : sf2_bank absent"
+            )
+
+        if "sf2_program" not in instrument:
+
+            errors.append(
+                f"{prefix} : sf2_program absent"
+            )
+
+        if "sf2_bank" in instrument:
+
+            sf2_bank = instrument[
+                "sf2_bank"
+            ]
+
+            if (
+                not isinstance(
+                    sf2_bank,
+                    int
+                )
+                or
+                not 0 <= sf2_bank <= 16383
+            ):
+
+                errors.append(
+                    f"{prefix} : sf2_bank invalide"
+                )
+
+        if "sf2_program" in instrument:
+
+            sf2_program = instrument[
+                "sf2_program"
+            ]
+
+            if (
+                not isinstance(
+                    sf2_program,
+                    int
+                )
+                or
+                not 0 <= sf2_program <= 127
+            ):
+
+                errors.append(
+                    f"{prefix} : sf2_program invalide"
+                )
+
+        return errors
+
     def validate_instruments(self):
 
         errors = []
 
-        for instrument_id, instrument in self.get_instruments().items():
+        for instrument_id in self.get_instruments():
 
-            prefix = f"Instrument {instrument_id}"
-
-            if "name" not in instrument:
-
-                errors.append(
-                    f"{prefix} : nom absent"
+            errors.extend(
+                self.validate_instrument(
+                    instrument_id
                 )
-
-            if "sf2_bank" not in instrument:
-
-                errors.append(
-                    f"{prefix} : sf2_bank absent"
-                )
-
-            if "sf2_program" not in instrument:
-
-                errors.append(
-                    f"{prefix} : sf2_program absent"
-                )
-
-            if "sf2_bank" in instrument:
-
-                # SF2 bank may include percussion banks (>=128)
-                if not 0 <= instrument["sf2_bank"] <= 16383:
-
-                    errors.append(
-                        f"{prefix} : sf2_bank invalide"
-                    )
-
-            if "sf2_program" in instrument:
-
-                if not 0 <= instrument["sf2_program"] <= 127:
-
-                    errors.append(
-                        f"{prefix} : sf2_program invalide"
-                    )
+            )
 
         return errors
 
@@ -3074,6 +3178,13 @@ class FusionProject:
     def get_project_diagnostic_summary(self):
 
         summary = {
+            "instruments": {
+                "total": 0,
+                "ok": 0,
+                "unconfigured": 0,
+                "error": 0,
+                "info": 0
+            },
             "mixes": {
                 "total": 0,
                 "ok": 0,
@@ -3097,6 +3208,23 @@ class FusionProject:
             }
         }
 
+        # INSTRUMENT
+
+        for instrument_id in self.get_instruments():
+
+            summary["instruments"]["total"] += 1
+
+            errors = self.validate_instrument(
+                instrument_id
+            )
+
+            if errors:
+
+                summary["instruments"]["error"] += 1
+
+            else:
+
+                summary["instruments"]["ok"] += 1
 
         # MIX
 
@@ -3160,7 +3288,6 @@ class FusionProject:
 
                 summary["mixes"]["info"] += 1
 
-
         # PROGRAM
 
         for program in self.get_program_diagnostic():
@@ -3184,7 +3311,6 @@ class FusionProject:
             else:
 
                 summary["programs"]["ok"] += 1
-
 
         # SONG
 
@@ -3227,7 +3353,6 @@ class FusionProject:
             else:
 
                 summary["songs"]["ok"] += 1
-
 
         return summary
 
