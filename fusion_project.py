@@ -1794,6 +1794,36 @@ class FusionProject:
                     f"{prefix} : sf2_program absent."
                 )
 
+        #
+        # Instrument global optionnel
+        #
+        instrument_id = part.get(
+            "instrument"
+        )
+
+        if instrument_id is not None:
+
+            if (
+                not isinstance(
+                    instrument_id,
+                    str
+                )
+                or
+                not instrument_id
+            ):
+
+                errors.append(
+                    f"{prefix} : instrument invalide."
+                )
+
+            elif self.get_instrument(
+                instrument_id
+            ) is None:
+
+                errors.append(
+                    f"{prefix} : instrument "
+                    f"{instrument_id} inexistant."
+                )
 
         if (
             "note_min" in part
@@ -2531,6 +2561,52 @@ class FusionProject:
                         f"PROGRAM {program_id} invalide."
                     )
 
+                if not isinstance(
+                    program_data,
+                    dict
+                ):
+
+                    errors.append(
+                        f"{song_id} CH {channel_id} : "
+                        f"PROGRAM {program_id} invalide."
+                    )
+
+                    continue
+
+                #
+                # Instrument global optionnel
+                #
+                instrument_id = program_data.get(
+                    "instrument"
+                )
+
+                if instrument_id is not None:
+
+                    if (
+                        not isinstance(
+                            instrument_id,
+                            str
+                        )
+                        or
+                        not instrument_id
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} : "
+                            "instrument invalide."
+                        )
+
+                    elif self.get_instrument(
+                        instrument_id
+                    ) is None:
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} : "
+                            f"instrument {instrument_id} inexistant."
+                        )
+
         for field in (
             "volume",
             "pan",
@@ -2883,6 +2959,26 @@ class FusionProject:
                         part
                     )
                 )
+                #
+                # Référence instrument invalide
+                #
+                instrument_id = part.get(
+                    "instrument"
+                )
+
+                if (
+                    instrument_id is not None
+                    and
+                    self.get_instrument(
+                        instrument_id
+                    ) is None
+                ):
+
+                    result["fusion_valid"] = False
+
+                    result["errors"].append(
+                        f"Instrument inexistant ({instrument_id})"
+                    )
 
             results.append(
                 result
