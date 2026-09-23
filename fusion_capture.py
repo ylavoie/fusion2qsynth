@@ -105,6 +105,10 @@ def capture_program(
                             velocity_max
                         )
 
+                        original_data = copy.deepcopy(
+                            project.data
+                        )
+
                         program = project.ensure_program(
                             current_program
                         )
@@ -143,8 +147,14 @@ def capture_program(
 
                         else:
 
+                            project.data = original_data
+
                             print(
                                 "⚠ Sauvegarde non effectuée."
+                            )
+
+                            print(
+                                "État du projet restauré en mémoire."
                             )
 
                     else:
