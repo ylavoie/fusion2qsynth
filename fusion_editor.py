@@ -4686,6 +4686,7 @@ def print_project_summary(
     print("--------------")
 
     for label, key in (
+        ("INSTRUMENT", "instruments"),
         ("MIX", "mixes"),
         ("PROGRAM", "programs"),
         ("SONG", "songs")
@@ -4696,11 +4697,11 @@ def print_project_summary(
         ]
 
         line = (
-            f"{label:<8}: "
-            f"{data['total']:>3} | "
-            f"OK {data['ok']:>2} | "
-            f"À configurer {data['unconfigured']:>2} | "
-            f"Erreurs {data['error']:>2}"
+            f"{label:<10}: "
+            f"{data['total']:>4} | "
+            f"OK {data['ok']:>3} | "
+            f"À configurer {data['unconfigured']:>3} | "
+            f"Erreurs {data['error']:>3}"
         )
 
         if data.get(
