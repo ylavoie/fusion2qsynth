@@ -510,12 +510,14 @@ class FusionProject:
 
             return False
 
-        self._rotate_backups()
-
         temp_file = self.filename + ".tmp"
+        old_file = self.filename + ".old"
 
         try:
 
+            #
+            # Préparer complètement le nouveau fichier
+            #
             with open(
                 temp_file,
                 "w",
@@ -529,12 +531,25 @@ class FusionProject:
                     ensure_ascii=False
                 )
 
+            #
+            # Conserver l'ancienne version
+            #
+            if os.path.exists(
+                self.filename
+            ):
+
+                shutil.copy2(
+                    self.filename,
+                    old_file
+                )
+
+            #
+            # Installer le nouveau fichier
+            #
             os.replace(
                 temp_file,
                 self.filename
             )
-
-            return True
 
         except Exception as e:
 
@@ -542,13 +557,73 @@ class FusionProject:
                 f"Sauvegarde impossible : {e}"
             )
 
+            if os.path.exists(
+                temp_file
+            ):
+
+                os.remove(
+                    temp_file
+                )
+
+            if os.path.exists(
+                old_file
+            ):
+
+                os.remove(
+                    old_file
+                )
+
             return False
+
+        #
+        # À partir d'ici, fusion.json est sauvegardé.
+        # Un problème de backup ne doit donc plus
+        # faire retourner False.
+        #
+        try:
+
+            if os.path.exists(
+                old_file
+            ):
+
+                self._rotate_backups(
+                    old_file
+                )
+
+        except Exception as e:
+
+            print(
+                "⚠ Sauvegarde effectuée, "
+                "mais rotation des backups impossible :",
+                e
+            )
 
         finally:
 
-            if os.path.exists(temp_file):
+            #
+            # old_file peut encore exister si
+            # la rotation a échoué.
+            #
+            if os.path.exists(
+                old_file
+            ):
 
-                os.remove(temp_file)
+                os.remove(
+                    old_file
+                )
+
+        #
+        # Nettoyage défensif du temporaire
+        #
+        if os.path.exists(
+            temp_file
+        ):
+
+            os.remove(
+                temp_file
+            )
+
+        return True
 
     def archive_if_changed(self):
 
@@ -774,7 +849,10 @@ class FusionProject:
 
             return None
 
-    def _rotate_backups(self):
+    def _rotate_backups(
+        self,
+        old_file
+    ):
 
         if _BACKUP_COUNT < 1:
 
@@ -805,14 +883,10 @@ class FusionProject:
                     dst
                 )
 
-        if os.path.exists(
-            self.filename
-        ):
-
-            os.replace(
-                self.filename,
-                backup
-            )
+        os.replace(
+            old_file,
+            backup
+        )
 
     def reload(self):
 
