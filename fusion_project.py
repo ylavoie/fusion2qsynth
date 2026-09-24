@@ -2746,10 +2746,24 @@ class FusionProject:
 
         for song_id, song in songs.items():
 
+            if not isinstance(
+                song,
+                dict
+            ):
+
+                continue
+
             channels = song.get(
                 "channels",
                 {}
             )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                continue
 
             new_channels = {}
             song_changed = False
@@ -3043,17 +3057,60 @@ class FusionProject:
 
         errors = []
 
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return [
+                f"{song_id} CH {channel_id} : "
+                "définition invalide."
+            ]
+
+        allowed_fields = {
+            "programs",
+            "volume",
+            "pan",
+            "expression",
+            "reverb",
+            "chorus"
+        }
+
+        for field in channel:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{song_id} CH {channel_id} : "
+                    f"champ inconnu '{field}'."
+                )
+
         try:
 
             midi_channel = int(
                 channel_id
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             return [
-                f"{song_id} CH {channel_id} : canal MIDI invalide."
+                f"{song_id} CH {channel_id} : "
+                "canal MIDI invalide."
             ]
+
+        if (
+            str(midi_channel) != channel_id
+            or
+            not 1 <= midi_channel <= 16
+        ):
+
+            errors.append(
+                f"{song_id} CH {channel_id} : "
+                "canal MIDI invalide."
+            )
 
         if not (
             1 <= midi_channel <= 16
@@ -3098,6 +3155,19 @@ class FusionProject:
                         program_str
                     )
 
+                    if (
+                        str(bank) != bank_str
+                        or
+                        str(program) != program_str
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM invalide ({program_id})."
+                        )
+
+                        continue
+
                 except (
                     ValueError,
                     AttributeError
@@ -3111,7 +3181,7 @@ class FusionProject:
                     continue
 
                 if not (
-                    0 <= bank <= 16383
+                    0 <= bank <= 127
                 ):
 
                     errors.append(
@@ -3138,17 +3208,43 @@ class FusionProject:
                         f"PROGRAM {program_id} invalide."
                     )
 
-                if not isinstance(
-                    program_data,
-                    dict
-                ):
-
-                    errors.append(
-                        f"{song_id} CH {channel_id} : "
-                        f"PROGRAM {program_id} invalide."
-                    )
-
                     continue
+
+                allowed_program_fields = {
+                    "fusion_name",
+                    "instrument"
+                }
+
+                for field in program_data:
+
+                    if field not in allowed_program_fields:
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} : "
+                            f"champ inconnu '{field}'."
+                        )
+
+                fusion_name = program_data.get(
+                    "fusion_name"
+                )
+
+                if fusion_name is not None:
+
+                    if (
+                        not isinstance(
+                            fusion_name,
+                            str
+                        )
+                        or
+                        not fusion_name.strip()
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} : "
+                            "fusion_name invalide."
+                        )
 
                 #
                 # Instrument global optionnel
@@ -3165,7 +3261,7 @@ class FusionProject:
                             str
                         )
                         or
-                        not instrument_id
+                        not instrument_id.strip()
                     ):
 
                         errors.append(
@@ -3200,8 +3296,10 @@ class FusionProject:
                 field
             ]
 
-            if not (
-                0 <= value <= 127
+            if (
+                type(value) is not int
+                or
+                not 0 <= value <= 127
             ):
 
                 errors.append(
@@ -3257,18 +3355,89 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return [
                 f"SONG inconnue : {song_id}"
             ]
 
+        return self.validate_song_data(
+            song_id,
+            song
+        )
+
+    def validate_song_data(
+        self,
+        song_id,
+        song
+    ):
+
         errors = []
 
-        for channel_id, channel in song.get(
-            "channels",
-            {}
-        ).items():
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return [
+                f"{song_id} : définition invalide."
+            ]
+
+        allowed_fields = {
+            "name",
+            "channels"
+        }
+
+        for field in song:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{song_id} : "
+                    f"champ inconnu '{field}'."
+                )
+
+        name = song.get(
+            "name"
+        )
+
+        if (
+            not isinstance(
+                name,
+                str
+            )
+            or
+            not name.strip()
+        ):
+
+            errors.append(
+                f"{song_id} : nom invalide."
+            )
+
+        if "channels" not in song:
+
+            errors.append(
+                f"{song_id} : channels absent."
+            )
+
+            return errors
+
+        channels = song[
+            "channels"
+        ]
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            errors.append(
+                f"{song_id} : channels invalide."
+            )
+
+            return errors
+
+        for channel_id, channel in channels.items():
 
             errors.extend(
                 self.validate_song_channel_data(
@@ -3621,11 +3790,35 @@ class FusionProject:
 
         for song_id, song in self.iter_songs():
 
+            song_errors = self.validate_song_data(
+                song_id,
+                song
+            )
+
+            if not isinstance(
+                song,
+                dict
+            ):
+
+                diagnostic.append(
+                    {
+                        "song": song_id,
+                        "name": song_id,
+                        "fusion_valid": False,
+                        "channels": []
+                    }
+                )
+
+                continue
+
             song_diagnostic = {
                 "song": song_id,
                 "name": song.get(
                     "name",
                     song_id
+                ),
+                "fusion_valid": (
+                    len(song_errors) == 0
                 ),
                 "channels": []
             }
@@ -3634,6 +3827,17 @@ class FusionProject:
                 "channels",
                 {}
             )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                diagnostic.append(
+                    song_diagnostic
+                )
+
+                continue
 
             for channel_id, channel in channels.items():
 
@@ -3651,16 +3855,14 @@ class FusionProject:
                     "programs"
                 )
 
+                qsynth_configured = False
+
                 if isinstance(
                     programs,
                     dict
                 ):
 
-                    if not programs:
-
-                        qsynth_configured = False
-
-                    else:
+                    if programs:
 
                         qsynth_configured = True
 
@@ -3668,6 +3870,14 @@ class FusionProject:
                             program_id,
                             program_data
                         ) in programs.items():
+
+                            if not isinstance(
+                                program_data,
+                                dict
+                            ):
+
+                                qsynth_configured = False
+                                break
 
                             instrument = (
                                 self.resolve_song_program_instrument(
@@ -3846,12 +4056,9 @@ class FusionProject:
                 []
             )
 
-            fusion_valid = all(
-                channel.get(
-                    "fusion_valid",
-                    False
-                )
-                for channel in channels
+            fusion_valid = song.get(
+                "fusion_valid",
+                False
             )
 
             qsynth_configured = (
