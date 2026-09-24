@@ -1,1 +1,15 @@
 # TODO
+
+## Noms des banques Fusion personnalisées
+
+Permettre de définir dans fusion.json les noms des banques MIX et PROGRAM
+créées par l'utilisateur.
+
+Conserver les noms des banques Fusion connues par défaut dans
+fusion_gm_map.py.
+
+Ordre de résolution :
+
+1. nom personnalisé dans fusion.json
+2. nom connu dans fusion_gm_map.py
+3. "Bank <numéro>"

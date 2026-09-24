@@ -1,5 +1,90 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.16
+
+### Robustesse des sauvegardes et des captures
+
+* Réécriture de `save_safe()` afin d'écrire d'abord les nouvelles données dans un fichier temporaire avant leur installation atomique dans `fusion.json`.
+* Conservation temporaire de l'ancien fichier principal pendant l'installation afin de sécuriser la rotation des sauvegardes.
+* Nettoyage des fichiers temporaires après les opérations de sauvegarde.
+* Distinction entre les erreurs survenant avant l'installation de `fusion.json` et les erreurs de rotation des sauvegardes survenant après son installation.
+* Ajout d'un mécanisme de rollback en mémoire pour les captures PROGRAM, MIX et SONG lorsqu'une sauvegarde échoue avant l'installation des nouvelles données.
+* Conservation de la configuration existante lors de la recapture d'un PROGRAM, notamment de son instrument assigné.
+
+### Validation du format de fusion.json
+
+* Ajout de `format_version` à la structure racine de `fusion.json`.
+* Ajout de `PROJECT_FORMAT_VERSION` afin de définir explicitement la version du format supportée par l'application.
+* Validation de `format_version` dès le chargement du projet, avant les migrations et les autres traitements.
+* Détection explicite des formats absents, invalides, plus anciens ou plus récents que le format supporté.
+* Validation de la structure racine et des sections obligatoires `instruments`, `mixes`, `programs` et `songs`.
+* Rejet des sections racine inconnues et des collections dont la structure n'est pas un dictionnaire.
+
+### Validation des INSTRUMENTs
+
+* Validation individuelle des définitions d'instruments.
+* Validation des champs obligatoires `name`, `sf2_bank` et `sf2_program`.
+* Validation des limites des banques et programmes SoundFont.
+* Rejet des champs inconnus et des identifiants d'instruments non normalisés.
+* Normalisation des identifiants d'instruments existants et suppression des doublons identifiés.
+* Correction des références aux instruments normalisés dans les données existantes.
+* Ajout des INSTRUMENTs au diagnostic et au résumé global du projet.
+* Ajout d'une section `INSTRUMENT` distincte dans l'affichage des erreurs de validation.
+
+### Validation des MIX
+
+* Validation canonique des identifiants de canaux MIDI de `1` à `16`.
+* Distinction entre un identifiant de canal invalide et un canal MIDI hors limites.
+* Validation canonique des références PROGRAM sous la forme `bank:program`.
+* Validation des banques et programmes Fusion sur la plage MIDI `0..127`.
+* Validation des références aux PROGRAMs globaux et aux instruments globaux.
+* Renforcement du diagnostic afin de supporter les définitions MIX, collections de canaux et canaux individuels mal formés sans provoquer d'exception.
+* Utilisation de la validité globale du MIX dans le résumé du projet afin qu'une structure invalide ne soit pas classée comme simplement non configurée.
+
+### Validation des PROGRAMs
+
+* Validation canonique des identifiants PROGRAM sous la forme `bank:program`.
+* Validation des banques et programmes Fusion sur la plage MIDI `0..127`.
+* Validation de la structure PROGRAM et de son unique `PART 1`.
+* Validation des champs obligatoires `bank`, `program` et `midi_channel`.
+* Validation des plages optionnelles de notes et de vélocité, incluant leur présence par paires et leurs limites MIDI.
+* Validation des références optionnelles aux instruments globaux.
+* Vérification de la cohérence entre l'identifiant du PROGRAM et les valeurs `bank` et `program` de son `PART 1`.
+* Renforcement du diagnostic afin de supporter les PROGRAMs, collections `parts` et `PART 1` mal formés sans provoquer d'exception.
+* Correction du diagnostic des types invalides de `midi_channel`.
+* Suppression d'un contrôle redondant du canal MIDI dans le diagnostic.
+* Correction des messages de diagnostic des plages de vélocité.
+
+### Validation des SONGs
+
+* Validation de la structure complète des SONGs, de leurs canaux et de leurs PROGRAMs observés.
+* Validation canonique des identifiants de canaux MIDI et des identifiants `bank:program`.
+* Validation des contrôleurs optionnels `volume`, `pan`, `expression`, `reverb` et `chorus` sur la plage MIDI `0..127`.
+* Validation des champs optionnels `fusion_name` et `instrument`.
+* Validation des références locales aux instruments globaux.
+* Conservation de la distinction entre un PROGRAM observé dans un SONG et une référence obligatoire à un PROGRAM global.
+* Renforcement de la migration et du diagnostic afin de supporter les structures SONG mal formées sans provoquer d'exception.
+* Utilisation de la validité globale du SONG dans le résumé du projet afin qu'une structure invalide ne soit pas classée comme simplement non configurée.
+
+### Cohérence des données Fusion
+
+* Uniformisation des banques Fusion sur la plage MIDI `0..127`, conformément aux valeurs CC0 effectivement capturées.
+* Conservation de CC32 comme événement MIDI distinct sans l'intégrer à l'identifiant `bank:program`.
+* Vérification de la cohérence entre les identifiants PROGRAM et les données réellement capturées dans leur `PART 1`.
+* Correction et recapture des données PROGRAM incohérentes identifiées pendant l'audit.
+
+### Tests de robustesse
+
+* Tests volontaires de corruption des structures INSTRUMENT, MIX, PROGRAM et SONG.
+* Vérification des structures non dictionnaires aux différents niveaux des données.
+* Vérification des identifiants non canoniques, valeurs hors limites et types de données invalides.
+* Vérification du comportement des diagnostics et du résumé global en présence de données mal formées.
+* Vérification du rollback des captures et des différents scénarios d'échec de sauvegarde.
+* Validation finale du projet sans exception avec les données normales restaurées.
+* `git diff --check` exécuté sans anomalie.
+
+---
+
 ## Fusion2QSynth v2.15
 
 ### Optimisation de la détection des hints GM

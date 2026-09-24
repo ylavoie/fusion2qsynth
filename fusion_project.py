@@ -1679,7 +1679,7 @@ class FusionProject:
             mix_id
         )
 
-        if not mix:
+        if mix is None:
 
             return [
                 f"Mix inconnu : {mix_id}"
@@ -1708,6 +1708,45 @@ class FusionProject:
             )
 
             return errors
+
+        #
+        # Champs autorisés
+        #
+        allowed_fields = {
+            "name",
+            "channels"
+        }
+
+        for field in mix:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{mix_id} : champ inconnu '{field}'."
+                )
+
+        name = mix.get(
+            "name"
+        )
+
+        if name is None:
+
+            errors.append(
+                f"{mix_id} : nom absent."
+            )
+
+        elif (
+            not isinstance(
+                name,
+                str
+            )
+            or
+            not name.strip()
+        ):
+
+            errors.append(
+                f"{mix_id} : nom invalide."
+            )
 
         if "channels" not in mix:
 
@@ -1779,9 +1818,13 @@ class FusionProject:
 
             return errors
 
-        if not (
-            1 <= midi_channel <= 16
-        ):
+        if str(midi_channel) != channel_id:
+
+            errors.append(
+                f"{prefix} : canal MIDI invalide."
+            )
+
+        elif not 1 <= midi_channel <= 16:
 
             errors.append(
                 f"{prefix} : canal MIDI hors limites."
@@ -1854,6 +1897,18 @@ class FusionProject:
                         program_text
                     )
 
+                    if (
+                        str(bank) != bank_text
+                        or
+                        str(program) != program_text
+                    ):
+
+                        errors.append(
+                            f"{prefix} : PROGRAM invalide ({program_id})."
+                        )
+
+                        return errors
+
                 except (
                     ValueError,
                     AttributeError
@@ -1867,7 +1922,7 @@ class FusionProject:
                 else:
 
                     if not (
-                        0 <= bank <= 16383
+                        0 <= bank <= 127
                     ):
 
                         errors.append(
@@ -1883,7 +1938,7 @@ class FusionProject:
                         )
 
                     if (
-                        0 <= bank <= 16383
+                        0 <= bank <= 127
                         and
                         0 <= program <= 127
                         and
@@ -1930,6 +1985,53 @@ class FusionProject:
 
         return errors
 
+    def validate_fusion_program_id(
+        self,
+        performance_id
+    ):
+
+        if not isinstance(
+            performance_id,
+            str
+        ):
+
+            return False
+
+        try:
+
+            bank_text, program_text = (
+                performance_id.split(
+                    ":",
+                    1
+                )
+            )
+
+            if (
+                str(int(bank_text)) != bank_text
+                or
+                str(int(program_text)) != program_text
+            ):
+
+                return False
+
+            bank = int(
+                bank_text
+            )
+
+            program = int(
+                program_text
+            )
+
+        except ValueError:
+
+            return False
+
+        return (
+            0 <= bank <= 127
+            and
+            0 <= program <= 127
+        )
+
     def validate_part_data(
         self,
         mix_id,
@@ -1939,8 +2041,44 @@ class FusionProject:
 
         errors = []
 
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            errors.append(
+                f"{mix_id} : définition invalide."
+            )
+
+            return errors
+
         prefix = f"{mix_id} PART {part_id}"
 
+        #
+        # Champs autorisés
+        #
+        allowed_fields = {
+            "bank",
+            "program",
+            "midi_channel",
+            "instrument",
+            "note_min",
+            "note_max",
+            "velocity_min",
+            "velocity_max"
+        }
+
+        for field in part:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{prefix} : champ inconnu '{field}'."
+                )
+
+        #
+        # Canal MIDI
+        #
         if "midi_channel" not in part:
 
             errors.append(
@@ -1949,54 +2087,68 @@ class FusionProject:
 
         else:
 
-            ch = part["midi_channel"]
+            midi_channel = part[
+                "midi_channel"
+            ]
 
-            if not (1 <= ch <= 16):
+            if (
+                type(midi_channel) is not int
+                or
+                not 1 <= midi_channel <= 16
+            ):
 
                 errors.append(
-                    f"{prefix} : canal MIDI invalide ({ch})."
+                    f"{prefix} : canal MIDI invalide."
                 )
 
-        has_bank = (
-            "bank" in part
-        )
-
-        has_program = (
-            "program" in part
-        )
-
-        if (
-            has_bank
-            and
-            not has_program
-        ):
-
-            errors.append(
-                f"{prefix} : program Fusion absent."
-            )
-
-        if (
-            has_program
-            and
-            not has_bank
-        ):
+        #
+        # Bank Fusion
+        #
+        if "bank" not in part:
 
             errors.append(
                 f"{prefix} : bank Fusion absente."
             )
 
-        if "name" in part:
+        else:
 
-            if "sf2_bank" not in part:
+            bank = part[
+                "bank"
+            ]
+
+            if (
+                type(bank) is not int
+                or
+                not 0 <= bank <= 127
+            ):
 
                 errors.append(
-                    f"{prefix} : sf2_bank absent."
+                    f"{prefix} : bank Fusion invalide."
                 )
 
-            if "sf2_program" not in part:
+        #
+        # Program Fusion
+        #
+        if "program" not in part:
+
+            errors.append(
+                f"{prefix} : program Fusion absent."
+            )
+
+        else:
+
+            program = part[
+                "program"
+            ]
+
+            if (
+                type(program) is not int
+                or
+                not 0 <= program <= 127
+            ):
 
                 errors.append(
-                    f"{prefix} : sf2_program absent."
+                    f"{prefix} : program Fusion invalide."
                 )
 
         #
@@ -2030,33 +2182,84 @@ class FusionProject:
                     f"{instrument_id} inexistant."
                 )
 
-        if (
+        #
+        # Zone de notes
+        #
+        has_note_min = (
             "note_min" in part
-            and
+        )
+
+        has_note_max = (
             "note_max" in part
+        )
+
+        if (
+            has_note_min
+            != has_note_max
         ):
 
-            if not (
-                0 <= part["note_min"]
-                <= part["note_max"]
-                <= 127
+            errors.append(
+                f"{prefix} : zone de notes incomplète."
+            )
+
+        elif has_note_min:
+
+            note_min = part[
+                "note_min"
+            ]
+
+            note_max = part[
+                "note_max"
+            ]
+
+            if (
+                type(note_min) is not int
+                or
+                type(note_max) is not int
+                or
+                not 0 <= note_min <= note_max <= 127
             ):
 
                 errors.append(
                     f"{prefix} : zone de notes invalide."
                 )
 
+        #
+        # Plage de vélocité
+        #
+        has_velocity_min = (
+            "velocity_min" in part
+        )
+
+        has_velocity_max = (
+            "velocity_max" in part
+        )
 
         if (
-            "velocity_min" in part
-            and
-            "velocity_max" in part
+            has_velocity_min
+            != has_velocity_max
         ):
 
-            if not (
-                0 <= part["velocity_min"]
-                <= part["velocity_max"]
-                <= 127
+            errors.append(
+                f"{prefix} : plage de vélocité incomplète."
+            )
+
+        elif has_velocity_min:
+
+            velocity_min = part[
+                "velocity_min"
+            ]
+
+            velocity_max = part[
+                "velocity_max"
+            ]
+
+            if (
+                type(velocity_min) is not int
+                or
+                type(velocity_max) is not int
+                or
+                not 0 <= velocity_min <= velocity_max <= 127
             ):
 
                 errors.append(
@@ -2294,34 +2497,222 @@ class FusionProject:
         program_id
     ):
 
+        try:
+
+            bank_text, program_text = (
+                program_id.split(
+                    ":",
+                    1
+                )
+            )
+
+            bank = int(
+                bank_text
+            )
+
+            program_number = int(
+                program_text
+            )
+
+        except (
+            AttributeError,
+            ValueError
+        ):
+
+            return [
+                f"PROGRAM {program_id} : identifiant invalide."
+            ]
+
+        if (
+            str(bank) != bank_text
+            or
+            str(program_number) != program_text
+            or
+            not 0 <= bank <= 127
+            or
+            not 0 <= program_number <= 127
+        ):
+
+            return [
+                f"PROGRAM {program_id} : identifiant invalide."
+            ]
+
         program = self.get_program(
             program_id
         )
 
-        if not program:
+        if program is None:
 
             return [
                 f"PROGRAM inconnu : {program_id}"
             ]
 
-        part = program.get(
-            "parts",
-            {}
-        ).get(
-            "1"
-        )
-
-        if not part:
-
-            return [
-                f"{program_id} : PART 1 absente."
-            ]
-
-        return self.validate_part_data(
+        return self.validate_program_data(
             program_id,
-            "1",
-            part
+            program
         )
+
+    def validate_program_data(
+        self,
+        program_id,
+        program
+    ):
+
+        errors = []
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            errors.append(
+                f"{program_id} : définition invalide."
+            )
+
+            return errors
+
+        #
+        # Champs autorisés
+        #
+        allowed_fields = {
+            "name",
+            "parts"
+        }
+
+        for field in program:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{program_id} : champ inconnu '{field}'."
+                )
+
+        #
+        # Nom
+        #
+        name = program.get(
+            "name"
+        )
+
+        if name is None:
+
+            errors.append(
+                f"{program_id} : nom absent."
+            )
+
+        elif (
+            not isinstance(
+                name,
+                str
+            )
+            or
+            not name.strip()
+        ):
+
+            errors.append(
+                f"{program_id} : nom invalide."
+            )
+
+        if "parts" not in program:
+
+            errors.append(
+                f"{program_id} : parts absent."
+            )
+
+            return errors
+
+        parts = program.get(
+            "parts"
+        )
+
+        if not isinstance(
+            parts,
+            dict
+        ):
+
+            errors.append(
+                f"{program_id} : parts invalide."
+            )
+
+            return errors
+
+
+        if "1" not in parts:
+
+            errors.append(
+                f"{program_id} : PART 1 absente."
+            )
+
+            return errors
+
+        for part_id in parts:
+
+            if part_id != "1":
+
+                errors.append(
+                    f"{program_id} : PART {part_id} invalide."
+                )
+
+        part = parts["1"]
+
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            errors.append(
+                f"{program_id} PART 1 : définition invalide."
+            )
+
+            return errors
+
+        errors.extend(
+            self.validate_part_data(
+                program_id,
+                "1",
+                part
+            )
+        )
+
+        bank_text, program_text = (
+            program_id.split(":")
+        )
+
+        expected_bank = int(
+            bank_text
+        )
+
+        expected_program = int(
+            program_text
+        )
+
+        if (
+            type(part.get("bank")) is int
+            and
+            0 <= part["bank"] <= 127
+            and
+            part["bank"] != expected_bank
+        ):
+
+            errors.append(
+                f"{program_id} PART 1 : "
+                f"bank Fusion incohérente avec l'identifiant."
+            )
+
+        if (
+            type(part.get("program")) is int
+            and
+            0 <= part["program"] <= 127
+            and
+            part["program"] != expected_program
+        ):
+
+            errors.append(
+                f"{program_id} PART 1 : "
+                f"program Fusion incohérent avec l'identifiant."
+            )
+
+        return errors
 
     #
     # Accès Song
@@ -2374,10 +2765,24 @@ class FusionProject:
 
         for song_id, song in songs.items():
 
+            if not isinstance(
+                song,
+                dict
+            ):
+
+                continue
+
             channels = song.get(
                 "channels",
                 {}
             )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                continue
 
             new_channels = {}
             song_changed = False
@@ -2671,17 +3076,60 @@ class FusionProject:
 
         errors = []
 
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return [
+                f"{song_id} CH {channel_id} : "
+                "définition invalide."
+            ]
+
+        allowed_fields = {
+            "programs",
+            "volume",
+            "pan",
+            "expression",
+            "reverb",
+            "chorus"
+        }
+
+        for field in channel:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{song_id} CH {channel_id} : "
+                    f"champ inconnu '{field}'."
+                )
+
         try:
 
             midi_channel = int(
                 channel_id
             )
 
-        except ValueError:
+        except (
+            ValueError,
+            TypeError
+        ):
 
             return [
-                f"{song_id} CH {channel_id} : canal MIDI invalide."
+                f"{song_id} CH {channel_id} : "
+                "canal MIDI invalide."
             ]
+
+        if (
+            str(midi_channel) != channel_id
+            or
+            not 1 <= midi_channel <= 16
+        ):
+
+            errors.append(
+                f"{song_id} CH {channel_id} : "
+                "canal MIDI invalide."
+            )
 
         if not (
             1 <= midi_channel <= 16
@@ -2726,6 +3174,19 @@ class FusionProject:
                         program_str
                     )
 
+                    if (
+                        str(bank) != bank_str
+                        or
+                        str(program) != program_str
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM invalide ({program_id})."
+                        )
+
+                        continue
+
                 except (
                     ValueError,
                     AttributeError
@@ -2739,7 +3200,7 @@ class FusionProject:
                     continue
 
                 if not (
-                    0 <= bank <= 16383
+                    0 <= bank <= 127
                 ):
 
                     errors.append(
@@ -2766,17 +3227,43 @@ class FusionProject:
                         f"PROGRAM {program_id} invalide."
                     )
 
-                if not isinstance(
-                    program_data,
-                    dict
-                ):
-
-                    errors.append(
-                        f"{song_id} CH {channel_id} : "
-                        f"PROGRAM {program_id} invalide."
-                    )
-
                     continue
+
+                allowed_program_fields = {
+                    "fusion_name",
+                    "instrument"
+                }
+
+                for field in program_data:
+
+                    if field not in allowed_program_fields:
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} : "
+                            f"champ inconnu '{field}'."
+                        )
+
+                fusion_name = program_data.get(
+                    "fusion_name"
+                )
+
+                if fusion_name is not None:
+
+                    if (
+                        not isinstance(
+                            fusion_name,
+                            str
+                        )
+                        or
+                        not fusion_name.strip()
+                    ):
+
+                        errors.append(
+                            f"{song_id} CH {channel_id} : "
+                            f"PROGRAM {program_id} : "
+                            "fusion_name invalide."
+                        )
 
                 #
                 # Instrument global optionnel
@@ -2793,7 +3280,7 @@ class FusionProject:
                             str
                         )
                         or
-                        not instrument_id
+                        not instrument_id.strip()
                     ):
 
                         errors.append(
@@ -2828,8 +3315,10 @@ class FusionProject:
                 field
             ]
 
-            if not (
-                0 <= value <= 127
+            if (
+                type(value) is not int
+                or
+                not 0 <= value <= 127
             ):
 
                 errors.append(
@@ -2885,18 +3374,89 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return [
                 f"SONG inconnue : {song_id}"
             ]
 
+        return self.validate_song_data(
+            song_id,
+            song
+        )
+
+    def validate_song_data(
+        self,
+        song_id,
+        song
+    ):
+
         errors = []
 
-        for channel_id, channel in song.get(
-            "channels",
-            {}
-        ).items():
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return [
+                f"{song_id} : définition invalide."
+            ]
+
+        allowed_fields = {
+            "name",
+            "channels"
+        }
+
+        for field in song:
+
+            if field not in allowed_fields:
+
+                errors.append(
+                    f"{song_id} : "
+                    f"champ inconnu '{field}'."
+                )
+
+        name = song.get(
+            "name"
+        )
+
+        if (
+            not isinstance(
+                name,
+                str
+            )
+            or
+            not name.strip()
+        ):
+
+            errors.append(
+                f"{song_id} : nom invalide."
+            )
+
+        if "channels" not in song:
+
+            errors.append(
+                f"{song_id} : channels absent."
+            )
+
+            return errors
+
+        channels = song[
+            "channels"
+        ]
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            errors.append(
+                f"{song_id} : channels invalide."
+            )
+
+            return errors
+
+        for channel_id, channel in channels.items():
 
             errors.extend(
                 self.validate_song_channel_data(
@@ -2975,28 +3535,64 @@ class FusionProject:
 
         for mix_id, mix in self.iter_mixes():
 
+            mix_errors = self.validate_mix_data(
+                mix_id,
+                mix
+            )
+
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                result.append(
+                    {
+                        "mix": mix_id,
+                        "name": mix_id,
+                        "fusion_valid": False,
+                        "channels": []
+                    }
+                )
+
+                continue
+
             mix_result = {
                 "mix": mix_id,
                 "name": mix.get(
                     "name",
                     mix_id
-                )
+                ),
+                "fusion_valid":
+                    len(mix_errors) == 0,
+                "channels": []
             }
+
+            channels = mix.get(
+                "channels",
+                {}
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                result.append(
+                    mix_result
+                )
+
+                continue
 
             mix_result[
                 "channels"
             ] = []
 
             for channel_id, channel in sorted(
-                mix.get(
-                    "channels",
-                    {}
-                ).items(),
+                channels.items(),
                 key=lambda item: int(
                     item[0]
                 )
             ):
-
                 errors = (
                     self.validate_mix_channel_data(
                         mix_id,
@@ -3004,6 +3600,34 @@ class FusionProject:
                         channel
                     )
                 )
+
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    mix_result[
+                        "channels"
+                    ].append(
+                        {
+                            "channel":
+                                int(channel_id),
+
+                            "program":
+                                None,
+
+                            "fusion_valid":
+                                False,
+
+                            "qsynth_configured":
+                                False,
+
+                            "instrument":
+                                None
+                        }
+                    )
+
+                    continue
 
                 instrument = (
                     self.resolve_mix_channel_instrument(
@@ -3048,10 +3672,51 @@ class FusionProject:
 
         for program_id, program in self.iter_programs():
 
+            if not isinstance(
+                program,
+                dict
+            ):
+
+                results.append(
+                    {
+                        "program": program_id,
+                        "name": program_id,
+                        "fusion_valid": False,
+                        "qsynth_configured": False,
+                        "errors": [
+                            "Définition invalide"
+                        ]
+                    }
+                )
+
+                continue
+
             parts = program.get(
                 "parts",
                 {}
             )
+
+            if not isinstance(
+                parts,
+                dict
+            ):
+
+                results.append(
+                    {
+                        "program": program_id,
+                        "name": program.get(
+                            "name",
+                            ""
+                        ),
+                        "fusion_valid": False,
+                        "qsynth_configured": False,
+                        "errors": [
+                            "PARTS invalide"
+                        ]
+                    }
+                )
+
+                continue
 
             part = parts.get(
                 "1"
@@ -3068,24 +3733,24 @@ class FusionProject:
                 "errors": []
             }
 
-            if not part:
+            if part is None:
 
                 result["errors"].append(
                     "PART absente"
                 )
 
+            elif not isinstance(
+                part,
+                dict
+            ):
+
+                result["errors"].append(
+                    "PART invalide"
+                )
+
             else:
 
-                if "midi_channel" in part:
-
-                    result["fusion_valid"] = True
-
-                else:
-
-                    result["fusion_valid"] = False
-                    result["errors"].append(
-                        "Canal MIDI absent"
-                    )
+                result["fusion_valid"] = True
 
                 #
                 # Validation Fusion
@@ -3104,8 +3769,10 @@ class FusionProject:
                         "midi_channel"
                     ]
 
-                    if not (
-                        1 <= midi_channel <= 16
+                    if (
+                        type(midi_channel) is not int
+                        or
+                        not 1 <= midi_channel <= 16
                     ):
 
                         result["fusion_valid"] = False
@@ -3116,17 +3783,42 @@ class FusionProject:
                 #
                 # Plage de notes
                 #
-                if (
+                has_note_min = (
                     "note_min" in part
-                    and
+                )
+
+                has_note_max = (
                     "note_max" in part
+                )
+
+                if (
+                    has_note_min
+                    != has_note_max
                 ):
 
+                    result["fusion_valid"] = False
+                    result[
+                        "errors"
+                    ].append(
+                        "Zone de notes incomplète"
+                    )
+
+                elif has_note_min:
+
+                    note_min = part[
+                        "note_min"
+                    ]
+
+                    note_max = part[
+                        "note_max"
+                    ]
+
                     if not (
-                        0
-                        <= part["note_min"]
-                        <= part["note_max"]
-                        <= 127
+                        type(note_min) is int
+                        and
+                        type(note_max) is int
+                        and
+                        0 <= note_min <= note_max <= 127
                     ):
 
                         result["fusion_valid"] = False
@@ -3139,24 +3831,49 @@ class FusionProject:
                 #
                 # Plage de vélocité
                 #
-                if (
+                has_velocity_min = (
                     "velocity_min" in part
-                    and
+                )
+
+                has_velocity_max = (
                     "velocity_max" in part
+                )
+
+                if (
+                    has_velocity_min
+                    != has_velocity_max
                 ):
 
+                    result["fusion_valid"] = False
+                    result[
+                        "errors"
+                    ].append(
+                        "Zone de vélocité incomplète"
+                    )
+
+                elif has_velocity_min:
+
+                    velocity_min = part[
+                        "velocity_min"
+                    ]
+
+                    velocity_max = part[
+                        "velocity_max"
+                    ]
+
                     if not (
-                        0
-                        <= part["velocity_min"]
-                        <= part["velocity_max"]
-                        <= 127
+                        type(velocity_min) is int
+                        and
+                        type(velocity_max) is int
+                        and
+                        0 <= velocity_min <= velocity_max <= 127
                     ):
 
                         result["fusion_valid"] = False
                         result[
                             "errors"
                         ].append(
-                            "Plage de vélocité invalide"
+                            "Zone de vélocité invalide"
                         )
 
                 result["qsynth_configured"] = (
@@ -3199,11 +3916,35 @@ class FusionProject:
 
         for song_id, song in self.iter_songs():
 
+            song_errors = self.validate_song_data(
+                song_id,
+                song
+            )
+
+            if not isinstance(
+                song,
+                dict
+            ):
+
+                diagnostic.append(
+                    {
+                        "song": song_id,
+                        "name": song_id,
+                        "fusion_valid": False,
+                        "channels": []
+                    }
+                )
+
+                continue
+
             song_diagnostic = {
                 "song": song_id,
                 "name": song.get(
                     "name",
                     song_id
+                ),
+                "fusion_valid": (
+                    len(song_errors) == 0
                 ),
                 "channels": []
             }
@@ -3212,6 +3953,17 @@ class FusionProject:
                 "channels",
                 {}
             )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                diagnostic.append(
+                    song_diagnostic
+                )
+
+                continue
 
             for channel_id, channel in channels.items():
 
@@ -3229,16 +3981,14 @@ class FusionProject:
                     "programs"
                 )
 
+                qsynth_configured = False
+
                 if isinstance(
                     programs,
                     dict
                 ):
 
-                    if not programs:
-
-                        qsynth_configured = False
-
-                    else:
+                    if programs:
 
                         qsynth_configured = True
 
@@ -3246,6 +3996,14 @@ class FusionProject:
                             program_id,
                             program_data
                         ) in programs.items():
+
+                            if not isinstance(
+                                program_data,
+                                dict
+                            ):
+
+                                qsynth_configured = False
+                                break
 
                             instrument = (
                                 self.resolve_song_program_instrument(
@@ -3342,13 +4100,9 @@ class FusionProject:
                 units
             )
 
-            valid = sum(
-                1
-                for unit in units
-                if unit.get(
-                    "fusion_valid",
-                    False
-                )
+            fusion_valid = mix.get(
+                "fusion_valid",
+                False
             )
 
             configured = sum(
@@ -3363,7 +4117,7 @@ class FusionProject:
             #
             # État de configuration
             #
-            if valid < total:
+            if not fusion_valid:
 
                 summary["mixes"]["error"] += 1
 
@@ -3424,12 +4178,9 @@ class FusionProject:
                 []
             )
 
-            fusion_valid = all(
-                channel.get(
-                    "fusion_valid",
-                    False
-                )
-                for channel in channels
+            fusion_valid = song.get(
+                "fusion_valid",
+                False
             )
 
             qsynth_configured = (
