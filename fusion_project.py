@@ -1818,9 +1818,13 @@ class FusionProject:
 
             return errors
 
-        if not (
-            1 <= midi_channel <= 16
-        ):
+        if str(midi_channel) != channel_id:
+
+            errors.append(
+                f"{prefix} : canal MIDI invalide."
+            )
+
+        elif not 1 <= midi_channel <= 16:
 
             errors.append(
                 f"{prefix} : canal MIDI hors limites."
@@ -1892,6 +1896,18 @@ class FusionProject:
                     program = int(
                         program_text
                     )
+
+                    if (
+                        str(bank) != bank_text
+                        or
+                        str(program) != program_text
+                    ):
+
+                        errors.append(
+                            f"{prefix} : PROGRAM invalide ({program_id})."
+                        )
+
+                        return errors
 
                 except (
                     ValueError,
@@ -2637,15 +2653,18 @@ class FusionProject:
                     f"{program_id} : PART {part_id} invalide."
                 )
 
-        errors.extend(
-            self.validate_part_data(
-                program_id,
-                "1",
-                parts["1"]
-            )
-        )
-
         part = parts["1"]
+
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            errors.append(
+                f"{program_id} PART 1 : définition invalide."
+            )
+
+            return errors
 
         errors.extend(
             self.validate_part_data(
@@ -3516,28 +3535,64 @@ class FusionProject:
 
         for mix_id, mix in self.iter_mixes():
 
+            mix_errors = self.validate_mix_data(
+                mix_id,
+                mix
+            )
+
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                result.append(
+                    {
+                        "mix": mix_id,
+                        "name": mix_id,
+                        "fusion_valid": False,
+                        "channels": []
+                    }
+                )
+
+                continue
+
             mix_result = {
                 "mix": mix_id,
                 "name": mix.get(
                     "name",
                     mix_id
-                )
+                ),
+                "fusion_valid":
+                    len(mix_errors) == 0,
+                "channels": []
             }
+
+            channels = mix.get(
+                "channels",
+                {}
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                result.append(
+                    mix_result
+                )
+
+                continue
 
             mix_result[
                 "channels"
             ] = []
 
             for channel_id, channel in sorted(
-                mix.get(
-                    "channels",
-                    {}
-                ).items(),
+                channels.items(),
                 key=lambda item: int(
                     item[0]
                 )
             ):
-
                 errors = (
                     self.validate_mix_channel_data(
                         mix_id,
@@ -3545,6 +3600,34 @@ class FusionProject:
                         channel
                     )
                 )
+
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    mix_result[
+                        "channels"
+                    ].append(
+                        {
+                            "channel":
+                                int(channel_id),
+
+                            "program":
+                                None,
+
+                            "fusion_valid":
+                                False,
+
+                            "qsynth_configured":
+                                False,
+
+                            "instrument":
+                                None
+                        }
+                    )
+
+                    continue
 
                 instrument = (
                     self.resolve_mix_channel_instrument(
@@ -3589,10 +3672,51 @@ class FusionProject:
 
         for program_id, program in self.iter_programs():
 
+            if not isinstance(
+                program,
+                dict
+            ):
+
+                results.append(
+                    {
+                        "program": program_id,
+                        "name": program_id,
+                        "fusion_valid": False,
+                        "qsynth_configured": False,
+                        "errors": [
+                            "Définition invalide"
+                        ]
+                    }
+                )
+
+                continue
+
             parts = program.get(
                 "parts",
                 {}
             )
+
+            if not isinstance(
+                parts,
+                dict
+            ):
+
+                results.append(
+                    {
+                        "program": program_id,
+                        "name": program.get(
+                            "name",
+                            ""
+                        ),
+                        "fusion_valid": False,
+                        "qsynth_configured": False,
+                        "errors": [
+                            "PARTS invalide"
+                        ]
+                    }
+                )
+
+                continue
 
             part = parts.get(
                 "1"
@@ -3609,24 +3733,24 @@ class FusionProject:
                 "errors": []
             }
 
-            if not part:
+            if part is None:
 
                 result["errors"].append(
                     "PART absente"
                 )
 
+            elif not isinstance(
+                part,
+                dict
+            ):
+
+                result["errors"].append(
+                    "PART invalide"
+                )
+
             else:
 
-                if "midi_channel" in part:
-
-                    result["fusion_valid"] = True
-
-                else:
-
-                    result["fusion_valid"] = False
-                    result["errors"].append(
-                        "Canal MIDI absent"
-                    )
+                result["fusion_valid"] = True
 
                 #
                 # Validation Fusion
@@ -3645,8 +3769,10 @@ class FusionProject:
                         "midi_channel"
                     ]
 
-                    if not (
-                        1 <= midi_channel <= 16
+                    if (
+                        type(midi_channel) is not int
+                        or
+                        not 1 <= midi_channel <= 16
                     ):
 
                         result["fusion_valid"] = False
@@ -3722,7 +3848,7 @@ class FusionProject:
                     result[
                         "errors"
                     ].append(
-                        "Zone de notes incomplète"
+                        "Zone de vélocité incomplète"
                     )
 
                 elif has_velocity_min:
@@ -3747,7 +3873,7 @@ class FusionProject:
                         result[
                             "errors"
                         ].append(
-                            "Zone de notes invalide"
+                            "Zone de vélocité invalide"
                         )
 
                 result["qsynth_configured"] = (
@@ -3974,13 +4100,9 @@ class FusionProject:
                 units
             )
 
-            valid = sum(
-                1
-                for unit in units
-                if unit.get(
-                    "fusion_valid",
-                    False
-                )
+            fusion_valid = mix.get(
+                "fusion_valid",
+                False
             )
 
             configured = sum(
@@ -3995,7 +4117,7 @@ class FusionProject:
             #
             # État de configuration
             #
-            if valid < total:
+            if not fusion_valid:
 
                 summary["mixes"]["error"] += 1
 

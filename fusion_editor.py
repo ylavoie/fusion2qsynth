@@ -4697,7 +4697,7 @@ def print_project_summary(
         ]
 
         line = (
-            f"{label:<10}: "
+            f"{label:<11}: "
             f"{data['total']:>4} | "
             f"OK {data['ok']:>3} | "
             f"À configurer {data['unconfigured']:>3} | "

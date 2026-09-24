@@ -4,6 +4,7 @@ def print_validation_errors(
     title="Erreurs de validation"
 ):
 
+    instrument_errors = []
     mix_errors = []
     program_errors = []
     song_errors = []
@@ -25,6 +26,10 @@ def print_validation_errors(
         for song_id, _ in project.iter_songs()
     }
 
+    instrument_ids = set(
+        project.get_instruments().keys()
+    )
+
     for error in errors:
 
         if not isinstance(
@@ -39,6 +44,22 @@ def print_validation_errors(
             continue
 
         matched = False
+
+        for instrument_id in instrument_ids:
+
+            if error.startswith(
+                f"Instrument {instrument_id} "
+            ):
+
+                instrument_errors.append(
+                    error
+                )
+
+                matched = True
+                break
+
+        if matched:
+            continue
 
         for song_id in song_ids:
 
@@ -95,6 +116,19 @@ def print_validation_errors(
     print("====================")
     print(title)
     print("====================")
+
+    if instrument_errors:
+
+        print()
+        print("INSTRUMENT")
+        print("----------")
+
+        for error in instrument_errors:
+
+            print(
+                "-",
+                error
+            )
 
     if mix_errors:
 
