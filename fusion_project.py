@@ -12,7 +12,12 @@ from fusion_lib import (
 )
 from fusion_constants import PROJECT_FORMAT_VERSION
 
-from fusion_gm_map import fusion_program_bank_name
+from fusion_gm_map import (
+    FUSION_PROGRAM_BANK_NAMES,
+    FUSION_MIX_BANK_NAMES,
+    fusion_program_bank_name,
+    fusion_mix_bank_name
+)
 
 # Fichiers
 FUSION_FILE = "fusion.json"
@@ -188,6 +193,7 @@ class FusionProject:
     ):
 
         required_sections = (
+            "banks",
             "instruments",
             "mixes",
             "programs",
@@ -215,6 +221,7 @@ class FusionProject:
 
         allowed_sections = {
             "format_version",
+            "banks",
             "instruments",
             "mixes",
             "programs",
@@ -1051,6 +1058,318 @@ class FusionProject:
         except Exception:
 
             pass
+
+    #
+    # Accès BANK
+    #
+    def get_program_bank_name(
+        self,
+        bank
+    ):
+
+        name = (
+            self.data.get(
+                "banks",
+                {}
+            )
+            .get(
+                "program",
+                {}
+            )
+            .get(
+                str(bank)
+            )
+        )
+
+        if name is not None:
+
+            return name
+
+        return fusion_program_bank_name(
+            bank
+        )
+
+    def get_mix_bank_name(
+        self,
+        bank
+    ):
+
+        name = (
+            self.data.get(
+                "banks",
+                {}
+            )
+            .get(
+                "mix",
+                {}
+            )
+            .get(
+                str(bank)
+            )
+        )
+
+        if name is not None:
+
+            return name
+
+        return fusion_mix_bank_name(
+            bank
+        )
+
+    def get_program_banks(
+        self
+    ):
+
+        banks = set(
+            FUSION_PROGRAM_BANK_NAMES
+        )
+
+        banks.update(
+            int(bank)
+            for bank in self.data[
+                "banks"
+            ][
+                "program"
+            ]
+        )
+
+        return sorted(
+            banks
+        )
+
+    def get_mix_banks(
+        self
+    ):
+
+        banks = set(
+            FUSION_MIX_BANK_NAMES
+        )
+
+        banks.update(
+            int(bank)
+            for bank in self.data[
+                "banks"
+            ][
+                "mix"
+            ]
+        )
+
+        return sorted(
+            banks
+        )
+
+    def get_banks(
+        self,
+        bank_type
+    ):
+
+        if bank_type == "program":
+
+            return self.get_program_banks()
+
+        if bank_type == "mix":
+
+            return self.get_mix_banks()
+
+        raise ValueError(
+            f"Type de banque invalide : {bank_type}"
+        )
+
+    def get_bank_name(
+        self,
+        bank_type,
+        bank
+    ):
+
+        if bank_type == "program":
+
+            return self.get_program_bank_name(
+                bank
+            )
+
+        if bank_type == "mix":
+
+            return self.get_mix_bank_name(
+                bank
+            )
+
+        raise ValueError(
+            f"Type de banque invalide : {bank_type}"
+        )
+
+    def set_bank_name(
+        self,
+        bank_type,
+        bank,
+        name
+    ):
+
+        if bank_type not in (
+            "program",
+            "mix"
+        ):
+
+            return (
+                False,
+                [
+                    (
+                        "Type de banque invalide : "
+                        f"{bank_type}"
+                    )
+                ]
+            )
+
+        try:
+
+            bank = int(
+                bank
+            )
+
+        except (
+            TypeError,
+            ValueError
+        ):
+
+            return (
+                False,
+                [
+                    "Banque invalide."
+                ]
+            )
+
+        if not 0 <= bank <= 127:
+
+            return (
+                False,
+                [
+                    "Banque invalide."
+                ]
+            )
+
+        banks = self.data[
+            "banks"
+        ][
+            bank_type
+        ]
+
+        bank_id = str(
+            bank
+        )
+
+        old_name = banks.get(
+            bank_id
+        )
+
+        if name is not None:
+
+            name = name.strip()
+
+            if not name:
+
+                return (
+                    False,
+                    [
+                        "Nom de banque invalide."
+                    ]
+                )
+
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if name is None:
+
+            banks.pop(
+                bank_id,
+                None
+            )
+
+        else:
+
+            banks[
+                bank_id
+            ] = name
+
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
+
+        if new_errors:
+
+            if old_name is None:
+
+                banks.pop(
+                    bank_id,
+                    None
+                )
+
+            else:
+
+                banks[
+                    bank_id
+                ] = old_name
+
+            return (
+                False,
+                new_errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def get_custom_bank_name(
+        self,
+        bank_type,
+        bank
+    ):
+
+        if bank_type == "program":
+
+            return self.get_custom_program_bank_name(
+                bank
+            )
+
+        if bank_type == "mix":
+
+            return self.get_custom_mix_bank_name(
+                bank
+            )
+
+        raise ValueError(
+            f"Type de banque invalide : {bank_type}"
+        )
+
+    def get_custom_program_bank_name(
+        self,
+        bank
+    ):
+
+        return (
+            self.data[
+                "banks"
+            ][
+                "program"
+            ].get(
+                str(bank)
+            )
+        )
+
+    def get_custom_mix_bank_name(
+        self,
+        bank
+    ):
+
+        return (
+            self.data[
+                "banks"
+            ][
+                "mix"
+            ].get(
+                str(bank)
+            )
+        )
 
     #
     # Accès Mix
@@ -4330,7 +4649,7 @@ class FusionProject:
         print(
             "Fusion Bank    :",
             (
-                f"{fusion_program_bank_name(bank)} ({bank})"
+                f"{self.get_program_bank_name(bank)} ({bank})"
                 if bank is not None
                 else "?"
             )
@@ -4426,6 +4745,10 @@ class FusionProject:
         errors = []
 
         errors.extend(
+            self.validate_banks()
+        )
+
+        errors.extend(
             self.validate_instruments()
         )
 
@@ -4454,6 +4777,136 @@ class FusionProject:
                     song_id
                 )
             )
+
+        return errors
+
+    def validate_bank_names(
+        self,
+        bank_type
+    ):
+
+        errors = []
+
+        banks = self.data.get(
+            "banks",
+            {}
+        ).get(
+            bank_type,
+            {}
+        )
+
+        for bank_id, name in banks.items():
+
+            prefix = (
+                f"Banque {bank_type.upper()} "
+                f"{bank_id}"
+            )
+
+            if (
+                not isinstance(
+                    bank_id,
+                    str
+                )
+                or
+                not bank_id.isdigit()
+                or
+                str(int(bank_id)) != bank_id
+                or
+                not 0 <= int(bank_id) <= 127
+            ):
+
+                errors.append(
+                    f"{prefix} : identifiant invalide"
+                )
+
+                continue
+
+            if (
+                not isinstance(
+                    name,
+                    str
+                )
+                or
+                not name.strip()
+            ):
+
+                errors.append(
+                    f"{prefix} : nom invalide"
+                )
+
+        return errors
+
+    def validate_banks(
+        self
+    ):
+
+        errors = []
+
+        banks = self.data.get(
+            "banks"
+        )
+
+        if not isinstance(
+            banks,
+            dict
+        ):
+
+            return [
+                "Banques : définition invalide"
+            ]
+
+        required_sections = {
+            "program",
+            "mix"
+        }
+
+        for section in sorted(
+            required_sections
+        ):
+
+            if section not in banks:
+
+                errors.append(
+                    f"Banques : section {section} absente"
+                )
+
+            elif not isinstance(
+                banks[section],
+                dict
+            ):
+
+                errors.append(
+                    f"Banques : section {section} invalide"
+                )
+
+        unknown_sections = (
+            set(banks)
+            - required_sections
+        )
+
+        for section in sorted(
+            unknown_sections
+        ):
+
+            errors.append(
+                f"Banques : section inconnue {section}"
+            )
+
+        if errors:
+
+            return errors
+
+        errors.extend(
+            self.validate_bank_names(
+                "program"
+            )
+        )
+
+        errors.extend(
+            self.validate_bank_names(
+                "mix"
+            )
+        )
 
         return errors
 

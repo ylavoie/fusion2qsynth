@@ -18,11 +18,6 @@ from fusion_constants import (
     DEBUG
 )
 
-from fusion_gm_map import (
-    fusion_mix_bank_name,
-    fusion_program_bank_name,
-)
-
 fusion_default_channel = FUSION_DEFAULT_CHANNEL - 1
 
 from fusion_project import FusionProject
@@ -219,7 +214,9 @@ def capture_program(
                         )
                         print(
                             "Bank           :",
-                            fusion_program_bank_name(bank)
+                            project.get_program_bank_name(
+                                bank
+                            )
                         )
                         print(
                             "Program        :",
@@ -542,7 +539,7 @@ def capture_mix(
                             print()
                             print(
                                 "Fusion Mix :",
-                                f"{fusion_mix_bank_name(bank)} "
+                                f"{project.get_mix_bank_name(bank)} "
                                 f"({current_mix})"
                             )
                             print()

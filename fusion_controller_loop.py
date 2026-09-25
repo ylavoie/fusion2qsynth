@@ -25,11 +25,6 @@ from fusion_performance import (
     load_song_program
 )
 
-from fusion_gm_map import (
-    fusion_program_bank_name,
-    fusion_mix_bank_name
-)
-
 fusion_default_channel = FUSION_DEFAULT_CHANNEL - 1
 
 def execute_pending_reload(
@@ -530,13 +525,13 @@ def run_controller_loop(
 
                 if selected_mode == "mix":
 
-                    bank_name = fusion_mix_bank_name(
+                    bank_name = project.get_mix_bank_name(
                         bank
                     )
 
                 else:
 
-                    bank_name = fusion_program_bank_name(
+                    bank_name = project.get_program_bank_name(
                         bank
                     )
 

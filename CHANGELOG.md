@@ -1,5 +1,40 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.17
+
+### Gestion des banques
+
+* Ajout du menu **Gestion des banques** dans l’éditeur.
+* Ajout de sous-menus distincts pour les banques **PROGRAM** et **MIX**.
+* Affichage des banques Fusion connues et des banques possédant un nom personnalisé.
+* Sélection possible de toute banque valide de `0` à `127`, y compris une banque sans nom Fusion prédéfini.
+* Affichage du **nom effectif** et du **nom personnalisé** de la banque sélectionnée.
+* Ajout et modification d’un nom personnalisé.
+* Suppression d’un nom personnalisé avec `-`.
+* Retour automatique au nom Fusion d’origine, ou au nom générique `BANK n`, après suppression d’un nom personnalisé.
+* Persistance des noms personnalisés dans `fusion.json` via `save_safe()`.
+* Validation des modifications sans blocage par les erreurs préexistantes du projet.
+* Ajout de l’accès centralisé aux noms de banques PROGRAM et MIX dans `FusionProject`.
+* Prise en compte des noms personnalisés de banques dans la capture Fusion et le contrôleur Live.
+* Ajout d’une section **BANK** dans l’affichage des erreurs de validation.
+
+### Référence des suggestions
+
+* Mise à jour de la référence après correction de deux noms PROGRAM Fusion :
+  * `0:94` : `Oxide` → `oxide`
+  * `1:0` : `Holy Grail Grand Piano` → `Bright Jazz Piano`
+* Mise à jour de `fusion_catalog_sha256` pour refléter le catalogue Fusion corrigé.
+* Régénération des suggestions de `1:0` correspondant au nouveau nom `Bright Jazz Piano`.
+* Validation de la nouvelle référence : `Régressions suggestions: 0`.
+
+### Validation
+
+* Validation fonctionnelle de l’ajout, de la modification et de la suppression des noms personnalisés pour les banques PROGRAM et MIX.
+* Vérification de la persistance et de la suppression des noms personnalisés dans `fusion.json`.
+* Validation globale réussie avec `integration-globale.py`, sans erreur de suggestion, de normalisation, de limite ni de régression de référence.
+
+---
+
 ## Fusion2QSynth v2.16
 
 ### Robustesse des sauvegardes et des captures
