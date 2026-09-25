@@ -4,6 +4,7 @@ def print_validation_errors(
     title="Erreurs de validation"
 ):
 
+    bank_errors = []
     instrument_errors = []
     mix_errors = []
     program_errors = []
@@ -44,6 +45,22 @@ def print_validation_errors(
             continue
 
         matched = False
+
+        if (
+            error.startswith(
+                "Banque "
+            )
+            or
+            error.startswith(
+                "Banques "
+            )
+        ):
+
+            bank_errors.append(
+                error
+            )
+
+            continue
 
         for instrument_id in instrument_ids:
 
@@ -116,6 +133,19 @@ def print_validation_errors(
     print("====================")
     print(title)
     print("====================")
+
+    if bank_errors:
+
+        print()
+        print("BANK")
+        print("----")
+
+        for error in bank_errors:
+
+            print(
+                "-",
+                error
+            )
 
     if instrument_errors:
 

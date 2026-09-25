@@ -15,11 +15,6 @@ from fusion_diagnostic import (
     print_error_messages
 )
 
-from fusion_gm_map import (
-    fusion_program_bank_name,
-    FUSION_PROGRAM_BANK_NAMES
-)
-
 from fusion_suggestions import (
     suggest_instruments
 )
@@ -1512,12 +1507,12 @@ def validate_part_updates(
 
     if (
         bank is not None
-        and not 0 <= bank <= 18
+        and not 0 <= bank <= 127
     ):
 
         print()
         print(
-            "Fusion Bank invalide (0-18)."
+            "Fusion Bank invalide (0-127)."
         )
 
         return False
@@ -1583,6 +1578,7 @@ def validate_part_updates(
     return True
 
 def choose_fusion_program_bank(
+    project,
     current_bank=None
 ):
 
@@ -1591,7 +1587,7 @@ def choose_fusion_program_bank(
     print(
         "Banque Fusion actuelle :",
         (
-            f"{fusion_program_bank_name(current_bank)} "
+            f"{project.get_program_bank_name(current_bank)} "
             f"({current_bank})"
             if current_bank is not None
             else "?"
@@ -1600,13 +1596,11 @@ def choose_fusion_program_bank(
 
     print()
 
-    for bank in sorted(
-        FUSION_PROGRAM_BANK_NAMES
-    ):
+    for bank in project.get_program_banks():
 
         print(
             f"{bank:2} - "
-            f"{FUSION_PROGRAM_BANK_NAMES[bank]}"
+            f"{project.get_program_bank_name(bank)}"
         )
 
     print()
@@ -1638,7 +1632,7 @@ def choose_fusion_program_bank(
 
             continue
 
-        if bank in FUSION_PROGRAM_BANK_NAMES:
+        if 0 <= bank <= 127:
 
             return bank
 
@@ -1647,6 +1641,7 @@ def choose_fusion_program_bank(
         )
 
 def edit_part_values(
+    project,
     part,
     part_id
 ):
@@ -1673,7 +1668,7 @@ def edit_part_values(
     print(
         "Fusion Bank :",
         (
-            f"{fusion_program_bank_name(bank)} ({bank})"
+            f"{project.get_program_bank_name(bank)} ({bank})"
             if bank is not None
             else "?"
         )
@@ -1741,13 +1736,14 @@ def edit_part_values(
     print(
         "Fusion Bank actuelle :",
         (
-            f"{fusion_program_bank_name(bank)} ({bank})"
+            f"{project.get_program_bank_name(bank)} ({bank})"
             if bank is not None
             else "?"
         )
     )
 
     value = choose_fusion_program_bank(
+        project,
         bank
     )
 
@@ -3225,7 +3221,7 @@ def list_programs(
         )
 
         bank_name = (
-            fusion_program_bank_name(bank)
+            project.get_program_bank_name(bank)
             if bank is not None
             else "?"
         )
@@ -3468,6 +3464,7 @@ def edit_program(
         elif choice == "2":
 
             updates = edit_part_values(
+                project,
                 part,
                 "1"
             )
@@ -3797,7 +3794,7 @@ def list_songs(
                 )
 
                 bank_name = (
-                    fusion_program_bank_name(
+                    project.get_program_bank_name(
                         bank
                     )
                     if bank is not None
@@ -4311,7 +4308,7 @@ def edit_song(
 
                     print(
                         "Fusion Bank    :",
-                        f"{fusion_program_bank_name(bank)} ({bank})"
+                        f"{project.get_program_bank_name(bank)} ({bank})"
                     )
 
                     print(
@@ -4674,6 +4671,203 @@ def edit_song(
             if return_to_channel:
 
                 break
+
+def manage_banks(
+    project
+):
+
+    def manage_bank_type(
+        performance_type
+    ):
+
+        label = performance_type.upper()
+
+        while True:
+
+            print()
+            print("====================")
+            print(
+                f"Banques {label}"
+            )
+            print("====================")
+
+            banks = project.get_banks(
+                performance_type
+            )
+
+            if not banks:
+
+                print(
+                    "Aucune banque."
+                )
+
+                return
+
+            for bank in banks:
+
+                name = project.get_bank_name(
+                    performance_type,
+                    bank
+                )
+
+                print(
+                    f"{bank} - {name}"
+                )
+
+            print()
+            print(
+                "q - Retour"
+            )
+
+            choix = input(
+                "Banque > "
+            )
+
+            if choix.lower() == "q":
+
+                return
+
+            try:
+
+                bank = int(
+                    choix
+                )
+
+            except ValueError:
+
+                print(
+                    "Banque invalide."
+                )
+
+                continue
+
+            if not 0 <= bank <= 127:
+
+                print(
+                    "Banque inexistante."
+                )
+
+                continue
+
+            effective_name = project.get_bank_name(
+                performance_type,
+                bank
+            )
+
+            custom_name = project.get_custom_bank_name(
+                performance_type,
+                bank
+            )
+
+            print()
+            print(
+                "Nom effectif     :",
+                effective_name
+            )
+
+            print(
+                "Nom personnalisé :",
+                (
+                    custom_name
+                    if custom_name is not None
+                    else "-"
+                )
+            )
+
+            print()
+            print(
+                "Nouveau nom"
+            )
+
+            print(
+                "Entrée = conserver"
+            )
+
+            print(
+                "- = supprimer le nom personnalisé"
+            )
+
+            name = input(
+                "> "
+            ).strip()
+
+            if not name:
+
+                continue
+
+            if name == "-":
+
+                name = None
+
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
+            success, messages = project.set_bank_name(
+                performance_type,
+                bank,
+                name
+            )
+
+            if success:
+
+                if project.save_safe(
+                    allowed_errors=allowed_errors
+                ):
+
+                    print(
+                        "Nom de banque enregistré."
+                    )
+
+            else:
+
+                print(
+                    "Modification refusée :"
+                )
+
+                print_error_messages(
+                    messages
+                )
+
+
+    while True:
+
+        print()
+        print("====================")
+        print("Gestion des banques")
+        print("====================")
+
+        print(
+            "1 - PROGRAM"
+        )
+
+        print(
+            "2 - MIX"
+        )
+
+        print(
+            "q - Retour"
+        )
+
+        choix = input(
+            "> "
+        )
+
+        if choix == "1":
+
+            manage_bank_type(
+                "program"
+            )
+
+        elif choix == "2":
+
+            manage_bank_type(
+                "mix"
+            )
+
+        elif choix.lower() == "q":
+
+            return
 
 def print_project_summary(
     project
@@ -5590,6 +5784,7 @@ def main():
         print("2 - Gestion PROGRAM")
         print("3 - Gestion SONG")
         print("4 - Gestion Instruments")
+        print("5 - Gestion des banques")
         print("q - Quitter")
         choix = input(
             "> "
@@ -5616,6 +5811,12 @@ def main():
         elif choix == "4":
 
             instruments_menu(
+                project
+            )
+
+        elif choix == "5":
+
+            manage_banks(
                 project
             )
 
