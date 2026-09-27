@@ -1059,6 +1059,21 @@ class FusionProject:
 
             pass
 
+    def snapshot(
+        self
+    ):
+
+        return copy.deepcopy(
+            self.data
+        )
+
+    def restore_snapshot(
+        self,
+        snapshot
+    ):
+
+        self.data = snapshot
+
     #
     # Accès BANK
     #

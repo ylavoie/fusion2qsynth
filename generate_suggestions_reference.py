@@ -58,10 +58,7 @@ def build_reference():
         for p in list_presets()
     ]
 
-    programs = project.data.get(
-        "programs",
-        {}
-    )
+    programs = project.get_programs()
 
     if not programs:
 

@@ -2,7 +2,6 @@
 
 import mido
 import time
-import copy
 
 from fusion_lib import (
     find_fusion_input,
@@ -100,9 +99,7 @@ def capture_program(
                             velocity_max
                         )
 
-                        original_data = copy.deepcopy(
-                            project.data
-                        )
+                        original_data = project.snapshot()
 
                         program = project.ensure_program(
                             current_program
@@ -132,7 +129,9 @@ def capture_program(
 
                         else:
 
-                            project.data = original_data
+                            project.restore_snapshot(
+                                original_data
+                            )
 
                             print(
                                 "⚠ Sauvegarde non effectuée."
@@ -444,9 +443,7 @@ def capture_mix(
                                     channel_id
                                 ] = {}
 
-                            original_data = copy.deepcopy(
-                                project.data
-                            )
+                            original_data = project.snapshot()
                             project.ensure_mix(
                                 current_mix
                             )
@@ -482,7 +479,9 @@ def capture_mix(
 
                             else:
 
-                                project.data = original_data
+                                project.restore_snapshot(
+                                    original_data
+                                )
 
                                 print(
                                     "Le Mix n'a pas été sauvegardé."
@@ -774,9 +773,7 @@ def capture_song(
 
                     capture_active = False
 
-                    original_data = copy.deepcopy(
-                        project.data
-                    )
+                    original_data = project.snapshot()
 
                     if not channels:
 
@@ -1090,7 +1087,9 @@ def capture_song(
 
                     else:
 
-                        project.data = original_data
+                        project.restore_snapshot(
+                            original_data
+                        )
 
                         print(
                             "⚠ Sauvegarde non effectuée."
