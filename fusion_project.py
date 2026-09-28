@@ -1059,6 +1059,21 @@ class FusionProject:
 
             pass
 
+    def snapshot(
+        self
+    ):
+
+        return copy.deepcopy(
+            self.data
+        )
+
+    def restore_snapshot(
+        self,
+        snapshot
+    ):
+
+        self.data = snapshot
+
     #
     # Accès BANK
     #
@@ -2792,6 +2807,90 @@ class FusionProject:
 
         return programs[program_id]
 
+    def update_program_part(
+        self,
+        program_id,
+        part_id,
+        updates,
+        allowed_errors=None
+    ):
+
+        program = self.get_program(
+            program_id
+        )
+
+        if not program:
+
+            return (
+                False,
+                [
+                    f"PROGRAM inconnu : {program_id}"
+                ]
+            )
+
+        parts = program.get(
+            "parts"
+        )
+
+        if not isinstance(
+            parts,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{program_id} : définition PART invalide."
+                ]
+            )
+
+        part_id = str(
+            part_id
+        )
+
+        old_program = copy.deepcopy(
+            program
+        )
+
+        part = parts.setdefault(
+            part_id,
+            {}
+        )
+
+        part.update(
+            updates
+        )
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            program.clear()
+
+            program.update(
+                old_program
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
     def iter_programs(self):
 
         programs = self.get_programs()
@@ -3365,6 +3464,414 @@ class FusionProject:
             }
 
         return songs[song_id]
+
+    def replace_song_channels(
+        self,
+        song_id,
+        channels,
+        allowed_errors=None
+    ):
+
+        song = self.get_song(
+            song_id
+        )
+
+        if not song:
+
+            return (
+                False,
+                [
+                    f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        old_song = copy.deepcopy(
+            song
+        )
+
+        song["channels"] = channels
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            song.clear()
+
+            song.update(
+                old_song
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def update_song_channel(
+        self,
+        song_id,
+        channel_id,
+        updates=None,
+        remove_fields=None,
+        allowed_errors=None
+    ):
+
+        song = self.get_song(
+            song_id
+        )
+
+        if not song:
+
+            return (
+                False,
+                [
+                    f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        channels = song.get(
+            "channels"
+        )
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} : définition channels invalide."
+                ]
+            )
+
+        channel_id = str(
+            channel_id
+        )
+
+        channel = channels.get(
+            channel_id
+        )
+
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} : canal inconnu."
+                ]
+            )
+
+        old_song = copy.deepcopy(
+            song
+        )
+
+        if updates:
+
+            channel.update(
+                updates
+            )
+
+        if remove_fields:
+
+            for field in remove_fields:
+
+                channel.pop(
+                    field,
+                    None
+                )
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            song.clear()
+
+            song.update(
+                old_song
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def update_song_program(
+        self,
+        song_id,
+        channel_id,
+        program_id,
+        updates=None,
+        remove_fields=None,
+        allowed_errors=None
+    ):
+
+        song = self.get_song(
+            song_id
+        )
+
+        if not song:
+
+            return (
+                False,
+                [
+                    f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        channels = song.get(
+            "channels"
+        )
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} : définition channels invalide."
+                ]
+            )
+
+        channel_id = str(
+            channel_id
+        )
+
+        channel = channels.get(
+            channel_id
+        )
+
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} : canal inconnu."
+                ]
+            )
+
+        programs = channel.get(
+            "programs"
+        )
+
+        if not isinstance(
+            programs,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} : "
+                    "définition PROGRAMs invalide."
+                ]
+            )
+
+        program = programs.get(
+            program_id
+        )
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} : "
+                    f"PROGRAM {program_id} inconnu."
+                ]
+            )
+
+        old_song = copy.deepcopy(
+            song
+        )
+
+        if updates:
+
+            program.update(
+                updates
+            )
+
+        if remove_fields:
+
+            for field in remove_fields:
+
+                program.pop(
+                    field,
+                    None
+                )
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            song.clear()
+
+            song.update(
+                old_song
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def move_song_channel(
+        self,
+        song_id,
+        old_channel_id,
+        new_channel_id,
+        allowed_errors=None
+    ):
+
+        song = self.get_song(
+            song_id
+        )
+
+        if not song:
+
+            return (
+                False,
+                [
+                    f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        channels = song.get(
+            "channels"
+        )
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} : définition channels invalide."
+                ]
+            )
+
+        old_channel_id = str(
+            old_channel_id
+        )
+
+        new_channel_id = str(
+            new_channel_id
+        )
+
+        if old_channel_id not in channels:
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {old_channel_id} : canal inconnu."
+                ]
+            )
+
+        if new_channel_id in channels:
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {new_channel_id} : canal déjà utilisé."
+                ]
+            )
+
+        old_song = copy.deepcopy(
+            song
+        )
+
+        channels[
+            new_channel_id
+        ] = channels.pop(
+            old_channel_id
+        )
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            song.clear()
+
+            song.update(
+                old_song
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def iter_songs(self):
 
@@ -4947,6 +5454,113 @@ class FusionProject:
             }
 
         return mixes[mix_id]
+
+    def update_mix_channel(
+        self,
+        mix_id,
+        channel_id,
+        updates=None,
+        remove_fields=None,
+        allowed_errors=None
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return (
+                False,
+                [
+                    f"Mix inconnu : {mix_id}"
+                ]
+            )
+
+        channels = mix.get(
+            "channels"
+        )
+
+        if not isinstance(
+            channels,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{mix_id} : définition channels invalide."
+                ]
+            )
+
+        channel_id = str(
+            channel_id
+        )
+
+        channel = channels.get(
+            channel_id
+        )
+
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{mix_id} CH {channel_id} : canal inconnu."
+                ]
+            )
+
+        old_mix = copy.deepcopy(
+            mix
+        )
+
+        if updates:
+
+            channel.update(
+                updates
+            )
+
+        if remove_fields:
+
+            for field in remove_fields:
+
+                channel.pop(
+                    field,
+                    None
+                )
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            mix.clear()
+
+            mix.update(
+                old_mix
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def replace_mix_channels(
         self,

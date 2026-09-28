@@ -55,10 +55,7 @@ names = set()
 #
 # PROGRAM
 #
-for program_id, program in project.data.get(
-    "programs",
-    {}
-).items():
+for program_id, program in project.get_programs().items():
 
     bank = int(
         program_id.split(

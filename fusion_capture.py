@@ -2,7 +2,6 @@
 
 import mido
 import time
-import copy
 
 from fusion_lib import (
     find_fusion_input,
@@ -100,28 +99,55 @@ def capture_program(
                             velocity_max
                         )
 
-                        original_data = copy.deepcopy(
-                            project.data
-                        )
+                        original_data = project.snapshot()
 
-                        program = project.ensure_program(
+                        project.ensure_program(
                             current_program
                         )
 
-                        part = program["parts"].setdefault(
+                        ok, errors = project.update_program_part(
+                            current_program,
                             "1",
-                            {}
+                            {
+                                "midi_channel":
+                                    fusion_default_channel + 1,
+
+                                "bank":
+                                    current_program_bank,
+
+                                "program":
+                                    current_program_number,
+
+                                "note_min":
+                                    note_min,
+
+                                "note_max":
+                                    note_max,
+
+                                "velocity_min":
+                                    velocity_min,
+
+                                "velocity_max":
+                                    velocity_max
+                            },
+                            allowed_errors=allowed_errors
                         )
 
-                        part.update({
-                            "midi_channel": fusion_default_channel + 1,
-                            "bank": current_program_bank,
-                            "program": current_program_number,
-                            "note_min": note_min,
-                            "note_max": note_max,
-                            "velocity_min": velocity_min,
-                            "velocity_max": velocity_max
-                        })
+                        if not ok:
+
+                            print(
+                                "PROGRAM non modifié."
+                            )
+
+                            print_error_messages(
+                                errors
+                            )
+
+                            project.restore_snapshot(
+                                original_data
+                            )
+
+                            continue
 
                         if project.save_safe(
                             allowed_errors=allowed_errors
@@ -132,7 +158,9 @@ def capture_program(
 
                         else:
 
-                            project.data = original_data
+                            project.restore_snapshot(
+                                original_data
+                            )
 
                             print(
                                 "⚠ Sauvegarde non effectuée."
@@ -444,9 +472,7 @@ def capture_mix(
                                     channel_id
                                 ] = {}
 
-                            original_data = copy.deepcopy(
-                                project.data
-                            )
+                            original_data = project.snapshot()
                             project.ensure_mix(
                                 current_mix
                             )
@@ -482,7 +508,9 @@ def capture_mix(
 
                             else:
 
-                                project.data = original_data
+                                project.restore_snapshot(
+                                    original_data
+                                )
 
                                 print(
                                     "Le Mix n'a pas été sauvegardé."
@@ -774,9 +802,7 @@ def capture_song(
 
                     capture_active = False
 
-                    original_data = copy.deepcopy(
-                        project.data
-                    )
+                    original_data = project.snapshot()
 
                     if not channels:
 
@@ -1031,14 +1057,18 @@ def capture_song(
                     #
                     # Créer les PROGRAMs inconnus détectés dans la SONG
                     #
+                    program_error = False
+
                     for program_id, program_data in unknown_programs.items():
 
-                        program = project.ensure_program(
+                        project.ensure_program(
                             program_id
                         )
 
-                        program["parts"] = {
-                            "1": {
+                        ok, errors = project.update_program_part(
+                            program_id,
+                            "1",
+                            {
                                 "midi_channel":
                                     fusion_default_channel + 1,
 
@@ -1047,8 +1077,40 @@ def capture_song(
 
                                 "program":
                                     program_data["program"]
-                            }
-                        }
+                            },
+                            allowed_errors=allowed_errors
+                        )
+
+                        if not ok:
+
+                            print(
+                                "PROGRAM non créé :",
+                                program_id
+                            )
+
+                            print_error_messages(
+                                errors
+                            )
+
+                            program_error = True
+
+                            break
+
+                    if program_error:
+
+                        project.restore_snapshot(
+                            original_data
+                        )
+
+                        print(
+                            "SONG non sauvegardée."
+                        )
+
+                        print(
+                            "État du projet restauré en mémoire."
+                        )
+
+                        continue
 
                     #
                     # Conserver les canaux enregistrés
@@ -1062,7 +1124,28 @@ def capture_song(
                         channels
                     )
 
-                    song["channels"] = merged_channels
+                    ok, errors = project.replace_song_channels(
+                        song_id,
+                        merged_channels,
+                        allowed_errors=allowed_errors
+                    )
+
+                    if not ok:
+
+                        project.restore_snapshot(
+                            original_data
+                        )
+
+                        print(
+                            "SONG non modifiée :",
+                            song_id
+                        )
+
+                        print_error_messages(
+                            errors
+                        )
+
+                        continue
 
                     if project.save_safe(
                         allowed_errors=allowed_errors
@@ -1090,7 +1173,9 @@ def capture_song(
 
                     else:
 
-                        project.data = original_data
+                        project.restore_snapshot(
+                            original_data
+                        )
 
                         print(
                             "⚠ Sauvegarde non effectuée."

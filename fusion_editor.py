@@ -592,44 +592,6 @@ def play_part_preview(project, part):
         instrument
     )
 
-def edit_fusion_name(
-    data
-):
-
-    current_name = data.get(
-        "fusion_name",
-        ""
-    )
-
-    print()
-    print(
-        "Nom Fusion actuel :",
-        current_name
-        if current_name
-        else "Non défini"
-    )
-
-    name = input(
-        "Nom Fusion (Entrée = conserver, - = effacer) : "
-    ).strip()
-
-    if not name:
-
-        return False
-
-    if name == "-":
-
-        data.pop(
-            "fusion_name",
-            None
-        )
-
-        return True
-
-    data["fusion_name"] = name
-
-    return True
-
 def edit_mix(project,mix_id):
 
     def test_mix_menu(
@@ -982,6 +944,8 @@ def edit_mix_channel(
 
     def edit_mix_channel_instrument(
         project,
+        mix_id,
+        channel_id,
         channel
     ):
 
@@ -1042,15 +1006,29 @@ def edit_mix_channel(
 
             return
 
-        old_channel = dict(
-            channel
+        original_data = project.snapshot()
+
+        ok, errors = project.update_mix_channel(
+            mix_id,
+            channel_id,
+            {
+                "instrument":
+                    instrument["id"]
+            },
+            allowed_errors=allowed_errors
         )
 
-        channel[
-            "instrument"
-        ] = instrument[
-            "id"
-        ]
+        if not ok:
+
+            print(
+                "Instrument local non affecté."
+            )
+
+            print_error_messages(
+                errors
+            )
+
+            return
 
         if project.save_safe(
             allowed_errors=allowed_errors
@@ -1062,10 +1040,8 @@ def edit_mix_channel(
 
         else:
 
-            channel.clear()
-
-            channel.update(
-                old_channel
+            project.restore_snapshot(
+                original_data
             )
 
             print(
@@ -1094,10 +1070,6 @@ def edit_mix_channel(
             "(vide pour aucun) : "
         ).strip()
 
-        old_channel = dict(
-            channel
-        )
-
         allowed_errors = (
             project.get_blocking_errors(
                 project.validate()
@@ -1106,10 +1078,10 @@ def edit_mix_channel(
 
         if not value:
 
-            channel.pop(
-                "program",
-                None
-            )
+            updates = None
+            remove_fields = [
+                "program"
+            ]
 
         else:
 
@@ -1126,28 +1098,26 @@ def edit_mix_channel(
 
                 return
 
-            channel[
-                "program"
-            ] = value
+            updates = {
+                "program": value
+            }
 
-        errors = (
-            project.validate_mix_channel_data(
-                mix_id,
-                channel_id,
-                channel
-            )
+            remove_fields = None
+
+        original_data = project.snapshot()
+
+        ok, errors = project.update_mix_channel(
+            mix_id,
+            channel_id,
+            updates=updates,
+            remove_fields=remove_fields,
+            allowed_errors=allowed_errors
         )
 
-        if errors:
-
-            channel.clear()
-
-            channel.update(
-                old_channel
-            )
+        if not ok:
 
             print(
-                "Canal non modifié."
+                "PROGRAM non modifié."
             )
 
             print_error_messages(
@@ -1166,10 +1136,8 @@ def edit_mix_channel(
 
         else:
 
-            channel.clear()
-
-            channel.update(
-                old_channel
+            project.restore_snapshot(
+                original_data
             )
 
             print(
@@ -1178,6 +1146,8 @@ def edit_mix_channel(
 
     def remove_mix_channel_instrument(
         project,
+        mix_id,
+        channel_id,
         channel
     ):
 
@@ -1189,19 +1159,34 @@ def edit_mix_channel(
 
             return
 
-        old_channel = dict(
-            channel
-        )
-
         allowed_errors = (
             project.get_blocking_errors(
                 project.validate()
             )
         )
 
-        del channel[
-            "instrument"
-        ]
+        original_data = project.snapshot()
+
+        ok, errors = project.update_mix_channel(
+            mix_id,
+            channel_id,
+            remove_fields=[
+                "instrument"
+            ],
+            allowed_errors=allowed_errors
+        )
+
+        if not ok:
+
+            print(
+                "Instrument local non supprimé."
+            )
+
+            print_error_messages(
+                errors
+            )
+
+            return
 
         if project.save_safe(
             allowed_errors=allowed_errors
@@ -1231,10 +1216,8 @@ def edit_mix_channel(
 
         else:
 
-            channel.clear()
-
-            channel.update(
-                old_channel
+            project.restore_snapshot(
+                original_data
             )
 
             print(
@@ -1357,6 +1340,8 @@ def edit_mix_channel(
 
             edit_mix_channel_instrument(
                 project,
+                mix_id,
+                channel_id,
                 channel
             )
 
@@ -1364,6 +1349,8 @@ def edit_mix_channel(
 
             remove_mix_channel_instrument(
                 project,
+                mix_id,
+                channel_id,
                 channel
             )
 
@@ -3318,22 +3305,14 @@ def edit_program(
 
         name = input(
             "Nom Fusion "
-            "(Entrée = conserver, - = effacer) : "
+            "(Entrée = conserver) : "
         ).strip()
 
         if not name:
 
-            return False
+            return None
 
-        if name == "-":
-
-            program["name"] = ""
-
-        else:
-
-            program["name"] = name
-
-        return True
+        return name
 
     program = project.get_program(
         program_id
@@ -3431,15 +3410,29 @@ def edit_program(
 
                 continue
 
-            old_part = dict(
-                part
+            original_data = project.snapshot()
+
+            ok, errors = project.update_program_part(
+                program_id,
+                "1",
+                {
+                    "instrument":
+                        instrument["id"]
+                },
+                allowed_errors=allowed_errors
             )
 
-            part[
-                "instrument"
-            ] = instrument[
-                "id"
-            ]
+            if not ok:
+
+                print(
+                    "Instrument non affecté."
+                )
+
+                print_error_messages(
+                    errors
+                )
+
+                continue
 
             if project.save_safe(
                 allowed_errors=allowed_errors
@@ -3451,10 +3444,8 @@ def edit_program(
 
             else:
 
-                part.clear()
-
-                part.update(
-                    old_part
+                project.restore_snapshot(
+                    original_data
                 )
 
                 print(
@@ -3473,48 +3464,33 @@ def edit_program(
 
                 continue
 
-            old_part = dict(
-                part
-            )
-
-            before_errors = project.get_blocking_errors(
+            allowed_errors = project.get_blocking_errors(
                 project.validate()
             )
 
-            part.update(
-                updates
+            original_data = project.snapshot()
+
+            ok, errors = project.update_program_part(
+                program_id,
+                "1",
+                updates,
+                allowed_errors=allowed_errors
             )
 
-            after_errors = project.get_blocking_errors(
-                project.validate()
-            )
-
-            new_errors = [
-                error
-                for error in after_errors
-                if error not in before_errors
-            ]
-
-            if new_errors:
-
-                part.clear()
-
-                part.update(
-                    old_part
-                )
+            if not ok:
 
                 print(
                     "PROGRAM non modifié."
                 )
 
                 print_error_messages(
-                    new_errors
+                    errors
                 )
 
                 continue
 
             if project.save_safe(
-                allowed_errors=before_errors
+                allowed_errors=allowed_errors
             ):
 
                 print(
@@ -3523,10 +3499,8 @@ def edit_program(
 
             else:
 
-                part.clear()
-
-                part.update(
-                    old_part
+                project.restore_snapshot(
+                    original_data
                 )
 
                 print(
@@ -3535,37 +3509,54 @@ def edit_program(
 
         elif choice == "3":
 
-            old_program = dict(
+            name = edit_program_name(
                 program
             )
+
+            if name is None:
+
+                continue
 
             allowed_errors = project.get_blocking_errors(
                 project.validate()
             )
 
-            if edit_program_name(
-                program
+            original_data = project.snapshot()
+
+            ok, errors = project.rename_program(
+                program_id,
+                name
+            )
+
+            if not ok:
+
+                print(
+                    "Nom Fusion non modifié."
+                )
+
+                print_error_messages(
+                    errors
+                )
+
+                continue
+
+            if project.save_safe(
+                allowed_errors=allowed_errors
             ):
 
-                if project.save_safe(
-                    allowed_errors=allowed_errors
-                ):
+                print(
+                    "Nom Fusion modifié."
+                )
 
-                    print(
-                        "Nom Fusion modifié."
-                    )
+            else:
 
-                else:
+                project.restore_snapshot(
+                    original_data
+                )
 
-                    program.clear()
-
-                    program.update(
-                        old_program
-                    )
-
-                    print(
-                        "⚠ Sauvegarde non effectuée."
-                    )
+                print(
+                    "⚠ Sauvegarde non effectuée."
+                )
 
         elif choice.lower() == "q":
 
@@ -3850,6 +3841,7 @@ def edit_song(
 ):
     def edit_song_channel_parameters(
         project,
+        song_id,
         channel_id,
         channel
     ):
@@ -3974,48 +3966,33 @@ def edit_song(
 
             return
 
-        old_channel = dict(
-            channel
-        )
-
-        before_errors = project.get_blocking_errors(
+        allowed_errors = project.get_blocking_errors(
             project.validate()
         )
 
-        channel.update(
-            updates
+        original_data = project.snapshot()
+
+        ok, errors = project.update_song_channel(
+            song_id,
+            channel_id,
+            updates=updates,
+            allowed_errors=allowed_errors
         )
 
-        after_errors = project.get_blocking_errors(
-            project.validate()
-        )
-
-        new_errors = [
-            error
-            for error in after_errors
-            if error not in before_errors
-        ]
-
-        if new_errors:
-
-            channel.clear()
-
-            channel.update(
-                old_channel
-            )
+        if not ok:
 
             print(
                 "Canal SONG non modifié."
             )
 
             print_error_messages(
-                new_errors
+                errors
             )
 
             return
 
         if project.save_safe(
-            allowed_errors=before_errors
+            allowed_errors=allowed_errors
         ):
 
             print(
@@ -4024,10 +4001,8 @@ def edit_song(
 
         else:
 
-            channel.clear()
-
-            channel.update(
-                old_channel
+            project.restore_snapshot(
+                original_data
             )
 
             print(
@@ -4452,15 +4427,30 @@ def edit_song(
 
                         continue
 
-                    old_program_data = dict(
-                        program_data
+                    original_data = project.snapshot()
+
+                    ok, errors = project.update_song_program(
+                        song_id,
+                        channel_id,
+                        selected_program_id,
+                        updates={
+                            "instrument":
+                                instrument["id"]
+                        },
+                        allowed_errors=allowed_errors
                     )
 
-                    program_data[
-                        "instrument"
-                    ] = instrument[
-                        "id"
-                    ]
+                    if not ok:
+
+                        print(
+                            "Instrument non affecté."
+                        )
+
+                        print_error_messages(
+                            errors
+                        )
+
+                        continue
 
                     if project.save_safe(
                         allowed_errors=allowed_errors
@@ -4472,10 +4462,8 @@ def edit_song(
 
                     else:
 
-                        program_data.clear()
-
-                        program_data.update(
-                            old_program_data
+                        project.restore_snapshot(
+                            original_data
                         )
 
                         print(
@@ -4486,6 +4474,7 @@ def edit_song(
 
                     edit_song_channel_parameters(
                         project,
+                        song_id,
                         channel_id,
                         channel
                     )
@@ -4522,50 +4511,33 @@ def edit_song(
 
                         continue
 
-                    old_channels = dict(
-                        channels
-                    )
-
-                    before_errors = project.get_blocking_errors(
+                    allowed_errors = project.get_blocking_errors(
                         project.validate()
                     )
 
-                    channels[
-                        new_channel_id
-                    ] = channels.pop(
-                        channel_id
+                    original_data = project.snapshot()
+
+                    ok, errors = project.move_song_channel(
+                        song_id,
+                        channel_id,
+                        new_channel_id,
+                        allowed_errors=allowed_errors
                     )
 
-                    after_errors = project.get_blocking_errors(
-                        project.validate()
-                    )
-
-                    new_errors = [
-                        error
-                        for error in after_errors
-                        if error not in before_errors
-                    ]
-
-                    if new_errors:
-
-                        channels.clear()
-
-                        channels.update(
-                            old_channels
-                        )
+                    if not ok:
 
                         print(
                             "Canal MIDI non modifié."
                         )
 
                         print_error_messages(
-                            new_errors
+                            errors
                         )
 
                         continue
 
                     if project.save_safe(
-                        allowed_errors=before_errors
+                        allowed_errors=allowed_errors
                     ):
 
                         print(
@@ -4576,16 +4548,15 @@ def edit_song(
                         )
 
                         channel_id = new_channel_id
+
                         channel = channels[
                             new_channel_id
                         ]
 
                     else:
 
-                        channels.clear()
-
-                        channels.update(
-                            old_channels
+                        project.restore_snapshot(
+                            original_data
                         )
 
                         print(
@@ -4606,17 +4577,33 @@ def edit_song(
 
                         continue
 
-                    old_program_data = dict(
-                        program_data
-                    )
-
                     allowed_errors = project.get_blocking_errors(
                         project.validate()
                     )
 
-                    del program_data[
-                        "instrument"
-                    ]
+                    original_data = project.snapshot()
+
+                    ok, errors = project.update_song_program(
+                        song_id,
+                        channel_id,
+                        selected_program_id,
+                        remove_fields=[
+                            "instrument"
+                        ],
+                        allowed_errors=allowed_errors
+                    )
+
+                    if not ok:
+
+                        print(
+                            "Instrument local non supprimé."
+                        )
+
+                        print_error_messages(
+                            errors
+                        )
+
+                        continue
 
                     if project.save_safe(
                         allowed_errors=allowed_errors
@@ -4650,10 +4637,8 @@ def edit_song(
 
                     else:
 
-                        program_data.clear()
-
-                        program_data.update(
-                            old_program_data
+                        project.restore_snapshot(
+                            original_data
                         )
 
                         print(
@@ -5257,6 +5242,8 @@ def main():
                 project.validate()
             )
 
+            original_data = project.snapshot()
+
             ok, errors = project.rename_program(
                 program_id,
                 new_name
@@ -5283,6 +5270,10 @@ def main():
                 )
 
             else:
+
+                project.restore_snapshot(
+                    original_data
+                )
 
                 print(
                     "⚠ Sauvegarde non effectuée."
