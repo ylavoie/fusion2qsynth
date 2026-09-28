@@ -1482,107 +1482,6 @@ def read_note(
 
         return note
 
-def validate_part_updates(
-    part,
-    updates
-):
-
-    test = dict(part)
-
-    test.update(
-        updates
-    )
-
-    if not (
-        1 <= test.get(
-            "midi_channel",
-            1
-        )
-        <= 16
-    ):
-
-        print()
-
-        print(
-            "Canal MIDI invalide (1-16)."
-        )
-
-        return False
-
-    bank = test.get("bank")
-
-    if (
-        bank is not None
-        and not 0 <= bank <= 127
-    ):
-
-        print()
-        print(
-            "Fusion Bank invalide (0-127)."
-        )
-
-        return False
-
-    program = test.get("program")
-
-    if (
-        program is not None
-        and not 0 <= program <= 127
-    ):
-
-        print()
-        print(
-            "Fusion Program invalide (0-127)."
-        )
-
-        return False
-
-    if not (
-        0 <= test.get(
-            "note_min",
-            0
-        )
-        <=
-        test.get(
-            "note_max",
-            127
-        )
-        <= 127
-    ):
-
-        print()
-
-        print(
-            "Plage de notes invalide (0-127)."
-        )
-
-        return False
-
-
-    if not (
-        0 <= test.get(
-            "velocity_min",
-            0
-        )
-        <=
-        test.get(
-            "velocity_max",
-            127
-        )
-        <= 127
-    ):
-
-        print()
-
-        print(
-            "Plage de vélocité invalide (0-127)."
-        )
-
-        return False
-
-
-    return True
-
 def choose_fusion_program_bank(
     project,
     current_bank=None
@@ -1645,6 +1544,232 @@ def choose_fusion_program_bank(
         print(
             "Banque Fusion invalide."
         )
+
+def choose_mix_id(
+    project,
+    allowed_ids=None
+):
+
+    if allowed_ids is None:
+
+        mix_ids = {
+            mix_id
+            for mix_id, mix
+            in project.iter_mixes()
+        }
+
+    else:
+
+        mix_ids = set(
+            allowed_ids
+        )
+
+    if not mix_ids:
+
+        print()
+        print(
+            "Aucun MIX disponible."
+        )
+
+        return None
+
+    while True:
+
+        print()
+        print(
+            "MIX bank:program"
+        )
+        print(
+            "? - Sélection assistée"
+        )
+        print(
+            "Entrée - Annuler"
+        )
+
+        value = input(
+            "> "
+        ).strip()
+
+        if not value:
+
+            return None
+
+        if value != "?":
+
+            if value in mix_ids:
+
+                return value
+
+            print(
+                "MIX inconnu ou non disponible :",
+                value
+            )
+
+            continue
+
+        #
+        # Sélection assistée
+        #
+
+        while True:
+
+            banks = sorted({
+                int(
+                    mix_id.split(
+                        ":",
+                        1
+                    )[0]
+                )
+                for mix_id in mix_ids
+            })
+
+            print()
+            print(
+                "Banques MIX disponibles"
+            )
+            print(
+                "-----------------------"
+            )
+
+            for bank in banks:
+
+                print(
+                    f"{bank:3} - "
+                    f"{project.get_mix_bank_name(bank)}"
+                )
+
+            print()
+            print(
+                "Entrée - Retour"
+            )
+
+            bank_value = input(
+                "> "
+            ).strip()
+
+            if not bank_value:
+
+                break
+
+            try:
+
+                bank = int(
+                    bank_value
+                )
+
+            except ValueError:
+
+                print(
+                    "Choix invalide."
+                )
+
+                continue
+
+            if bank not in banks:
+
+                print(
+                    "Banque MIX non disponible."
+                )
+
+                continue
+
+            while True:
+
+                available = []
+
+                for mix_id in mix_ids:
+
+                    bank_text, program_text = (
+                        mix_id.split(
+                            ":",
+                            1
+                        )
+                    )
+
+                    if int(bank_text) != bank:
+
+                        continue
+
+                    available.append(
+                        (
+                            int(program_text),
+                            mix_id
+                        )
+                    )
+
+                available.sort()
+
+                print()
+
+                print(
+                    f"{project.get_mix_bank_name(bank)} "
+                    f"({bank})"
+                )
+
+                print(
+                    "----------------------------"
+                )
+
+                for program, mix_id in available:
+
+                    mix = project.get_mix(
+                        mix_id
+                    )
+
+                    name = (
+                        mix.get(
+                            "name",
+                            mix_id
+                        )
+                        if mix
+                        else mix_id
+                    )
+
+                    print(
+                        f"{program:3} - {name}"
+                    )
+
+                print()
+                print(
+                    "Entrée - Retour"
+                )
+
+                program_value = input(
+                    "> "
+                ).strip()
+
+                if not program_value:
+
+                    break
+
+                try:
+
+                    program = int(
+                        program_value
+                    )
+
+                except ValueError:
+
+                    print(
+                        "Choix invalide."
+                    )
+
+                    continue
+
+                mix_id = (
+                    f"{bank}:{program}"
+                )
+
+                if mix_id not in mix_ids:
+
+                    print(
+                        "MIX inconnu ou non disponible :",
+                        mix_id
+                    )
+
+                    continue
+
+                return mix_id
 
 def choose_program_id(
     project,
@@ -1864,6 +1989,163 @@ def choose_program_id(
 
             return program_id
 
+def choose_song_id(
+    project,
+    allowed_ids=None
+):
+
+    if allowed_ids is None:
+
+        song_ids = {
+            song_id
+            for song_id, song
+            in project.iter_songs()
+        }
+
+    else:
+
+        song_ids = set(
+            allowed_ids
+        )
+
+    if not song_ids:
+
+        print()
+        print(
+            "Aucune SONG disponible."
+        )
+
+        return None
+
+    while True:
+
+        print()
+        print(
+            "SONG"
+        )
+        print(
+            "? - Sélection assistée"
+        )
+        print(
+            "Entrée - Annuler"
+        )
+
+        value = input(
+            "> "
+        ).strip()
+
+        if not value:
+
+            return None
+
+        if value != "?":
+
+            if value in song_ids:
+
+                return value
+
+            print(
+                "SONG inconnue ou non disponible :",
+                value
+            )
+
+            continue
+
+        #
+        # Sélection assistée
+        #
+        while True:
+
+            available = sorted(
+                song_ids,
+                key=str.casefold
+            )
+
+            print()
+            print(
+                "SONGs disponibles"
+            )
+            print(
+                "-----------------"
+            )
+
+            for index, song_id in enumerate(
+                available,
+                start=1
+            ):
+
+                song = project.get_song(
+                    song_id
+                )
+
+                name = (
+                    song.get(
+                        "name",
+                        song_id
+                    )
+                    if song
+                    else song_id
+                )
+
+                if (
+                    name
+                    and
+                    name != song_id
+                ):
+
+                    label = (
+                        f"{song_id} - {name}"
+                    )
+
+                else:
+
+                    label = song_id
+
+                print(
+                    f"{index:2} - {label}"
+                )
+
+            print()
+            print(
+                "Entrée - Retour"
+            )
+
+            choice = input(
+                "> "
+            ).strip()
+
+            if not choice:
+
+                break
+
+            try:
+
+                index = int(
+                    choice
+                )
+
+            except ValueError:
+
+                print(
+                    "Choix invalide."
+                )
+
+                continue
+
+            if not (
+                1 <= index <= len(available)
+            ):
+
+                print(
+                    "Choix invalide."
+                )
+
+                continue
+
+            return available[
+                index - 1
+            ]
+
 def edit_part_values(
     project,
     part,
@@ -1949,9 +2231,9 @@ def edit_part_values(
         16
     )
 
-    if value:
+    if value is not None:
 
-        updates["midi_channel"] = int(value)
+        updates["midi_channel"] = value
 
     print()
 
@@ -2061,9 +2343,9 @@ def edit_part_values(
         127
     )
 
-    if value:
+    if value is not None:
 
-        updates["velocity_min"] = int(value)
+        updates["velocity_min"] = value
 
     print()
 
@@ -2080,25 +2362,14 @@ def edit_part_values(
         127
     )
 
-    if value:
+    if value is not None:
 
-        updates["velocity_max"] = int(value)
+        updates["velocity_max"] = value
 
     if not updates:
 
         print(
             "Aucune modification."
-        )
-
-        return None
-
-    if not validate_part_updates(
-        part,
-        updates
-    ):
-
-        print(
-            "PART non modifiée."
         )
 
         return None
@@ -5237,9 +5508,13 @@ def main():
 
         def delete_mix_menu():
 
-            mix_id = input(
-                "Mix à supprimer : "
+            mix_id = choose_mix_id(
+                project
             )
+
+            if mix_id is None:
+
+                return
 
             mix = project.get_mix(
                 mix_id
@@ -5357,21 +5632,14 @@ def main():
 
                     print()
 
-                    mix_id = input(
-                        "MIX à éditer (Entrée = retour) : "
-                    ).strip()
+                    mix_id = choose_mix_id(
+                        project,
+                        allowed_ids=mix_ids
+                    )
 
-                    if not mix_id:
+                    if mix_id is None:
 
                         break
-
-                    if mix_id not in mix_ids:
-
-                        print(
-                            "MIX non présent dans cette liste."
-                        )
-
-                        continue
 
                     edit_mix(
                         project,
@@ -5393,32 +5661,30 @@ def main():
 
                     print()
 
-                    mix_id = input(
-                        "MIX à éditer (Entrée = retour) : "
-                    ).strip()
+                    mix_id = choose_mix_id(
+                        project,
+                        allowed_ids=mix_ids
+                    )
 
-                    if not mix_id:
+                    if mix_id is None:
 
                         break
-
-                    if mix_id not in mix_ids:
-
-                        print(
-                            "MIX non présent dans cette liste."
-                        )
-
-                        continue
 
                     edit_mix(
                         project,
                         mix_id
                     )
 
+
             elif choice == "4":
 
-                mix_id = input(
-                    "Numéro du Mix (ex: 2:4) : "
+                mix_id = choose_mix_id(
+                    project
                 )
+
+                if mix_id is None:
+
+                    continue
 
                 edit_mix(
                     project,
@@ -5726,9 +5992,13 @@ def main():
 
         def rename_song_menu():
 
-            song_id = input(
-                "SONG à renommer : "
+            song_id = choose_song_id(
+                project
             )
+
+            if song_id is None:
+
+                return
 
             song = project.get_song(
                 song_id
@@ -5790,9 +6060,13 @@ def main():
 
         def delete_song_menu():
 
-            song_id = input(
-                "SONG à supprimer : "
+            song_id = choose_song_id(
+                project
             )
+
+            if song_id is None:
+
+                return
 
             song = project.get_song(
                 song_id
@@ -5908,21 +6182,14 @@ def main():
 
                     print()
 
-                    song_id = input(
-                        "SONG à éditer (Entrée = retour) : "
-                    ).strip()
+                    song_id = choose_song_id(
+                        project,
+                        allowed_ids=song_ids
+                    )
 
-                    if not song_id:
+                    if song_id is None:
 
                         break
-
-                    if song_id not in song_ids:
-
-                        print(
-                            "SONG non présente dans cette liste."
-                        )
-
-                        continue
 
                     edit_song(
                         project,
@@ -5942,23 +6209,14 @@ def main():
 
                         break
 
-                    print()
+                    song_id = choose_song_id(
+                        project,
+                        allowed_ids=song_ids
+                    )
 
-                    song_id = input(
-                        "SONG à éditer (Entrée = retour) : "
-                    ).strip()
-
-                    if not song_id:
+                    if song_id is None:
 
                         break
-
-                    if song_id not in song_ids:
-
-                        print(
-                            "SONG non présente dans cette liste."
-                        )
-
-                        continue
 
                     edit_song(
                         project,
@@ -5967,9 +6225,13 @@ def main():
 
             elif choice == "4":
 
-                song_id = input(
-                    "SONG à éditer : "
+                song_id = choose_song_id(
+                    project
                 )
+
+                if song_id is None:
+
+                    continue
 
                 edit_song(
                     project,
