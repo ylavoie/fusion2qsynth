@@ -91,7 +91,7 @@ def choose_backup_restore():
         print()
 
     print(
-        "q - Annuler"
+        "Q - Annuler"
     )
 
     choix = input("> ")
@@ -145,7 +145,7 @@ def choose_archive_restore():
 
     print()
     print(
-        "q - Annuler"
+        "Q - Annuler"
     )
 
     choix = input("> ")

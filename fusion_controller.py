@@ -123,7 +123,7 @@ def choose_controller_mode():
         print("1 - PROGRAM")
         print("2 - MIX")
         print("3 - SONG")
-        print("q - Retour")
+        print("Q - Retour")
         print()
 
         choice = input(

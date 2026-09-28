@@ -341,7 +341,7 @@ def choose_instrument(
                 )
 
                 print(
-                    "q - Annuler"
+                    "Q - Annuler"
                 )
 
                 choix = input(
@@ -417,7 +417,7 @@ def choose_instrument(
             )
 
         print("a - Ajouter un instrument")
-        print("q - Annuler")
+        print("Q - Annuler")
 
         choix = input(
             "> "
@@ -614,7 +614,7 @@ def edit_mix(project,mix_id):
             )
 
             print(
-                "q - Retour"
+                "Q - Retour"
             )
 
             choix = input(
@@ -797,7 +797,7 @@ def edit_mix(project,mix_id):
         )
 
         print(
-            "q - Retour"
+            "Q - Retour"
         )
 
         choix = input("> ")
@@ -1072,7 +1072,7 @@ def edit_mix_channel(
             "2 - Aucun PROGRAM"
         )
         print(
-            "q - Annuler"
+            "Q - Annuler"
         )
 
         while True:
@@ -1339,7 +1339,7 @@ def edit_mix_channel(
         )
 
         print(
-            "q - Retour"
+            "Q - Retour"
         )
 
         choice = input(
@@ -2896,7 +2896,7 @@ def instruments_menu(project):
         print("2 - Ajouter")
         print("3 - Modifier")
         print("4 - Supprimer")
-        print("q - Retour")
+        print("Q - Retour")
 
         choice = input("> ")
 
@@ -3620,7 +3620,7 @@ def edit_program(
         print("1 - Modifier l'instrument")
         print("2 - Modifier les paramètres")
         print("3 - Modifier le nom Fusion")
-        print("q - Retour")
+        print("Q - Retour")
 
         choice = input(
             "> "
@@ -4439,7 +4439,7 @@ def edit_song(
                         )
 
                     print(
-                        "q - Retour"
+                        "Q - Retour"
                     )
 
                     while True:
@@ -4617,7 +4617,7 @@ def edit_song(
                         )
 
                 print(
-                    "q - Retour"
+                    "Q - Retour"
                 )
 
                 choice = input(
@@ -4933,12 +4933,12 @@ def manage_banks(
                 )
 
                 print(
-                    f"{bank} - {name}"
+                    f"{bank:2} - {name}"
                 )
 
             print()
             print(
-                "q - Retour"
+                "Q - Retour"
             )
 
             choix = input(
@@ -5068,7 +5068,7 @@ def manage_banks(
         )
 
         print(
-            "q - Retour"
+            "Q - Retour"
         )
 
         choix = input(
@@ -5330,7 +5330,7 @@ def main():
             print("4 - Éditer")
             print("5 - Supprimer")
             print("6 - Supprimer les MIX vides")
-            print("q - Retour")
+            print("Q - Retour")
 
             choice = input(
                 "> "
@@ -5623,7 +5623,7 @@ def main():
             print("4 - Éditer")
             print("5 - Renommer")
             print("6 - Supprimer")
-            print("q - Retour")
+            print("Q - Retour")
 
             choice = input(
                 "> "
@@ -5881,7 +5881,7 @@ def main():
             print("4 - Éditer")
             print("5 - Renommer")
             print("6 - Supprimer")
-            print("q - Retour")
+            print("Q - Retour")
 
             choice = input(
                 "> "
@@ -6011,7 +6011,7 @@ def main():
         print("3 - Gestion SONG")
         print("4 - Gestion Instruments")
         print("5 - Gestion des banques")
-        print("q - Quitter")
+        print("Q - Quitter")
         choix = input(
             "> "
         )
