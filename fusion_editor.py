@@ -1056,53 +1056,72 @@ def edit_mix_channel(
     ):
 
         print()
-
         print(
             "PROGRAM actuel :",
             channel.get(
                 "program",
-                "?"
+                "Aucun"
             )
         )
 
-        value = input(
-            "Nouveau PROGRAM bank:program "
-            "(vide pour aucun) : "
-        ).strip()
+        print()
+        print(
+            "1 - Sélectionner un PROGRAM"
+        )
+        print(
+            "2 - Aucun PROGRAM"
+        )
+        print(
+            "q - Annuler"
+        )
+
+        while True:
+
+            choice = input(
+                "> "
+            ).strip()
+
+            if choice == "1":
+
+                program_id = choose_program_id(
+                    project
+                )
+
+                if program_id is None:
+
+                    return
+
+                updates = {
+                    "program": program_id
+                }
+
+                remove_fields = None
+
+                break
+
+            elif choice == "2":
+
+                updates = None
+
+                remove_fields = [
+                    "program"
+                ]
+
+                break
+
+            elif choice.lower() == "q":
+
+                return
+
+            print(
+                "Choix invalide."
+            )
 
         allowed_errors = (
             project.get_blocking_errors(
                 project.validate()
             )
         )
-
-        if not value:
-
-            updates = None
-            remove_fields = [
-                "program"
-            ]
-
-        else:
-
-            program = project.get_program(
-                value
-            )
-
-            if program is None:
-
-                print(
-                    "PROGRAM global inconnu :",
-                    value
-                )
-
-                return
-
-            updates = {
-                "program": value
-            }
-
-            remove_fields = None
 
         original_data = project.snapshot()
 
@@ -1626,6 +1645,224 @@ def choose_fusion_program_bank(
         print(
             "Banque Fusion invalide."
         )
+
+def choose_program_id(
+    project,
+    allowed_ids=None
+):
+
+    if allowed_ids is None:
+
+        program_ids = {
+            program_id
+            for program_id, program
+            in project.iter_programs()
+        }
+
+    else:
+
+        program_ids = {
+            str(program_id)
+            for program_id in allowed_ids
+        }
+
+    if not program_ids:
+
+        print(
+            "Aucun PROGRAM disponible."
+        )
+
+        return None
+
+    while True:
+
+        print()
+        print(
+            "PROGRAM bank:program"
+        )
+        print(
+            "? - Sélection assistée"
+        )
+        print(
+            "Entrée - Annuler"
+        )
+
+        value = input(
+            "> "
+        ).strip()
+
+        if not value:
+
+            return None
+
+        #
+        # Saisie directe
+        #
+        if value != "?":
+
+            if value not in program_ids:
+
+                print(
+                    "PROGRAM inconnu ou non disponible :",
+                    value
+                )
+
+                continue
+
+            return value
+
+        #
+        # Sélection assistée
+        #
+        banks = {}
+
+        for program_id in program_ids:
+
+            try:
+
+                bank_str, program_str = (
+                    program_id.split(
+                        ":",
+                        1
+                    )
+                )
+
+                bank = int(
+                    bank_str
+                )
+
+                program = int(
+                    program_str
+                )
+
+            except (
+                ValueError,
+                AttributeError
+            ):
+
+                continue
+
+            banks.setdefault(
+                bank,
+                []
+            ).append(
+                (
+                    program,
+                    program_id
+                )
+            )
+
+        if not banks:
+
+            print(
+                "Aucun PROGRAM disponible."
+            )
+
+            continue
+
+        print()
+        print(
+            "Banques PROGRAM disponibles"
+        )
+        print(
+            "----------------------------"
+        )
+
+        for bank in sorted(
+            banks
+        ):
+
+            print(
+                f"{bank:3} - "
+                f"{project.get_program_bank_name(bank)}"
+            )
+
+        print()
+        print(
+            "Entrée - Retour"
+        )
+
+        bank = read_int(
+            "> ",
+            0,
+            127
+        )
+
+        if bank is None:
+
+            continue
+
+        if bank not in banks:
+
+            print(
+                "Aucun PROGRAM disponible dans cette banque."
+            )
+
+            continue
+
+        programs = sorted(
+            banks[bank]
+        )
+
+        while True:
+
+            print()
+            print(
+                project.get_program_bank_name(bank),
+                f"({bank})"
+            )
+            print(
+                "----------------------------"
+            )
+
+            for program, program_id in programs:
+
+                program_data = project.get_program(
+                    program_id
+                )
+
+                name = "?"
+
+                if program_data:
+
+                    name = program_data.get(
+                        "name",
+                        "?"
+                    )
+
+                print(
+                    f"{program:3} - {name}"
+                )
+
+            print()
+            print(
+                "Entrée - Retour"
+            )
+
+            program = read_int(
+                "> ",
+                0,
+                127
+            )
+
+            if program is None:
+
+                break
+
+            program_id = (
+                f"{bank}:{program}"
+            )
+
+            if program_id not in program_ids:
+
+                print(
+                    "PROGRAM inconnu ou non disponible :",
+                    program_id
+                )
+
+                continue
+
+            return program_id
 
 def edit_part_values(
     project,
@@ -5204,9 +5441,13 @@ def main():
 
         def rename_program_menu():
 
-            program_id = input(
-                "PROGRAM à renommer : "
+            program_id = choose_program_id(
+                project
             )
+
+            if program_id is None:
+
+                return
 
             program = project.get_program(
                 program_id
@@ -5281,9 +5522,13 @@ def main():
 
         def delete_program_menu():
 
-            program_id = input(
-                "PROGRAM à supprimer : "
+            program_id = choose_program_id(
+                project
             )
+
+            if program_id is None:
+
+                return
 
             program = project.get_program(
                 program_id
@@ -5405,21 +5650,14 @@ def main():
 
                     print()
 
-                    program_id = input(
-                        "PROGRAM à éditer (Entrée = retour) : "
-                    ).strip()
+                    program_id = choose_program_id(
+                        project,
+                        allowed_ids=program_ids
+                    )
 
-                    if not program_id:
+                    if program_id is None:
 
                         break
-
-                    if program_id not in program_ids:
-
-                        print(
-                            "PROGRAM non présent dans cette liste."
-                        )
-
-                        continue
 
                     edit_program(
                         project,
@@ -5441,21 +5679,14 @@ def main():
 
                     print()
 
-                    program_id = input(
-                        "PROGRAM à éditer (Entrée = retour) : "
-                    ).strip()
+                    program_id = choose_program_id(
+                        project,
+                        allowed_ids=program_ids
+                    )
 
-                    if not program_id:
+                    if program_id is None:
 
                         break
-
-                    if program_id not in program_ids:
-
-                        print(
-                            "PROGRAM non présent dans cette liste."
-                        )
-
-                        continue
 
                     edit_program(
                         project,
@@ -5464,9 +5695,13 @@ def main():
 
             elif choice == "4":
 
-                program_id = input(
-                    "PROGRAM à éditer : "
+                program_id = choose_program_id(
+                    project
                 )
+
+                if program_id is None:
+
+                    continue
 
                 edit_program(
                     project,

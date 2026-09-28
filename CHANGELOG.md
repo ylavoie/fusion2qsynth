@@ -1,5 +1,75 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.19
+
+### Sélection assistée des PROGRAM
+
+* Ajout de `choose_program_id()` pour centraliser la sélection d’un PROGRAM dans l’Éditeur.
+* Conservation de la saisie directe d’un identifiant `bank:program`.
+* Ajout de `?` pour accéder à une sélection assistée par banque PROGRAM.
+* Affichage des banques disponibles avec leur nom effectif obtenu par `get_program_bank_name()`.
+* Prise en compte automatique des noms personnalisés de banques PROGRAM.
+* Affichage, après sélection d’une banque, des PROGRAMs disponibles avec leur numéro et leur nom Fusion.
+* Retour de l’identifiant canonique `bank:program` après sélection.
+* Possibilité de limiter la sélection à une liste de PROGRAMs autorisés avec `allowed_ids`.
+* Dans une sélection filtrée, seules les banques contenant au moins un PROGRAM autorisé sont proposées.
+* Une saisie directe ou assistée d’un PROGRAM non disponible dans le contexte courant est refusée.
+
+### Gestion PROGRAM
+
+* Utilisation de `choose_program_id()` pour l’édition d’un PROGRAM.
+* Utilisation de `choose_program_id()` pour le renommage d’un PROGRAM.
+* Utilisation de `choose_program_id()` pour la suppression d’un PROGRAM.
+* Utilisation de la sélection filtrée pour les PROGRAMs « À configurer ».
+* Utilisation de la sélection filtrée pour les PROGRAMs « En erreur ».
+* Conservation de la navigation existante lors de l’annulation d’une sélection : retour au menu PROGRAM sans modification.
+
+### Gestion MIX
+
+* Utilisation de `choose_program_id()` pour affecter un PROGRAM à un canal MIX.
+* Remplacement de la saisie ambiguë « vide pour aucun » par un menu explicite :
+  * `1 - Sélectionner un PROGRAM`
+  * `2 - Aucun PROGRAM`
+  * `q - Annuler`
+* Distinction explicite entre l’annulation de l’opération et la suppression du PROGRAM associé au canal.
+* Conservation de l’instrument local du canal lors de l’affectation, du remplacement ou de la suppression du PROGRAM.
+
+### Navigation
+
+* Une entrée vide dans la saisie principale de `choose_program_id()` annule la sélection.
+* Une entrée vide dans la liste des banques revient à la saisie principale.
+* Une entrée vide dans la liste des PROGRAMs d’une banque revient à la sélection des banques.
+* Une sélection de PROGRAM inexistante reste dans la banque courante afin de permettre une nouvelle saisie.
+* Harmonisation du comportement d’annulation entre l’édition, le renommage, la suppression et les listes filtrées de PROGRAMs.
+
+### Documentation
+
+* Suppression du TODO relatif aux noms personnalisés des banques Fusion, fonctionnalité réalisée dans une version précédente.
+* Conservation d’un fichier `TODO` minimal destiné aux améliorations futures.
+
+### Validation
+
+* Compilation complète réussie avec `python -m py_compile *.py`.
+* Vérification réussie avec `git diff --check`.
+* Validation fonctionnelle de la saisie directe `bank:program`.
+* Validation fonctionnelle de la sélection assistée par nom de banque.
+* Validation du filtrage des banques et PROGRAMs avec `allowed_ids`.
+* Validation de l’affectation et du remplacement d’un PROGRAM dans un canal MIX.
+* Validation de la suppression explicite du PROGRAM d’un canal MIX.
+* Validation de l’édition, du renommage et de la suppression d’un PROGRAM avec le nouveau sélecteur.
+* Validation des parcours d’annulation et du retour au menu PROGRAM.
+* Vérification qu’aucune saisie directe parallèle d’un identifiant PROGRAM `bank:program` ne subsiste dans l’Éditeur.
+* Validation globale réussie avec `integration-globale.py` :
+  * `Inconnus : 0`
+  * `Sans suggestion : 0`
+  * `Hints non respectés : 0`
+  * `Suggestions invalides : 0`
+  * `Erreurs FUSION_GM_DATA : 0`
+  * `Erreurs normalisation : 0`
+  * `Régressions suggestions : 0`
+
+---
+
 ## Fusion2QSynth v2.18
 
 ### Encapsulation des modifications du projet
