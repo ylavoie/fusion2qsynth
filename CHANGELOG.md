@@ -1,5 +1,72 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.18
+
+### Encapsulation des modifications du projet
+
+* Renforcement de l’encapsulation de `FusionProject` afin que les modules de capture et d’édition ne modifient plus directement les structures internes du projet.
+* Ajout de `snapshot()` et `restore_snapshot()` pour centraliser la sauvegarde et la restauration de l’état du projet en mémoire.
+* Suppression des accès directs à `project.data` dans `fusion_capture.py` et `fusion_editor.py`.
+* Centralisation des modifications de PROGRAM, MIX et SONG dans `FusionProject`.
+* Ajout de `update_program_part()` pour modifier une PART d’un PROGRAM avec validation et restauration automatique en cas d’erreur.
+* Ajout de `update_mix_channel()` pour modifier ou supprimer des propriétés d’un canal MIX avec validation intégrée.
+* Ajout de `update_song_channel()` pour modifier les paramètres d’un canal SONG.
+* Ajout de `update_song_program()` pour modifier les données locales d’un PROGRAM utilisé dans une SONG.
+* Ajout de `move_song_channel()` pour déplacer un canal SONG sans manipulation directe de la structure `channels`.
+* Utilisation de `replace_song_channels()` pour remplacer de façon contrôlée l’ensemble des canaux d’une SONG.
+
+### Capture Fusion
+
+* Remplacement des modifications directes des PARTs de PROGRAM par `update_program_part()`.
+* Remplacement des sauvegardes manuelles de `project.data` par `snapshot()` et `restore_snapshot()`.
+* Lors de la capture d’une SONG, création des PROGRAMs inconnus par l’interface de modification de `FusionProject`.
+* Annulation complète de la capture SONG et restauration de l’état du projet si la création d’un PROGRAM échoue.
+* Remplacement de l’affectation directe de `song["channels"]` par `replace_song_channels()`.
+* Conservation du mécanisme `allowed_errors` afin que les erreurs préexistantes du projet ne bloquent pas une modification valide.
+
+### Éditeur
+
+* Suppression de `edit_fusion_name()`, devenue inutilisée.
+* Modification du nom Fusion d’un PROGRAM exclusivement par `rename_program()`.
+* Un nom de PROGRAM ne peut plus être effacé avec `-`, conformément à la validation qui exige un nom non vide.
+* Remplacement des modifications directes des PARTs de PROGRAM par `update_program_part()`.
+* Remplacement des modifications directes des canaux MIX par `update_mix_channel()`.
+* Centralisation de l’affectation et de la suppression des instruments locaux des canaux MIX.
+* Remplacement des modifications directes des paramètres de canaux SONG par `update_song_channel()`.
+* Centralisation de l’affectation et de la suppression des instruments locaux des PROGRAMs d’une SONG avec `update_song_program()`.
+* Remplacement du déplacement manuel des canaux SONG par `move_song_channel()`.
+* Restauration systématique du snapshot du projet lorsqu’une sauvegarde avec `save_safe()` échoue.
+
+### Architecture et robustesse
+
+* `fusion_capture.py` et `fusion_editor.py` utilisent désormais l’API de `FusionProject` pour les modifications persistantes du modèle.
+* Les opérations de modification suivent maintenant un cycle commun :
+  * prise d’un snapshot ;
+  * modification par l’API `FusionProject` ;
+  * validation ;
+  * sauvegarde avec `save_safe()` ;
+  * restauration du snapshot en cas d’échec de sauvegarde.
+* Réduction du couplage entre l’interface utilisateur, la capture MIDI et la représentation interne de `fusion.json`.
+* Les mutations internes nécessaires à la validation et au rollback sont maintenant confinées dans `FusionProject`.
+
+### Validation
+
+* Compilation complète réussie avec `python -m py_compile *.py`.
+* Vérification réussie avec `git diff --check`.
+* Vérification qu’aucun accès direct à `project.data` ou aux attributs privés de `FusionProject` ne subsiste hors de `fusion_project.py`.
+* Vérification des mutations directes dans `fusion_capture.py`, `fusion_editor.py` et `fusion_performance.py`; les mutations restantes concernent les structures temporaires de capture, de validation ou d’état d’exécution.
+* Validation fonctionnelle de la recapture d’une SONG existante après encapsulation des modifications.
+* Validation globale réussie avec `integration-globale.py` :
+  * `Inconnus : 0`
+  * `Sans suggestion : 0`
+  * `Hints non respectés : 0`
+  * `Suggestions invalides : 0`
+  * `Erreurs FUSION_GM_DATA : 0`
+  * `Erreurs normalisation : 0`
+  * `Régressions suggestions : 0`
+
+---
+
 ## Fusion2QSynth v2.17
 
 ### Gestion des banques
