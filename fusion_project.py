@@ -242,29 +242,6 @@ class FusionProject:
                 "dans fusion.json."
             )
 
-    def restore_backup(self):
-
-        backup = self.filename + ".bak"
-
-        if not os.path.exists(
-            backup
-        ):
-
-            return False
-
-        try:
-
-            shutil.copy2(
-                backup,
-                self.filename
-            )
-
-            return True
-
-        except Exception:
-
-            return False
-
     @classmethod
     def restore_from_backup(
         cls,
@@ -313,54 +290,6 @@ class FusionProject:
             )
 
             return None
-
-    @classmethod
-    def restore(cls):
-
-        project = cls.__new__(cls)
-
-        project.filename = FUSION_FILE
-        project.data = {}
-        project.file_time = 0
-
-        project.log_recovery(
-            "RECOVERY_REQUEST"
-        )
-
-        if not project.restore_backup():
-
-            project.log_recovery(
-                "RESTORE_FAILED"
-            )
-            return None
-
-        try:
-
-            project.load()
-
-        except ProjectRecoveryError:
-
-            project.log_recovery(
-                "RESTORE_FAILED"
-            )
-            return None
-
-        project.log_recovery(
-            "RESTORE_COPY_SUCCESS"
-        )
-        errors = project.validate()
-
-        if errors:
-
-            project.log_recovery(
-                "RESTORE_FAILED"
-            )
-            return None
-
-        project.log_recovery(
-            "RESTORE_VALIDATED"
-        )
-        return project
 
     @classmethod
     def get_backup_info(cls,backup):
@@ -997,10 +926,6 @@ class FusionProject:
             backup
         )
 
-    def reload(self):
-
-        self.load()
-
     def reload_if_changed(self):
 
         if not os.path.exists(
@@ -1340,47 +1265,20 @@ class FusionProject:
         bank
     ):
 
-        if bank_type == "program":
+        if bank_type not in (
+            "program",
+            "mix"
+        ):
 
-            return self.get_custom_program_bank_name(
-                bank
+            raise ValueError(
+                f"Type de banque invalide : {bank_type}"
             )
-
-        if bank_type == "mix":
-
-            return self.get_custom_mix_bank_name(
-                bank
-            )
-
-        raise ValueError(
-            f"Type de banque invalide : {bank_type}"
-        )
-
-    def get_custom_program_bank_name(
-        self,
-        bank
-    ):
 
         return (
             self.data[
                 "banks"
             ][
-                "program"
-            ].get(
-                str(bank)
-            )
-        )
-
-    def get_custom_mix_bank_name(
-        self,
-        bank
-    ):
-
-        return (
-            self.data[
-                "banks"
-            ][
-                "mix"
+                bank_type
             ].get(
                 str(bank)
             )
@@ -1414,25 +1312,6 @@ class FusionProject:
         return self.get_mixes().get(
             mix_id
         )
-
-    def get_mix_channels(
-        self,
-        mix
-    ):
-
-        channels = mix.get(
-            "channels",
-            {}
-        )
-
-        if isinstance(
-            channels,
-            dict
-        ):
-
-            return channels
-
-        return {}
 
     def migrate_legacy_mixes(
         self
@@ -2318,53 +2197,6 @@ class FusionProject:
                 )
 
         return errors
-
-    def validate_fusion_program_id(
-        self,
-        performance_id
-    ):
-
-        if not isinstance(
-            performance_id,
-            str
-        ):
-
-            return False
-
-        try:
-
-            bank_text, program_text = (
-                performance_id.split(
-                    ":",
-                    1
-                )
-            )
-
-            if (
-                str(int(bank_text)) != bank_text
-                or
-                str(int(program_text)) != program_text
-            ):
-
-                return False
-
-            bank = int(
-                bank_text
-            )
-
-            program = int(
-                program_text
-            )
-
-        except ValueError:
-
-            return False
-
-        return (
-            0 <= bank <= 127
-            and
-            0 <= program <= 127
-        )
 
     def validate_part_data(
         self,
@@ -3957,14 +3789,6 @@ class FusionProject:
                 "canal MIDI invalide."
             )
 
-        if not (
-            1 <= midi_channel <= 16
-        ):
-
-            errors.append(
-                f"{song_id} CH {channel_id} : canal MIDI invalide."
-            )
-
         programs = channel.get(
             "programs"
         )
@@ -4153,43 +3977,6 @@ class FusionProject:
                 )
 
         return errors
-
-    def validate_song_channel(
-        self,
-        song_id,
-        channel_id
-    ):
-
-        song = self.get_song(
-            song_id
-        )
-
-        if not song:
-
-            return [
-                f"SONG inconnue : {song_id}"
-            ]
-
-        channels = song.get(
-            "channels",
-            {}
-        )
-
-        channel = channels.get(
-            str(channel_id)
-        )
-
-        if channel is None:
-
-            return [
-                f"{song_id} CH {channel_id} : canal inconnu."
-            ]
-
-        return self.validate_song_channel_data(
-            song_id,
-            str(channel_id),
-            channel
-        )
 
     def validate_song(
         self,
@@ -5625,36 +5412,6 @@ class FusionProject:
             []
         )
 
-    def prepare_capture(
-        self,
-        mix_id
-    ):
-
-        mixes = self.get_mixes()
-
-        if mix_id not in mixes:
-
-            mixes[mix_id] = {
-
-                "name":
-                    f"Fusion Mix {mix_id}",
-
-                "channels": {}
-
-            }
-
-            return True
-
-        if (
-            "channels" in mixes[mix_id]
-            and
-            mixes[mix_id]["channels"]
-        ):
-
-            return False
-
-        return True
-
     #
     # Instruments
     #
@@ -5717,55 +5474,175 @@ class FusionProject:
     def add_instrument(
         self,
         instrument_id,
-        instrument
+        instrument,
+        allowed_errors=None
     ):
 
-        if "instruments" not in self.data:
+        instruments = self.get_instruments()
 
-            self.data["instruments"] = {}
+        if instrument_id in instruments:
 
-        if instrument_id in self.data["instruments"]:
+            return (
+                False,
+                [
+                    f"Instrument existant : {instrument_id}"
+                ]
+            )
 
-            return False
+        instruments[
+            instrument_id
+        ] = instrument
 
-        self.data["instruments"][instrument_id] = instrument
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
 
-        return True
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            instruments.pop(
+                instrument_id,
+                None
+            )
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def update_instrument(
         self,
         instrument_id,
-        instrument
-    ):
-
-        if "instruments" not in self.data:
-
-            self.data["instruments"] = {}
-
-        self.data["instruments"][instrument_id] = instrument
-
-        return True
-
-    def remove_instrument(
-        self,
-        instrument_id
+        instrument,
+        allowed_errors=None
     ):
 
         instruments = self.get_instruments()
 
         if instrument_id not in instruments:
 
-            return False
+            return (
+                False,
+                [
+                    f"Instrument inconnu : {instrument_id}"
+                ]
+            )
+
+        old_instrument = copy.deepcopy(
+            instruments[
+                instrument_id
+            ]
+        )
+
+        instruments[
+            instrument_id
+        ] = instrument
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            instruments[
+                instrument_id
+            ] = old_instrument
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
+
+    def remove_instrument(
+        self,
+        instrument_id,
+        allowed_errors=None
+    ):
+
+        instruments = self.get_instruments()
+
+        if instrument_id not in instruments:
+
+            return (
+                False,
+                [
+                    f"Instrument inconnu : {instrument_id}"
+                ]
+            )
 
         if self.find_instrument_usage(
             instrument_id
         ):
 
-            return False
+            return (
+                False,
+                [
+                    f"Instrument utilisé : {instrument_id}"
+                ]
+            )
 
-        del instruments[instrument_id]
+        old_instrument = copy.deepcopy(
+            instruments[
+                instrument_id
+            ]
+        )
 
-        return True
+        del instruments[
+            instrument_id
+        ]
+
+        errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        if allowed_errors is not None:
+
+            errors = [
+                error
+                for error in errors
+                if error not in allowed_errors
+            ]
+
+        if errors:
+
+            instruments[
+                instrument_id
+            ] = old_instrument
+
+            return (
+                False,
+                errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def find_instrument_usage(
         self,

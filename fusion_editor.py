@@ -208,10 +208,23 @@ def ensure_project_instrument(
         "sf2_program": preset["sf2_program"]
     }
 
-    if not project.add_instrument(
+    original_data = project.snapshot()
+
+    ok, errors = project.add_instrument(
         instrument_id,
-        instrument
-    ):
+        instrument,
+        allowed_errors=allowed_errors
+    )
+
+    if not ok:
+
+        print(
+            "Instrument non ajouté."
+        )
+
+        print_error_messages(
+            errors
+        )
 
         return None
 
@@ -219,8 +232,8 @@ def ensure_project_instrument(
         allowed_errors=allowed_errors
     ):
 
-        project.remove_instrument(
-            instrument_id
+        project.restore_snapshot(
+            original_data
         )
 
         return None
@@ -3353,17 +3366,26 @@ def add_instrument(project):
         project.validate()
     )
 
-    if not project.add_instrument(
+    original_data = project.snapshot()
+
+    ok, errors = project.add_instrument(
         instrument_id,
         {
             "name": name,
             "sf2_bank": bank,
             "sf2_program": program
-        }
-    ):
+        },
+        allowed_errors=allowed_errors
+    )
+
+    if not ok:
 
         print(
-            "Instrument déjà présent."
+            "Instrument non ajouté."
+        )
+
+        print_error_messages(
+            errors
         )
 
         return
@@ -3371,12 +3393,16 @@ def add_instrument(project):
     if project.save_safe(
         allowed_errors=allowed_errors
     ):
+
         print(
-            "Instrument ajouté :",
-            name
+            "Instrument ajouté."
         )
 
     else:
+
+        project.restore_snapshot(
+            original_data
+        )
 
         print(
             "⚠ Sauvegarde non effectuée."
@@ -3481,28 +3507,37 @@ def delete_instrument(
 
         return
 
-    if project.remove_instrument(
-        instrument_id
+    original_data = project.snapshot()
+
+    ok, errors = project.remove_instrument(
+        instrument_id,
+        allowed_errors=allowed_errors
+    )
+
+    if not ok:
+
+        print(
+            "Instrument non supprimé."
+        )
+
+        print_error_messages(
+            errors
+        )
+
+        return
+
+    if project.save_safe(
+        allowed_errors=allowed_errors
     ):
 
-        if project.save_safe(
-            allowed_errors=allowed_errors
-        ):
-
-            print(
-                "Instrument supprimé."
-            )
-
-        else:
-
-            print(
-                "Suppression non sauvegardée."
-            )
+        print(
+            "Instrument supprimé."
+        )
 
     else:
 
-        print(
-            "Suppression impossible."
+        project.restore_snapshot(
+            original_data
         )
 
 def edit_instrument(project):
@@ -3569,13 +3604,26 @@ def edit_instrument(project):
             else program
     }
 
-    if not project.update_instrument(
+    allowed_errors = project.get_blocking_errors(
+        project.validate()
+    )
+
+    original_data = project.snapshot()
+
+    ok, errors = project.update_instrument(
         instrument_id,
-        updated
-    ):
+        updated,
+        allowed_errors=allowed_errors
+    )
+
+    if not ok:
 
         print(
-            "Modification refusée."
+            "Instrument non modifié."
+        )
+
+        print_error_messages(
+            errors
         )
 
         return
@@ -3589,6 +3637,10 @@ def edit_instrument(project):
         )
 
     else:
+
+        project.restore_snapshot(
+            original_data
+        )
 
         print(
             "⚠ Sauvegarde non effectuée."
@@ -5237,7 +5289,7 @@ def manage_banks(
             if not 0 <= bank <= 127:
 
                 print(
-                    "Banque inexistante."
+                    "Banque invalide (0-127)."
                 )
 
                 continue
