@@ -46,6 +46,25 @@ class FusionProject:
 
         self.load()
 
+    def _empty_project_data(
+        self
+    ):
+
+        return {
+            "format_version":
+                PROJECT_FORMAT_VERSION,
+
+            "banks": {
+                "program": {},
+                "mix": {}
+            },
+
+            "instruments": {},
+            "mixes": {},
+            "programs": {},
+            "songs": {}
+        }
+
     #
     # Chargement / sauvegarde
     #
@@ -55,7 +74,7 @@ class FusionProject:
             self.filename
         ):
 
-            self.data = {}
+            self.data = self._empty_project_data()
 
             return
 
@@ -1289,20 +1308,9 @@ class FusionProject:
     #
     def get_mixes(self):
 
-        mixes = self.data.get(
+        return self.data[
             "mixes"
-        )
-
-        if not isinstance(
-            mixes,
-            dict
-        ):
-
-            mixes = {}
-
-            self.data["mixes"] = mixes
-
-        return mixes
+        ]
 
     def get_mix(
         self,
@@ -2495,20 +2503,9 @@ class FusionProject:
     #
     def get_programs(self):
 
-        programs = self.data.get(
+        return self.data[
             "programs"
-        )
-
-        if not isinstance(
-            programs,
-            dict
-        ):
-
-            programs = {}
-
-            self.data["programs"] = programs
-
-        return programs
+        ]
 
     def get_program(
         self,
@@ -2969,20 +2966,9 @@ class FusionProject:
     #
     def get_songs(self):
 
-        songs = self.data.get(
+        return self.data[
             "songs"
-        )
-
-        if not isinstance(
-            songs,
-            dict
-        ):
-
-            songs = {}
-
-            self.data["songs"] = songs
-
-        return songs
+        ]
 
     def get_song(
         self,
@@ -5417,10 +5403,9 @@ class FusionProject:
     #
     def get_instruments(self):
 
-        return self.data.get(
-            "instruments",
-            {}
-        )
+        return self.data[
+            "instruments"
+        ]
 
     def get_instrument(
         self,
