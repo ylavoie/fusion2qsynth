@@ -15,6 +15,10 @@ from fusion_diagnostic import (
     print_error_messages
 )
 
+from fusion_performance import (
+    print_mix
+)
+
 from fusion_suggestions import (
     suggest_instruments
 )
@@ -212,8 +216,7 @@ def ensure_project_instrument(
 
     ok, errors = project.add_instrument(
         instrument_id,
-        instrument,
-        allowed_errors=allowed_errors
+        instrument
     )
 
     if not ok:
@@ -771,7 +774,8 @@ def edit_mix(project,mix_id):
 
     while True:
 
-        project.print_mix(
+        print_mix(
+            project,
             mix_id
         )
 
@@ -1019,6 +1023,12 @@ def edit_mix_channel(
 
             return
 
+        allowed_errors = (
+            project.get_blocking_errors(
+                project.validate()
+            )
+        )
+
         original_data = project.snapshot()
 
         ok, errors = project.update_mix_channel(
@@ -1027,8 +1037,7 @@ def edit_mix_channel(
             {
                 "instrument":
                     instrument["id"]
-            },
-            allowed_errors=allowed_errors
+            }
         )
 
         if not ok:
@@ -1142,8 +1151,7 @@ def edit_mix_channel(
             mix_id,
             channel_id,
             updates=updates,
-            remove_fields=remove_fields,
-            allowed_errors=allowed_errors
+            remove_fields=remove_fields
         )
 
         if not ok:
@@ -1204,8 +1212,7 @@ def edit_mix_channel(
             channel_id,
             remove_fields=[
                 "instrument"
-            ],
-            allowed_errors=allowed_errors
+            ]
         )
 
         if not ok:
@@ -3374,8 +3381,7 @@ def add_instrument(project):
             "name": name,
             "sf2_bank": bank,
             "sf2_program": program
-        },
-        allowed_errors=allowed_errors
+        }
     )
 
     if not ok:
@@ -3507,11 +3513,16 @@ def delete_instrument(
 
         return
 
+    allowed_errors = (
+        project.get_blocking_errors(
+            project.validate()
+        )
+    )
+
     original_data = project.snapshot()
 
     ok, errors = project.remove_instrument(
-        instrument_id,
-        allowed_errors=allowed_errors
+        instrument_id
     )
 
     if not ok:
@@ -3612,8 +3623,7 @@ def edit_instrument(project):
 
     ok, errors = project.update_instrument(
         instrument_id,
-        updated,
-        allowed_errors=allowed_errors
+        updated
     )
 
     if not ok:
@@ -3874,6 +3884,124 @@ def edit_program(
 
         return name
 
+    def print_part(
+        part_id,
+        part,
+        fusion_name=None
+    ):
+
+        print()
+
+        print(
+            "PART",
+            part_id
+        )
+
+        print("----------------")
+
+        print(
+            "Nom Fusion     :",
+            (
+                fusion_name
+                if fusion_name is not None
+                else part.get(
+                    "fusion_name",
+                    "Non défini"
+                )
+            )
+        )
+
+        bank = part.get("bank")
+
+        print(
+            "Fusion Bank    :",
+            (
+                f"{project.get_program_bank_name(bank)} ({bank})"
+                if bank is not None
+                else "?"
+            )
+        )
+
+        print(
+            "Fusion Program :",
+            part.get(
+                "program",
+                "?"
+            )
+        )
+
+        instrument = project.resolve_part_instrument(
+            part
+        )
+
+        if instrument:
+
+            print(
+                "Instrument     :",
+                instrument.get(
+                    "name",
+                    "?"
+                )
+            )
+
+            print(
+                "SF2 Bank       :",
+                instrument.get(
+                    "sf2_bank",
+                    0
+                )
+            )
+
+            print(
+                "SF2 Program    :",
+                instrument.get(
+                    "sf2_program",
+                    0
+                )
+            )
+
+        else:
+
+            print(
+                "Instrument     : Non configuré"
+            )
+
+
+        print(
+            "Canal MIDI     :",
+            part.get(
+                "midi_channel",
+                "?"
+            )
+        )
+
+        print(
+            "Plage          :",
+            note_range(
+                part.get(
+                    "note_min",
+                    None
+                ),
+                part.get(
+                    "note_max",
+                    None
+                )
+            )
+        )
+
+        print(
+            "Velocity       :",
+            part.get(
+                "velocity_min",
+                0
+            ),
+            "-",
+            part.get(
+                "velocity_max",
+                127
+            )
+        )
+
     program = project.get_program(
         program_id
     )
@@ -3926,7 +4054,7 @@ def edit_program(
         )
     )
 
-    project.print_part(
+    print_part(
         "1",
         part,
         fusion_name=program.get(
@@ -3970,6 +4098,10 @@ def edit_program(
 
                 continue
 
+            allowed_errors = project.get_blocking_errors(
+                project.validate()
+            )
+
             original_data = project.snapshot()
 
             ok, errors = project.update_program_part(
@@ -3978,8 +4110,7 @@ def edit_program(
                 {
                     "instrument":
                         instrument["id"]
-                },
-                allowed_errors=allowed_errors
+                }
             )
 
             if not ok:
@@ -4033,8 +4164,7 @@ def edit_program(
             ok, errors = project.update_program_part(
                 program_id,
                 "1",
-                updates,
-                allowed_errors=allowed_errors
+                updates
             )
 
             if not ok:
@@ -4535,8 +4665,7 @@ def edit_song(
         ok, errors = project.update_song_channel(
             song_id,
             channel_id,
-            updates=updates,
-            allowed_errors=allowed_errors
+            updates=updates
         )
 
         if not ok:
@@ -4987,6 +5116,10 @@ def edit_song(
 
                         continue
 
+                    allowed_errors = project.get_blocking_errors(
+                        project.validate()
+                    )
+
                     original_data = project.snapshot()
 
                     ok, errors = project.update_song_program(
@@ -4996,8 +5129,7 @@ def edit_song(
                         updates={
                             "instrument":
                                 instrument["id"]
-                        },
-                        allowed_errors=allowed_errors
+                        }
                     )
 
                     if not ok:
@@ -5080,8 +5212,7 @@ def edit_song(
                     ok, errors = project.move_song_channel(
                         song_id,
                         channel_id,
-                        new_channel_id,
-                        allowed_errors=allowed_errors
+                        new_channel_id
                     )
 
                     if not ok:
@@ -5149,8 +5280,7 @@ def edit_song(
                         selected_program_id,
                         remove_fields=[
                             "instrument"
-                        ],
-                        allowed_errors=allowed_errors
+                        ]
                     )
 
                     if not ok:

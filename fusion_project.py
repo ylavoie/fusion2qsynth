@@ -6,10 +6,8 @@ import shutil
 import time
 import copy
 import re
+import hashlib
 
-from fusion_lib import (
-    note_name, note_range
-)
 from fusion_constants import PROJECT_FORMAT_VERSION
 
 from fusion_gm_map import (
@@ -105,18 +103,18 @@ class FusionProject:
                 f"Fichier {self.filename} invalide."
             )
 
-        self.validate_format_version()
-        self.validate_root_structure()
+        self._validate_format_version()
+        self._validate_root_structure()
 
         allowed_errors = self.get_blocking_errors(
             self.validate()
         )
 
         mix_migration = (
-            self.migrate_legacy_mixes()
+            self._migrate_legacy_mixes()
         )
         song_migration = (
-            self.migrate_legacy_songs()
+            self._migrate_legacy_songs()
         )
 
         migration_needed = (
@@ -162,7 +160,7 @@ class FusionProject:
                     "la migration du projet."
                 )
 
-    def validate_format_version(
+    def _validate_format_version(
         self
     ):
 
@@ -207,7 +205,7 @@ class FusionProject:
                 f"({PROJECT_FORMAT_VERSION})."
             )
 
-    def validate_root_structure(
+    def _validate_root_structure(
         self
     ):
 
@@ -296,7 +294,7 @@ class FusionProject:
 
                 return None
 
-            project.log_recovery(
+            project._log_recovery(
                 "RESTORE_VALIDATED " + backup
             )
 
@@ -304,30 +302,11 @@ class FusionProject:
 
         except Exception:
 
-            project.log_recovery(
+            project._log_recovery(
                 "RESTORE_FAILED " + backup
             )
 
             return None
-
-    @classmethod
-    def get_backup_info(cls,backup):
-
-        if not os.path.exists(
-            backup
-        ):
-
-            return None
-
-        stat = os.stat(
-            backup
-        )
-
-        return {
-            "filename": backup,
-            "size": cls.format_size(stat.st_size),
-            "time": cls.format_time(stat.st_mtime)
-        }
 
     @classmethod
     def list_backups(cls):
@@ -348,13 +327,19 @@ class FusionProject:
 
                 continue
 
-            stat = os.stat(filename)
+            stat = os.stat(
+                filename
+            )
 
             backups.append(
                 {
                     "filename": filename,
-                    "size": stat.st_size,
-                    "time": stat.st_mtime
+                    "size": cls._format_size(
+                        stat.st_size
+                    ),
+                    "time": cls._format_time(
+                        stat.st_mtime
+                    )
                 }
             )
 
@@ -470,8 +455,6 @@ class FusionProject:
         filename
     ):
 
-        import hashlib
-
         hasher = hashlib.sha256()
 
         with open(
@@ -490,7 +473,10 @@ class FusionProject:
 
         return hasher.hexdigest()
 
-    def format_size(size):
+    @staticmethod
+    def _format_size(
+        size
+    ):
 
         if size < 1024:
 
@@ -500,13 +486,20 @@ class FusionProject:
 
             return f"{size // 1024} Ko"
 
-        return f"{size / (1024 * 1024):.1f} Mo"
+        return (
+            f"{size / (1024 * 1024):.1f} Mo"
+        )
 
-    def format_time(timestamp):
+    @staticmethod
+    def _format_time(
+        timestamp
+    ):
 
         return time.strftime(
             "%d-%m-%Y %H:%M:%S",
-            time.localtime(timestamp)
+            time.localtime(
+                timestamp
+            )
         )
 
     def get_blocking_errors(
@@ -535,7 +528,7 @@ class FusionProject:
 
     def save_safe(
         self,
-        allowed_errors=None
+        allowed_errors
     ):
 
         errors = self.validate()
@@ -544,13 +537,11 @@ class FusionProject:
             errors
         )
 
-        if allowed_errors is not None:
-
-            blocking_errors = [
-                error
-                for error in blocking_errors
-                if error not in allowed_errors
-            ]
+        blocking_errors = [
+            error
+            for error in blocking_errors
+            if error not in allowed_errors
+        ]
 
         if blocking_errors:
 
@@ -785,7 +776,7 @@ class FusionProject:
                     filename
                 )
 
-                if not cls.archive_is_valid(
+                if not cls._archive_is_valid(
                     full_path
                 ):
 
@@ -809,7 +800,7 @@ class FusionProject:
         return archives
 
     @classmethod
-    def archive_is_valid(
+    def _archive_is_valid(
         cls,
         filename
     ):
@@ -974,18 +965,7 @@ class FusionProject:
 
         return True
 
-    def backup(self):
-
-        if os.path.exists(
-            self.filename
-        ):
-
-            shutil.copy2(
-                self.filename,
-                self.filename + ".bak"
-            )
-
-    def log_recovery(self, message):
+    def _log_recovery(self, message):
 
         try:
 
@@ -1321,7 +1301,7 @@ class FusionProject:
             mix_id
         )
 
-    def migrate_legacy_mixes(
+    def _migrate_legacy_mixes(
         self
     ):
 
@@ -1470,7 +1450,9 @@ class FusionProject:
 
             return (
                 False,
-                []
+                [
+                    f"Mix inconnu : {mix_id}"
+                ]
             )
 
         old_name = mix.get(
@@ -1539,8 +1521,6 @@ class FusionProject:
                     f"Mix déjà existant : {new_mix_id}"
                 ]
             )
-
-        import copy
 
         new_mix = copy.deepcopy(
             source
@@ -1613,8 +1593,6 @@ class FusionProject:
     def delete_empty_mixes(
         self
     ):
-
-        import copy
 
         mixes = self.get_mixes()
 
@@ -1726,6 +1704,12 @@ class FusionProject:
             self.get_mixes()
         )
 
+    def count_instruments(self):
+
+        return len(
+            self.get_instruments()
+        )
+
     @staticmethod
     def sort_mix_ids(data):
 
@@ -1743,7 +1727,7 @@ class FusionProject:
             )
         )
 
-    def validate_instrument(
+    def _validate_instrument(
         self,
         instrument_id
     ):
@@ -1877,14 +1861,14 @@ class FusionProject:
 
         return errors
 
-    def validate_instruments(self):
+    def _validate_instruments(self):
 
         errors = []
 
         for instrument_id in self.get_instruments():
 
             errors.extend(
-                self.validate_instrument(
+                self._validate_instrument(
                     instrument_id
                 )
             )
@@ -1906,12 +1890,12 @@ class FusionProject:
                 f"Mix inconnu : {mix_id}"
             ]
 
-        return self.validate_mix_data(
+        return self._validate_mix_data(
             mix_id,
             mix
         )
 
-    def validate_mix_data(
+    def _validate_mix_data(
         self,
         mix_id,
         mix
@@ -1997,7 +1981,7 @@ class FusionProject:
         ):
 
             errors.extend(
-                self.validate_mix_channel_data(
+                self._validate_mix_channel_data(
                     mix_id,
                     channel_id,
                     channel
@@ -2006,7 +1990,7 @@ class FusionProject:
 
         return errors
 
-    def validate_mix_channel_data(
+    def _validate_mix_channel_data(
         self,
         mix_id,
         channel_id,
@@ -2206,9 +2190,9 @@ class FusionProject:
 
         return errors
 
-    def validate_part_data(
+    def _validate_part_data(
         self,
-        mix_id,
+        program_id,
         part_id,
         part
     ):
@@ -2221,12 +2205,12 @@ class FusionProject:
         ):
 
             errors.append(
-                f"{mix_id} : définition invalide."
+                f"{program_id} : définition invalide."
             )
 
             return errors
 
-        prefix = f"{mix_id} PART {part_id}"
+        prefix = f"{program_id} PART {part_id}"
 
         #
         # Champs autorisés
@@ -2530,7 +2514,9 @@ class FusionProject:
 
             return (
                 False,
-                []
+                [
+                    f"PROGRAM inconnu : {program_id}"
+                ]
             )
 
         before_errors = self.get_blocking_errors(
@@ -2575,8 +2561,6 @@ class FusionProject:
         program_id
     ):
 
-        import copy
-
         programs = self.get_programs()
 
         if program_id not in programs:
@@ -2618,7 +2602,7 @@ class FusionProject:
             []
         )
 
-    def ensure_program(
+    def _ensure_program(
         self,
         program_id
     ):
@@ -2640,22 +2624,20 @@ class FusionProject:
         self,
         program_id,
         part_id,
-        updates,
-        allowed_errors=None
+        updates
     ):
 
-        program = self.get_program(
-            program_id
+        before_errors = self.get_blocking_errors(
+            self.validate()
         )
 
-        if not program:
+        backup = copy.deepcopy(
+            self.data
+        )
 
-            return (
-                False,
-                [
-                    f"PROGRAM inconnu : {program_id}"
-                ]
-            )
+        program = self._ensure_program(
+            program_id
+        )
 
         parts = program.get(
             "parts"
@@ -2665,6 +2647,8 @@ class FusionProject:
             parts,
             dict
         ):
+
+            self.data = backup
 
             return (
                 False,
@@ -2677,10 +2661,6 @@ class FusionProject:
             part_id
         )
 
-        old_program = copy.deepcopy(
-            program
-        )
-
         part = parts.setdefault(
             part_id,
             {}
@@ -2690,29 +2670,17 @@ class FusionProject:
             updates
         )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
+        if new_errors:
 
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
-
-            program.clear()
-
-            program.update(
-                old_program
-            )
+            self.data = backup
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -2794,12 +2762,12 @@ class FusionProject:
                 f"PROGRAM inconnu : {program_id}"
             ]
 
-        return self.validate_program_data(
+        return self._validate_program_data(
             program_id,
             program
         )
 
-    def validate_program_data(
+    def _validate_program_data(
         self,
         program_id,
         program
@@ -2914,7 +2882,7 @@ class FusionProject:
             return errors
 
         errors.extend(
-            self.validate_part_data(
+            self._validate_part_data(
                 program_id,
                 "1",
                 part
@@ -2979,7 +2947,7 @@ class FusionProject:
             str(song_id)
         )
 
-    def migrate_legacy_songs(
+    def _migrate_legacy_songs(
         self
     ):
 
@@ -3171,7 +3139,9 @@ class FusionProject:
 
             return (
                 False,
-                []
+                [
+                    f"SONG inconnue : {song_id}"
+                ]
             )
 
         old_name = song.get(
@@ -3215,8 +3185,6 @@ class FusionProject:
         self,
         song_id
     ):
-
-        import copy
 
         song_id = str(
             song_id
@@ -3263,7 +3231,7 @@ class FusionProject:
             []
         )
 
-    def ensure_song(
+    def _ensure_song(
         self,
         song_id
     ):
@@ -3286,8 +3254,7 @@ class FusionProject:
     def replace_song_channels(
         self,
         song_id,
-        channels,
-        allowed_errors=None
+        channels
     ):
 
         song = self.get_song(
@@ -3303,35 +3270,31 @@ class FusionProject:
                 ]
             )
 
-        old_song = copy.deepcopy(
-            song
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        song = self._ensure_song(
+            song_id
         )
 
         song["channels"] = channels
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
+        if new_errors:
 
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
-
-            song.clear()
-
-            song.update(
-                old_song
-            )
+            self.data = backup
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3344,8 +3307,7 @@ class FusionProject:
         song_id,
         channel_id,
         updates=None,
-        remove_fields=None,
-        allowed_errors=None
+        remove_fields=None
     ):
 
         song = self.get_song(
@@ -3397,6 +3359,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_song = copy.deepcopy(
             song
         )
@@ -3416,19 +3382,11 @@ class FusionProject:
                     None
                 )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             song.clear()
 
@@ -3438,7 +3396,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3452,8 +3410,7 @@ class FusionProject:
         channel_id,
         program_id,
         updates=None,
-        remove_fields=None,
-        allowed_errors=None
+        remove_fields=None
     ):
 
         song = self.get_song(
@@ -3539,6 +3496,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_song = copy.deepcopy(
             song
         )
@@ -3558,19 +3519,11 @@ class FusionProject:
                     None
                 )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             song.clear()
 
@@ -3580,7 +3533,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3592,8 +3545,7 @@ class FusionProject:
         self,
         song_id,
         old_channel_id,
-        new_channel_id,
-        allowed_errors=None
+        new_channel_id
     ):
 
         song = self.get_song(
@@ -3651,6 +3603,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_song = copy.deepcopy(
             song
         )
@@ -3661,19 +3617,11 @@ class FusionProject:
             old_channel_id
         )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             song.clear()
 
@@ -3683,7 +3631,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3711,7 +3659,7 @@ class FusionProject:
             self.get_songs()
         )
 
-    def validate_song_channel_data(
+    def _validate_song_channel_data(
         self,
         song_id,
         channel_id,
@@ -3979,12 +3927,12 @@ class FusionProject:
                 f"SONG inconnue : {song_id}"
             ]
 
-        return self.validate_song_data(
+        return self._validate_song_data(
             song_id,
             song
         )
 
-    def validate_song_data(
+    def _validate_song_data(
         self,
         song_id,
         song
@@ -4058,7 +4006,7 @@ class FusionProject:
         for channel_id, channel in channels.items():
 
             errors.extend(
-                self.validate_song_channel_data(
+                self._validate_song_channel_data(
                     song_id,
                     channel_id,
                     channel
@@ -4134,7 +4082,7 @@ class FusionProject:
 
         for mix_id, mix in self.iter_mixes():
 
-            mix_errors = self.validate_mix_data(
+            mix_errors = self._validate_mix_data(
                 mix_id,
                 mix
             )
@@ -4193,7 +4141,7 @@ class FusionProject:
                 )
             ):
                 errors = (
-                    self.validate_mix_channel_data(
+                    self._validate_mix_channel_data(
                         mix_id,
                         channel_id,
                         channel
@@ -4515,7 +4463,7 @@ class FusionProject:
 
         for song_id, song in self.iter_songs():
 
-            song_errors = self.validate_song_data(
+            song_errors = self._validate_song_data(
                 song_id,
                 song
             )
@@ -4566,7 +4514,7 @@ class FusionProject:
 
             for channel_id, channel in channels.items():
 
-                errors = self.validate_song_channel_data(
+                errors = self._validate_song_channel_data(
                     song_id,
                     channel_id,
                     channel
@@ -4672,7 +4620,7 @@ class FusionProject:
 
             summary["instruments"]["total"] += 1
 
-            errors = self.validate_instrument(
+            errors = self._validate_instrument(
                 instrument_id
             )
 
@@ -4808,216 +4756,6 @@ class FusionProject:
         return summary
 
     #
-    # Affichage
-    #
-    def print_mix(
-        self,
-        mix_id
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            print(
-                "Mix inconnu :",
-                mix_id
-            )
-
-            return
-
-        print()
-
-        print(
-            "Mix :",
-            mix_id,
-            "-",
-            mix.get(
-                "name",
-                mix_id
-            )
-        )
-
-        if "channels" in mix:
-
-            channels = mix.get(
-                "channels",
-                {}
-            )
-
-            for channel_id, channel in sorted(
-                channels.items(),
-                key=lambda item: int(
-                    item[0]
-                )
-            ):
-
-                program_id = channel.get(
-                    "program"
-                )
-
-                instrument = (
-                    self.resolve_mix_channel_instrument(
-                        channel
-                    )
-                )
-
-                instrument_name = (
-                    instrument.get(
-                        "name",
-                        "?"
-                    )
-                    if instrument
-                    else "Non configuré"
-                )
-
-                print()
-
-                print(
-                    "CH",
-                    channel_id
-                )
-
-                print(
-                    " PROGRAM    :",
-                    (
-                        program_id
-                        if program_id
-                        else "?"
-                    )
-                )
-
-                print(
-                    " Instrument :",
-                    instrument_name
-                )
-
-            return
-
-    def print_part(
-        self,
-        part_id,
-        part,
-        fusion_name=None
-    ):
-
-        print()
-
-        print(
-            "PART",
-            part_id
-        )
-
-        print("----------------")
-
-        print(
-            "Nom Fusion     :",
-            (
-                fusion_name
-                if fusion_name is not None
-                else part.get(
-                    "fusion_name",
-                    "Non défini"
-                )
-            )
-        )
-
-        bank = part.get("bank")
-
-        print(
-            "Fusion Bank    :",
-            (
-                f"{self.get_program_bank_name(bank)} ({bank})"
-                if bank is not None
-                else "?"
-            )
-        )
-
-        print(
-            "Fusion Program :",
-            part.get(
-                "program",
-                "?"
-            )
-        )
-
-
-        instrument = self.resolve_part_instrument(
-            part
-        )
-
-
-        if instrument:
-
-            print(
-                "Instrument     :",
-                instrument.get(
-                    "name",
-                    "?"
-                )
-            )
-
-            print(
-                "SF2 Bank       :",
-                instrument.get(
-                    "sf2_bank",
-                    0
-                )
-            )
-
-            print(
-                "SF2 Program    :",
-                instrument.get(
-                    "sf2_program",
-                    0
-                )
-            )
-
-        else:
-
-            print(
-                "Instrument     : Non configuré"
-            )
-
-
-        print(
-            "Canal MIDI     :",
-            part.get(
-                "midi_channel",
-                "?"
-            )
-        )
-
-        print(
-            "Plage          :",
-            note_range(
-                part.get(
-                    "note_min",
-                    None
-                ),
-                part.get(
-                    "note_max",
-                    None
-                )
-            )
-        )
-
-        print(
-            "Velocity       :",
-            part.get(
-                "velocity_min",
-                0
-            ),
-            "-",
-            part.get(
-                "velocity_max",
-                127
-            )
-        )
-
-    #
     # Validation
     #
     def validate(self):
@@ -5025,11 +4763,11 @@ class FusionProject:
         errors = []
 
         errors.extend(
-            self.validate_banks()
+            self._validate_banks()
         )
 
         errors.extend(
-            self.validate_instruments()
+            self._validate_instruments()
         )
 
         for mix_id in self.sort_mix_ids(
@@ -5060,7 +4798,7 @@ class FusionProject:
 
         return errors
 
-    def validate_bank_names(
+    def _validate_bank_names(
         self,
         bank_type
     ):
@@ -5116,7 +4854,7 @@ class FusionProject:
 
         return errors
 
-    def validate_banks(
+    def _validate_banks(
         self
     ):
 
@@ -5177,13 +4915,13 @@ class FusionProject:
             return errors
 
         errors.extend(
-            self.validate_bank_names(
+            self._validate_bank_names(
                 "program"
             )
         )
 
         errors.extend(
-            self.validate_bank_names(
+            self._validate_bank_names(
                 "mix"
             )
         )
@@ -5210,7 +4948,7 @@ class FusionProject:
             )
         )
 
-    def ensure_mix(
+    def _ensure_mix(
         self,
         mix_id
     ):
@@ -5233,8 +4971,7 @@ class FusionProject:
         mix_id,
         channel_id,
         updates=None,
-        remove_fields=None,
-        allowed_errors=None
+        remove_fields=None
     ):
 
         mix = self.get_mix(
@@ -5286,6 +5023,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_mix = copy.deepcopy(
             mix
         )
@@ -5305,19 +5046,11 @@ class FusionProject:
                     None
                 )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             mix.clear()
 
@@ -5327,7 +5060,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -5338,59 +5071,34 @@ class FusionProject:
     def replace_mix_channels(
         self,
         mix_id,
-        channels,
-        allowed_errors=None
+        channels
     ):
 
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            return (
-                False,
-                [
-                    f"Mix inconnu : {mix_id}"
-                ]
-            )
-
-        #
-        # Sauvegarde complète de l'ancien MIX
-        # pour permettre un rollback exact.
-        #
-        old_mix = copy.deepcopy(
-            mix
-        )
-
-        #
-        # Modèle MIX par canal
-        #
-        mix["channels"] = channels
-
-        errors = self.get_blocking_errors(
+        before_errors = self.get_blocking_errors(
             self.validate()
         )
 
-        if allowed_errors is not None:
+        backup = copy.deepcopy(
+            self.data
+        )
 
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
+        mix = self._ensure_mix(
+            mix_id
+        )
 
-        if errors:
+        mix["channels"] = channels
 
-            mix.clear()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
 
-            mix.update(
-                old_mix
-            )
+        if new_errors:
+
+            self.data = backup
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -5459,8 +5167,7 @@ class FusionProject:
     def add_instrument(
         self,
         instrument_id,
-        instrument,
-        allowed_errors=None
+        instrument
     ):
 
         instruments = self.get_instruments()
@@ -5474,23 +5181,19 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         instruments[
             instrument_id
         ] = instrument
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             instruments.pop(
                 instrument_id,
@@ -5499,7 +5202,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -5510,8 +5213,7 @@ class FusionProject:
     def update_instrument(
         self,
         instrument_id,
-        instrument,
-        allowed_errors=None
+        instrument
     ):
 
         instruments = self.get_instruments()
@@ -5525,6 +5227,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_instrument = copy.deepcopy(
             instruments[
                 instrument_id
@@ -5535,19 +5241,11 @@ class FusionProject:
             instrument_id
         ] = instrument
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             instruments[
                 instrument_id
@@ -5555,7 +5253,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -5565,8 +5263,7 @@ class FusionProject:
 
     def remove_instrument(
         self,
-        instrument_id,
-        allowed_errors=None
+        instrument_id
     ):
 
         instruments = self.get_instruments()
@@ -5591,6 +5288,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_instrument = copy.deepcopy(
             instruments[
                 instrument_id
@@ -5601,19 +5302,11 @@ class FusionProject:
             instrument_id
         ]
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             instruments[
                 instrument_id
@@ -5621,7 +5314,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
