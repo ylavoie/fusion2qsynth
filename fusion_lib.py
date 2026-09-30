@@ -191,6 +191,7 @@ def system_status(project):
         is not None
     )
 
+    status["instrument_count"] = project.count_instruments()
     status["mix_count"] = project.count_mixes()
     status["program_count"] = project.count_programs()
     status["song_count"] = project.count_songs()

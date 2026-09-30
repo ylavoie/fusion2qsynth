@@ -94,6 +94,92 @@ def print_performance_header(
     )
     print("======================")
 
+def print_mix(
+    project,
+    mix_id
+):
+
+    mix = project.get_mix(
+        mix_id
+    )
+
+    if not mix:
+
+        print(
+            "Mix inconnu :",
+            mix_id
+        )
+
+        return
+
+    print()
+
+    print(
+        "Mix :",
+        mix_id,
+        "-",
+        mix.get(
+            "name",
+            mix_id
+        )
+    )
+
+    if "channels" in mix:
+
+        channels = mix.get(
+            "channels",
+            {}
+        )
+
+        for channel_id, channel in sorted(
+            channels.items(),
+            key=lambda item: int(
+                item[0]
+            )
+        ):
+
+            program_id = channel.get(
+                "program"
+            )
+
+            instrument = (
+                project.resolve_mix_channel_instrument(
+                    channel
+                )
+            )
+
+            instrument_name = (
+                instrument.get(
+                    "name",
+                    "?"
+                )
+                if instrument
+                else "Non configuré"
+            )
+
+            print()
+
+            print(
+                "CH",
+                channel_id
+            )
+
+            print(
+                " PROGRAM    :",
+                (
+                    program_id
+                    if program_id
+                    else "?"
+                )
+            )
+
+            print(
+                " Instrument :",
+                instrument_name
+            )
+
+        return
+
 def load_mix(
     mix_id,
     out,
@@ -175,7 +261,8 @@ def load_mix(
         )
     )
 
-    project.print_mix(
+    print_mix(
+        project,
         mix_id
     )
 
