@@ -2020,10 +2020,7 @@ class FusionProject:
             ]
 
             if (
-                not isinstance(
-                    sf2_bank,
-                    int
-                )
+                type(sf2_bank) is not int
                 or
                 not 0 <= sf2_bank <= 16383
             ):
@@ -2039,10 +2036,7 @@ class FusionProject:
             ]
 
             if (
-                not isinstance(
-                    sf2_program,
-                    int
-                )
+                type(sf2_program) is not int
                 or
                 not 0 <= sf2_program <= 127
             ):
@@ -5630,10 +5624,32 @@ class FusionProject:
         #
         for program_id, program in self.iter_programs():
 
-            for part_id, part in program.get(
-                "parts",
-                {}
-            ).items():
+            if not isinstance(
+                program,
+                dict
+            ):
+
+                continue
+
+            parts = program.get(
+                "parts"
+            )
+
+            if not isinstance(
+                parts,
+                dict
+            ):
+
+                continue
+
+            for part_id, part in parts.items():
+
+                if not isinstance(
+                    part,
+                    dict
+                ):
+
+                    continue
 
                 if part.get(
                     "instrument"
@@ -5652,10 +5668,32 @@ class FusionProject:
         #
         for mix_id, mix in self.iter_mixes():
 
-            for channel_id, channel in mix.get(
-                "channels",
-                {}
-            ).items():
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                continue
+
+            channels = mix.get(
+                "channels"
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                continue
+
+            for channel_id, channel in channels.items():
+
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    continue
 
                 if channel.get(
                     "instrument"
@@ -5674,15 +5712,52 @@ class FusionProject:
         #
         for song_id, song in self.iter_songs():
 
-            for channel_id, channel in song.get(
-                "channels",
-                {}
-            ).items():
+            if not isinstance(
+                song,
+                dict
+            ):
 
-                for program_id, program_data in channel.get(
-                    "programs",
-                    {}
-                ).items():
+                continue
+
+            channels = song.get(
+                "channels"
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                continue
+
+            for channel_id, channel in channels.items():
+
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    continue
+
+                programs = channel.get(
+                    "programs"
+                )
+
+                if not isinstance(
+                    programs,
+                    dict
+                ):
+
+                    continue
+
+                for program_id, program_data in programs.items():
+
+                    if not isinstance(
+                        program_data,
+                        dict
+                    ):
+
+                        continue
 
                     if program_data.get(
                         "instrument"
