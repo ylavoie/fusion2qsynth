@@ -2658,33 +2658,10 @@ class FusionProject:
 
         return errors
 
-    def is_qsynth_ready(
+    def is_instrument_qsynth_ready(
         self,
-        part
+        instrument
     ):
-
-        if not isinstance(
-            part,
-            dict
-        ):
-
-            return False
-
-        midi_channel = part.get(
-            "midi_channel"
-        )
-
-        if (
-            type(midi_channel) is not int
-            or
-            not 1 <= midi_channel <= 16
-        ):
-
-            return False
-
-        instrument = self.resolve_part_instrument(
-            part
-        )
 
         if not isinstance(
             instrument,
@@ -2718,6 +2695,38 @@ class FusionProject:
             return False
 
         return True
+
+    def is_qsynth_ready(
+        self,
+        part
+    ):
+
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            return False
+
+        midi_channel = part.get(
+            "midi_channel"
+        )
+
+        if (
+            type(midi_channel) is not int
+            or
+            not 1 <= midi_channel <= 16
+        ):
+
+            return False
+
+        instrument = self.resolve_part_instrument(
+            part
+        )
+
+        return self.is_instrument_qsynth_ready(
+            instrument
+        )
 
     def resolve_mix_channel_instrument(
         self,
@@ -4661,6 +4670,27 @@ class FusionProject:
 
                     continue
 
+                try:
+
+                    midi_channel = int(
+                        channel_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    midi_channel_valid = False
+
+                else:
+
+                    midi_channel_valid = (
+                        str(midi_channel) == channel_id
+                        and
+                        1 <= midi_channel <= 16
+                    )
+
                 instrument = (
                     self.resolve_mix_channel_instrument(
                         channel
@@ -4682,8 +4712,13 @@ class FusionProject:
                         "fusion_valid":
                             len(errors) == 0,
 
-                        "qsynth_configured":
-                            instrument is not None,
+                        "qsynth_configured": (
+                            midi_channel_valid
+                            and
+                            self.is_instrument_qsynth_ready(
+                                instrument
+                            )
+                        ),
 
                         "instrument":
                             instrument
@@ -4854,14 +4889,38 @@ class FusionProject:
                     else None
                 )
 
-                qsynth_configured = False
+                try:
 
-                if isinstance(
-                    programs,
-                    dict
+                    midi_channel = int(
+                        channel_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
                 ):
 
-                    if programs:
+                    midi_channel_valid = False
+
+                else:
+
+                    midi_channel_valid = (
+                        str(midi_channel) == channel_id
+                        and
+                        1 <= midi_channel <= 16
+                    )
+                    qsynth_configured = False
+
+                    if (
+                        midi_channel_valid
+                        and
+                        isinstance(
+                            programs,
+                            dict
+                        )
+                        and
+                        programs
+                    ):
 
                         qsynth_configured = True
 
@@ -4885,7 +4944,9 @@ class FusionProject:
                                 )
                             )
 
-                            if not instrument:
+                            if not self.is_instrument_qsynth_ready(
+                                instrument
+                            ):
 
                                 qsynth_configured = False
                                 break

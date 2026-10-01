@@ -632,7 +632,7 @@ def load_song_program(
         song_id
     )
 
-    if not song:
+    if song is None:
 
         return False
 
@@ -685,7 +685,9 @@ def load_song_program(
         )
     )
 
-    if not instrument:
+    if not project.is_instrument_qsynth_ready(
+        instrument
+    ):
 
         print(
             "CH",
