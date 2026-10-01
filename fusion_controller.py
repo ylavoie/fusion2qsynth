@@ -282,15 +282,6 @@ def print_mode_diagnostic(
                     )
                 )
 
-            if "shared_channels" in mix:
-
-                print(
-                    " ⚠ Canaux partagés :",
-                    mix[
-                        "shared_channels"
-                    ]
-                )
-
         print()
 
         print(

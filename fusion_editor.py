@@ -5573,15 +5573,6 @@ def print_project_summary(
             f"Erreurs {data['error']:>3}"
         )
 
-        if data.get(
-            "info",
-            0
-        ):
-
-            line += (
-                f" | Infos {data['info']:>2}"
-            )
-
         print(
             line
         )
