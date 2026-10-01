@@ -1569,7 +1569,7 @@ class FusionProject:
             mix_id
         )
 
-        if not mix:
+        if mix is None:
 
             return (
                 False,
@@ -1625,7 +1625,7 @@ class FusionProject:
             source_mix_id
         )
 
-        if not source:
+        if source is None:
 
             return (
                 False,
@@ -1645,12 +1645,32 @@ class FusionProject:
                 ]
             )
 
+        source_name = source.get(
+            "name"
+        )
+
+        if (
+            not isinstance(
+                source_name,
+                str
+            )
+            or
+            not source_name.strip()
+        ):
+
+            return (
+                False,
+                [
+                    f"Mix source invalide : {source_mix_id}"
+                ]
+            )
+
         new_mix = copy.deepcopy(
             source
         )
 
         new_mix["name"] = self._make_copy_name(
-            source.get('name', source_mix_id)
+            source_name
         )
 
         before_errors = self.get_blocking_errors(
@@ -1692,9 +1712,17 @@ class FusionProject:
             )
 
             if not any(
-                mix.get("name") == candidate
+                isinstance(
+                    mix,
+                    dict
+                )
+                and
+                mix.get(
+                    "name"
+                ) == candidate
                 for mix in self.get_mixes().values()
             ):
+
                 return candidate
 
         index = 2
@@ -1706,9 +1734,17 @@ class FusionProject:
             )
 
             if not any(
-                mix.get("name") == candidate
+                isinstance(
+                    mix,
+                    dict
+                )
+                and
+                mix.get(
+                    "name"
+                ) == candidate
                 for mix in self.get_mixes().values()
             ):
+
                 return candidate
 
             index += 1
@@ -1733,16 +1769,33 @@ class FusionProject:
             self.iter_mixes()
         ):
 
-            if not mix.get(
-                "channels",
-                {}
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                continue
+
+            channels = mix.get(
+                "channels"
+            )
+
+            if (
+                isinstance(
+                    channels,
+                    dict
+                )
+                and
+                not channels
             ):
 
                 removed.append(
                     mix_id
                 )
 
-                del mixes[mix_id]
+                del mixes[
+                    mix_id
+                ]
 
         new_errors = self.get_new_blocking_errors(
             before_errors
@@ -2702,12 +2755,24 @@ class FusionProject:
             program_id
         )
 
-        if not program:
+        if program is None:
 
             return (
                 False,
                 [
                     f"PROGRAM inconnu : {program_id}"
+                ]
+            )
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"PROGRAM invalide : {program_id}"
                 ]
             )
 
@@ -2819,6 +2884,18 @@ class FusionProject:
         updates
     ):
 
+        if not isinstance(
+            updates,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"{program_id} PART {part_id} : modifications invalides."
+                ]
+            )
+
         before_errors = self.get_blocking_errors(
             self.validate()
         )
@@ -2830,6 +2907,20 @@ class FusionProject:
         program = self._ensure_program(
             program_id
         )
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            self.data = backup
+
+            return (
+                False,
+                [
+                    f"{program_id} : définition invalide."
+                ]
+            )
 
         parts = program.get(
             "parts"
@@ -2857,6 +2948,20 @@ class FusionProject:
             part_id,
             {}
         )
+
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            self.data = backup
+
+            return (
+                False,
+                [
+                    f"{program_id} PART {part_id} : définition invalide."
+                ]
+            )
 
         part.update(
             updates
@@ -2926,6 +3031,17 @@ class FusionProject:
     ):
 
         errors = []
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            errors.append(
+                f"{program_id} : définition invalide."
+            )
+
+            return errors
 
         program_id_valid = True
 
@@ -3089,19 +3205,6 @@ class FusionProject:
                 errors.append(
                     f"{program_id} PART 1 : "
                     f"bank Fusion incohérente avec l'identifiant."
-                )
-
-            if (
-                type(part.get("program")) is int
-                and
-                0 <= part["program"] <= 127
-                and
-                part["program"] != expected_program
-            ):
-
-                errors.append(
-                    f"{program_id} PART 1 : "
-                    f"program Fusion incohérent avec l'identifiant."
                 )
 
         if (
@@ -3371,12 +3474,24 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
                 [
                     f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
                 ]
             )
 
@@ -3497,12 +3612,24 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
                 [
                     f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
                 ]
             )
 
@@ -3546,12 +3673,40 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
                 [
                     f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
+        if (
+            updates is not None
+            and
+            not isinstance(
+                updates,
+                dict
+            )
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} : modifications invalides."
                 ]
             )
 
@@ -3649,12 +3804,41 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
                 [
                     f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
+        if (
+            updates is not None
+            and
+            not isinstance(
+                updates,
+                dict
+            )
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} "
+                    f"PROGRAM {program_id} : modifications invalides."
                 ]
             )
 
@@ -3784,7 +3968,7 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
@@ -3792,6 +3976,19 @@ class FusionProject:
                     f"SONG inconnue : {song_id}"
                 ]
             )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
 
         channels = song.get(
             "channels"
@@ -5056,7 +5253,7 @@ class FusionProject:
             mix_id
         )
 
-        if not mix:
+        if mix is None:
 
             return (
                 False,
@@ -5163,6 +5360,20 @@ class FusionProject:
         mix = self._ensure_mix(
             mix_id
         )
+
+        if not isinstance(
+            mix,
+            dict
+        ):
+
+            self.data = backup
+
+            return (
+                False,
+                [
+                    f"{mix_id} : définition invalide."
+                ]
+            )
 
         mix["channels"] = channels
 
