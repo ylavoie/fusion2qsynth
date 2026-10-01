@@ -1689,7 +1689,7 @@ class FusionProject:
 
         mixes = self.get_mixes()
 
-        for mix_id in self.sort_mix_ids(
+        for mix_id in self.sort_performance_ids(
             mixes
         ):
 
@@ -1704,27 +1704,43 @@ class FusionProject:
             self.get_mixes()
         )
 
-    def count_instruments(self):
-
-        return len(
-            self.get_instruments()
-        )
-
     @staticmethod
-    def sort_mix_ids(data):
+    def sort_performance_ids(
+        data
+    ):
 
-        mix_ids = [
-            key
-            for key in data.keys()
-            if ":" in key
-        ]
+        def sort_key(
+            performance_id
+        ):
+
+            try:
+
+                bank, program = (
+                    performance_id.split(
+                        ":"
+                    )
+                )
+
+                return (
+                    0,
+                    int(bank),
+                    int(program)
+                )
+
+            except (
+                AttributeError,
+                TypeError,
+                ValueError
+            ):
+
+                return (
+                    1,
+                    str(performance_id)
+                )
 
         return sorted(
-            mix_ids,
-            key=lambda x: (
-                int(x.split(":")[0]),
-                int(x.split(":")[1])
-            )
+            data.keys(),
+            key=sort_key
         )
 
     def _validate_instrument(
@@ -1903,6 +1919,54 @@ class FusionProject:
 
         errors = []
 
+        try:
+
+            bank_text, program_text = (
+                mix_id.split(
+                    ":",
+                    1
+                )
+            )
+
+            bank = int(
+                bank_text
+            )
+
+            program = int(
+                program_text
+            )
+
+            if (
+                str(bank) != bank_text
+                or
+                str(program) != program_text
+            ):
+
+                errors.append(
+                    f"MIX {mix_id} : identifiant invalide."
+                )
+
+        except (
+            ValueError,
+            AttributeError
+        ):
+
+            errors.append(
+                f"MIX {mix_id} : identifiant invalide."
+            )
+
+        else:
+
+            if not (
+                0 <= bank <= 127
+                and
+                0 <= program <= 127
+            ):
+
+                errors.append(
+                    f"MIX {mix_id} : identifiant hors limites."
+                )
+
         if not isinstance(
             mix,
             dict
@@ -2021,19 +2085,19 @@ class FusionProject:
                 f"{prefix} : canal MIDI invalide."
             )
 
-            return errors
+        else:
 
-        if str(midi_channel) != channel_id:
+            if str(midi_channel) != channel_id:
 
-            errors.append(
-                f"{prefix} : canal MIDI invalide."
-            )
+                errors.append(
+                    f"{prefix} : canal MIDI invalide."
+                )
 
-        elif not 1 <= midi_channel <= 16:
+            elif not 1 <= midi_channel <= 16:
 
-            errors.append(
-                f"{prefix} : canal MIDI hors limites."
-            )
+                errors.append(
+                    f"{prefix} : canal MIDI hors limites."
+                )
 
         #
         # Définition du canal
@@ -2111,8 +2175,6 @@ class FusionProject:
                         errors.append(
                             f"{prefix} : PROGRAM invalide ({program_id})."
                         )
-
-                        return errors
 
                 except (
                     ValueError,
@@ -2692,7 +2754,7 @@ class FusionProject:
 
         programs = self.get_programs()
 
-        for program_id in self.sort_mix_ids(
+        for program_id in self.sort_performance_ids(
             programs
         ):
 
@@ -2711,46 +2773,6 @@ class FusionProject:
         self,
         program_id
     ):
-
-        try:
-
-            bank_text, program_text = (
-                program_id.split(
-                    ":",
-                    1
-                )
-            )
-
-            bank = int(
-                bank_text
-            )
-
-            program_number = int(
-                program_text
-            )
-
-        except (
-            AttributeError,
-            ValueError
-        ):
-
-            return [
-                f"PROGRAM {program_id} : identifiant invalide."
-            ]
-
-        if (
-            str(bank) != bank_text
-            or
-            str(program_number) != program_text
-            or
-            not 0 <= bank <= 127
-            or
-            not 0 <= program_number <= 127
-        ):
-
-            return [
-                f"PROGRAM {program_id} : identifiant invalide."
-            ]
 
         program = self.get_program(
             program_id
@@ -2775,16 +2797,51 @@ class FusionProject:
 
         errors = []
 
-        if not isinstance(
-            program,
-            dict
-        ):
+        program_id_valid = True
 
-            errors.append(
-                f"{program_id} : définition invalide."
+        try:
+
+            bank_text, program_text = (
+                program_id.split(
+                    ":",
+                    1
+                )
             )
 
-            return errors
+            expected_bank = int(
+                bank_text
+            )
+
+            expected_program = int(
+                program_text
+            )
+
+        except (
+            AttributeError,
+            ValueError
+        ):
+
+            program_id_valid = False
+
+        else:
+
+            if (
+                str(expected_bank) != bank_text
+                or
+                str(expected_program) != program_text
+                or
+                not 0 <= expected_bank <= 127
+                or
+                not 0 <= expected_program <= 127
+            ):
+
+                program_id_valid = False
+
+        if not program_id_valid:
+
+            errors.append(
+                f"PROGRAM {program_id} : identifiant invalide."
+            )
 
         #
         # Champs autorisés
@@ -2889,30 +2946,33 @@ class FusionProject:
             )
         )
 
-        bank_text, program_text = (
-            program_id.split(":")
-        )
+        if program_id_valid:
 
-        expected_bank = int(
-            bank_text
-        )
+            if (
+                type(part.get("bank")) is int
+                and
+                0 <= part["bank"] <= 127
+                and
+                part["bank"] != expected_bank
+            ):
 
-        expected_program = int(
-            program_text
-        )
+                errors.append(
+                    f"{program_id} PART 1 : "
+                    f"bank Fusion incohérente avec l'identifiant."
+                )
 
-        if (
-            type(part.get("bank")) is int
-            and
-            0 <= part["bank"] <= 127
-            and
-            part["bank"] != expected_bank
-        ):
+            if (
+                type(part.get("program")) is int
+                and
+                0 <= part["program"] <= 127
+                and
+                part["program"] != expected_program
+            ):
 
-            errors.append(
-                f"{program_id} PART 1 : "
-                f"bank Fusion incohérente avec l'identifiant."
-            )
+                errors.append(
+                    f"{program_id} PART 1 : "
+                    f"program Fusion incohérent avec l'identifiant."
+                )
 
         if (
             type(part.get("program")) is int
@@ -3276,10 +3336,6 @@ class FusionProject:
 
         backup = copy.deepcopy(
             self.data
-        )
-
-        song = self._ensure_song(
-            song_id
         )
 
         song["channels"] = channels
@@ -4074,10 +4130,32 @@ class FusionProject:
     #
     # Diagnostic
     #
+
     def get_mix_diagnostic(
         self
     ):
 
+        def channel_sort_key(
+            item
+        ):
+            channel_id = item[0]
+
+            try:
+
+                return (
+                    0,
+                    int(channel_id)
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                return (
+                    1,
+                    str(channel_id)
+                )
         result = []
 
         for mix_id, mix in self.iter_mixes():
@@ -4136,9 +4214,7 @@ class FusionProject:
 
             for channel_id, channel in sorted(
                 channels.items(),
-                key=lambda item: int(
-                    item[0]
-                )
+                key=channel_sort_key
             ):
                 errors = (
                     self._validate_mix_channel_data(
@@ -4158,7 +4234,7 @@ class FusionProject:
                     ].append(
                         {
                             "channel":
-                                int(channel_id),
+                                channel_id,
 
                             "program":
                                 None,
@@ -4187,7 +4263,7 @@ class FusionProject:
                 ].append(
                     {
                         "channel":
-                            int(channel_id),
+                            channel_id,
 
                         "program":
                             channel.get(
@@ -4770,9 +4846,7 @@ class FusionProject:
             self._validate_instruments()
         )
 
-        for mix_id in self.sort_mix_ids(
-            self.get_mixes()
-        ):
+        for mix_id in self.get_mixes():
 
             errors.extend(
                 self.validate_mix(
@@ -4780,7 +4854,7 @@ class FusionProject:
                 )
             )
 
-        for program_id, program in self.iter_programs():
+        for program_id in self.get_programs():
 
             errors.extend(
                 self.validate_program(
@@ -4788,7 +4862,7 @@ class FusionProject:
                 )
             )
 
-        for song_id, song in self.iter_songs():
+        for song_id in self.get_songs():
 
             errors.extend(
                 self.validate_song(
@@ -5402,3 +5476,9 @@ class FusionProject:
                         )
 
         return usages
+
+    def count_instruments(self):
+
+        return len(
+            self.get_instruments()
+        )
