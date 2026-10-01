@@ -2670,7 +2670,15 @@ class FusionProject:
 
             return False
 
-        if "midi_channel" not in part:
+        midi_channel = part.get(
+            "midi_channel"
+        )
+
+        if (
+            type(midi_channel) is not int
+            or
+            not 1 <= midi_channel <= 16
+        ):
 
             return False
 
@@ -2678,15 +2686,38 @@ class FusionProject:
             part
         )
 
-        if not instrument:
+        if not isinstance(
+            instrument,
+            dict
+        ):
 
             return False
 
-        return (
-            "sf2_bank" in instrument
-            and
-            "sf2_program" in instrument
+        sf2_bank = instrument.get(
+            "sf2_bank"
         )
+
+        sf2_program = instrument.get(
+            "sf2_program"
+        )
+
+        if (
+            type(sf2_bank) is not int
+            or
+            not 0 <= sf2_bank <= 16383
+        ):
+
+            return False
+
+        if (
+            type(sf2_program) is not int
+            or
+            not 0 <= sf2_program <= 127
+        ):
+
+            return False
+
+        return True
 
     def resolve_mix_channel_instrument(
         self,
