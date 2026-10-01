@@ -1257,9 +1257,21 @@ class FusionProject:
                 ]
             )
 
+        if isinstance(
+            bank,
+            bool
+        ):
+
+            return (
+                False,
+                [
+                    "Banque invalide."
+                ]
+            )
+
         try:
 
-            bank = int(
+            bank_number = int(
                 bank
             )
 
@@ -1275,7 +1287,18 @@ class FusionProject:
                 ]
             )
 
-        if not 0 <= bank <= 127:
+        if (
+            not 0 <= bank_number <= 127
+            or
+            (
+                isinstance(
+                    bank,
+                    str
+                )
+                and
+                str(bank_number) != bank
+            )
+        ):
 
             return (
                 False,
@@ -1284,6 +1307,7 @@ class FusionProject:
                 ]
             )
 
+        bank = bank_number
         banks = self.data[
             "banks"
         ][

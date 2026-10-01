@@ -591,39 +591,3 @@ def test_failed_restore_creates_no_archive():
     print(
         "OK"
     )
-
-
-def main():
-
-    current_directory = os.getcwd()
-
-    with tempfile.TemporaryDirectory() as temp:
-
-        os.chdir(
-            temp
-        )
-
-        try:
-
-            test_missing_archive()
-            test_broken_json()
-            test_invalid_structure()
-            test_legacy_migration()
-            test_successful_restore_archives_current()
-            test_failed_restore_creates_no_archive()
-
-        finally:
-
-            os.chdir(
-                current_directory
-            )
-
-    print()
-    print("====================")
-    print("Tous les tests passent")
-    print("====================")
-
-
-if __name__ == "__main__":
-
-    main()

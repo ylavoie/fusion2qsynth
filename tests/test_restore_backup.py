@@ -401,37 +401,3 @@ def test_legacy_migration():
     print(
         "OK"
     )
-
-
-def main():
-
-    current_directory = os.getcwd()
-
-    with tempfile.TemporaryDirectory() as temp:
-
-        os.chdir(
-            temp
-        )
-
-        try:
-
-            test_missing_backup()
-            test_broken_json()
-            test_invalid_structure()
-            test_legacy_migration()
-
-        finally:
-
-            os.chdir(
-                current_directory
-            )
-
-    print()
-    print("====================")
-    print("Tous les tests passent")
-    print("====================")
-
-
-if __name__ == "__main__":
-
-    main()
