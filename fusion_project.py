@@ -2693,6 +2693,13 @@ class FusionProject:
         channel
     ):
 
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return None
+
         #
         # Override local
         #
@@ -4471,7 +4478,10 @@ class FusionProject:
             program_id
         )
 
-        if not program:
+        if not isinstance(
+            program,
+            dict
+        ):
 
             return None
 
