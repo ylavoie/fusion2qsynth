@@ -1128,3 +1128,139 @@ def test_count_instruments(
     )
 
     assert project.count_instruments() == 2
+
+
+def test_instrument_rejects_unknown_field(
+    project
+):
+
+    project.data[
+        "instruments"
+    ][
+        "test"
+    ] = {
+        "name": "Test",
+        "sf2_bank": 0,
+        "sf2_program": 0,
+        "unknown": 123
+    }
+
+    errors = project._validate_instrument(
+        "test"
+    )
+
+    assert (
+        "Instrument test : champ inconnu unknown"
+        in errors
+    )
+
+
+def test_instrument_rejects_missing_name(
+    project
+):
+
+    project.data[
+        "instruments"
+    ][
+        "test"
+    ] = {
+        "sf2_bank": 0,
+        "sf2_program": 0
+    }
+
+    errors = project._validate_instrument(
+        "test"
+    )
+
+    assert (
+        "Instrument test : nom absent"
+        in errors
+    )
+
+
+def test_instrument_rejects_missing_sf2_bank(
+    project
+):
+
+    project.data[
+        "instruments"
+    ][
+        "test"
+    ] = {
+        "name": "Test",
+        "sf2_program": 0
+    }
+
+    errors = project._validate_instrument(
+        "test"
+    )
+
+    assert (
+        "Instrument test : sf2_bank absent"
+        in errors
+    )
+
+
+def test_instrument_rejects_missing_sf2_program(
+    project
+):
+
+    project.data[
+        "instruments"
+    ][
+        "test"
+    ] = {
+        "name": "Test",
+        "sf2_bank": 0
+    }
+
+    errors = project._validate_instrument(
+        "test"
+    )
+
+    assert (
+        "Instrument test : sf2_program absent"
+        in errors
+    )
+
+
+def test_find_instrument_usage_ignores_invalid_structures(
+    project
+):
+
+    project.data[
+        "programs"
+    ][
+        "0:0"
+    ] = {
+        "name": "Program test",
+        "parts": "abc"
+    }
+
+    project.data[
+        "songs"
+    ][
+        "Song channels invalid"
+    ] = {
+        "name": "Song channels invalid",
+        "channels": "abc"
+    }
+
+    project.data[
+        "songs"
+    ][
+        "Song programs invalid"
+    ] = {
+        "name": "Song programs invalid",
+        "channels": {
+            "1": {
+                "programs": "abc"
+            }
+        }
+    }
+
+    usages = project.find_instrument_usage(
+        "instrument_test"
+    )
+
+    assert usages == []

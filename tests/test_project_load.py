@@ -240,6 +240,139 @@ def test_validate_root_structure_unknown_section(
         project._validate_root_structure()
 
 
+def test_load_migrates_legacy_mix(
+    tmp_path,
+    capsys
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = (
+        project._empty_project_data()
+    )
+
+    data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "name": "Legacy",
+        "parts": {
+            "1": {
+                "midi_channel": 2
+            }
+        }
+    }
+
+    write_json(
+        filename,
+        data
+    )
+
+    project = FusionProject(
+        filename=str(filename)
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "mix_migration MIX :"
+        in output
+    )
+
+    assert (
+        project.data[
+            "mixes"
+        ][
+            "0:0"
+        ][
+            "channels"
+        ]
+        == {
+            "2": {}
+        }
+    )
+
+    assert (
+        "parts"
+        not in project.data[
+            "mixes"
+        ][
+            "0:0"
+        ]
+    )
+
+
+def test_load_migration_save_failure(
+    tmp_path,
+    monkeypatch
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = (
+        project._empty_project_data()
+    )
+
+    data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "name": "Legacy",
+        "parts": {
+            "1": {
+                "midi_channel": 2
+            }
+        }
+    }
+
+    write_json(
+        filename,
+        data
+    )
+
+    monkeypatch.setattr(
+        FusionProject,
+        "save_safe",
+        lambda self, allowed_errors=None: False
+    )
+
+    with pytest.raises(
+        RuntimeError,
+        match=(
+            "Impossible de sauvegarder "
+            "la migration du projet."
+        )
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
+
+
 def test_load_missing_file_creates_empty_project(
     tmp_path
 ):
@@ -436,3 +569,27 @@ def test_load_rejects_invalid_root_structure(
         FusionProject(
             filename=str(filename)
         )
+
+
+def test_log_recovery_ignores_write_error(
+    project,
+    monkeypatch
+):
+
+    def failing_open(
+        *args,
+        **kwargs
+    ):
+
+        raise OSError(
+            "write failed"
+        )
+
+    monkeypatch.setattr(
+        "builtins.open",
+        failing_open
+    )
+
+    project._log_recovery(
+        "Test recovery"
+    )

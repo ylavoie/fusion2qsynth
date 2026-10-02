@@ -1,3 +1,6 @@
+import copy
+import pytest
+
 def add_mix(
     project,
     mix_id,
@@ -131,6 +134,48 @@ def test_rename_mix_with_preexisting_error(
     ) == "abc"
 
 
+def test_rename_mix_without_name_new_error_rolls_back(
+    project,
+    monkeypatch
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "channels": {}
+    }
+
+    mix = project.data[
+        "mixes"
+    ][
+        "0:0"
+    ]
+
+    assert "name" not in mix
+
+    monkeypatch.setattr(
+        project,
+        "get_new_blocking_errors",
+        lambda before_errors: [
+            "Erreur simulée"
+        ]
+    )
+
+    success, errors = project.rename_mix(
+        "0:0",
+        "Nouveau nom"
+    )
+
+    assert success is False
+    assert errors == [
+        "Erreur simulée"
+    ]
+
+    assert "name" not in mix
+
+
 def test_duplicate_mix_valid(
     project
 ):
@@ -254,6 +299,24 @@ def test_duplicate_mix_invalid_destination_rolls_back(
     assert "abc" not in project.get_mixes()
 
 
+def test_duplicate_mix_unknown_source(
+    project
+):
+
+    success, errors = project.duplicate_mix(
+        "99:99",
+        "0:1"
+    )
+
+    assert success is False
+
+    assert errors == [
+        "Mix source inconnu : 99:99"
+    ]
+
+    assert "0:1" not in project.get_mixes()
+
+
 def test_duplicate_invalid_source_does_not_crash(
     project
 ):
@@ -311,6 +374,125 @@ def test_duplicate_mix_with_preexisting_invalid_mix(
     ) == "abc"
 
 
+def test_duplicate_mix_rejects_source_without_valid_name(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "channels": {}
+    }
+
+    success, errors = project.duplicate_mix(
+        "0:0",
+        "0:1"
+    )
+
+    assert success is False
+
+    assert errors == [
+        "Mix source invalide : 0:0"
+    ]
+
+    assert "0:1" not in project.get_mixes()
+
+
+@pytest.mark.parametrize(
+    "name",
+    [
+        None,
+        "",
+        "   "
+    ]
+)
+def test_duplicate_mix_rejects_invalid_source_name(
+    project,
+    name
+):
+
+    mix = {
+        "channels": {}
+    }
+
+    if name is not None:
+
+        mix["name"] = name
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = mix
+
+    success, errors = project.duplicate_mix(
+        "0:0",
+        "0:1"
+    )
+
+    assert success is False
+    assert errors == [
+        "Mix source invalide : 0:0"
+    ]
+
+    assert "0:1" not in project.get_mixes()
+
+
+def test_make_copy_name_first_copy(
+    project
+):
+
+    assert project._make_copy_name(
+        "Test"
+    ) == "Test (copie)"
+
+
+def test_make_copy_name_numbered_copy(
+    project
+):
+
+    project.data[
+        "mixes"
+    ] = {
+        "0:0": {
+            "name": "Test (copie)",
+            "channels": {}
+        }
+    }
+
+    assert project._make_copy_name(
+        "Test"
+    ) == "Test (copie 2)"
+
+
+def test_make_copy_name_skips_existing_numbers(
+    project
+):
+
+    project.data[
+        "mixes"
+    ] = {
+        "0:0": {
+            "name": "Test (copie)",
+            "channels": {}
+        },
+        "0:1": {
+            "name": "Test (copie 2)",
+            "channels": {}
+        },
+        "0:2": {
+            "name": "Test (copie 3)",
+            "channels": {}
+        }
+    }
+
+    assert project._make_copy_name(
+        "Test"
+    ) == "Test (copie 4)"
+
+
 def test_delete_empty_mixes(
     project
 ):
@@ -339,6 +521,45 @@ def test_delete_empty_mixes(
 
     assert "0:0" not in project.get_mixes()
     assert "0:1" in project.get_mixes()
+
+
+def test_delete_empty_mixes_new_error_rolls_back(
+    project,
+    monkeypatch
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "name": "Mix vide",
+        "channels": {}
+    }
+
+    before = copy.deepcopy(
+        project.data
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_new_blocking_errors",
+        lambda before_errors: [
+            "Erreur simulée"
+        ]
+    )
+
+    success, errors = (
+        project.delete_empty_mixes()
+    )
+
+    assert success is False
+
+    assert errors == [
+        "Erreur simulée"
+    ]
+
+    assert project.data == before
 
 
 def test_delete_empty_mixes_preserves_invalid_structures(
@@ -386,6 +607,45 @@ def test_delete_mix_valid(
     assert "0:0" not in project.get_mixes()
 
 
+def test_delete_mix_new_error_rolls_back(
+    project,
+    monkeypatch
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "name": "Mix",
+        "channels": {}
+    }
+
+    before = copy.deepcopy(
+        project.data
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_new_blocking_errors",
+        lambda before_errors: [
+            "Erreur simulée"
+        ]
+    )
+
+    success, errors = project.delete_mix(
+        "0:0"
+    )
+
+    assert success is False
+
+    assert errors == [
+        "Erreur simulée"
+    ]
+
+    assert project.data == before
+
+
 def test_delete_mix_unknown(
     project
 ):
@@ -415,6 +675,118 @@ def test_delete_invalid_mix(
     assert success is True
     assert errors == []
     assert "0:0" not in project.get_mixes()
+
+
+def test_mix_rejects_noncanonical_id(
+    project
+):
+
+    mix = {
+        "name": "Test",
+        "channels": {}
+    }
+
+    errors = project._validate_mix_data(
+        "01:2",
+        mix
+    )
+
+    assert (
+        "MIX 01:2 : identifiant invalide."
+        in errors
+    )
+
+
+def test_mix_rejects_out_of_range_id(
+    project
+):
+
+    mix = {
+        "name": "Test",
+        "channels": {}
+    }
+
+    errors = project._validate_mix_data(
+        "128:0",
+        mix
+    )
+
+    assert (
+        "MIX 128:0 : identifiant hors limites."
+        in errors
+    )
+
+
+def test_mix_rejects_unknown_field(
+    project
+):
+
+    mix = {
+        "name": "Test",
+        "channels": {},
+        "unknown": 123
+    }
+
+    errors = project._validate_mix_data(
+        "0:0",
+        mix
+    )
+
+    assert (
+        "0:0 : champ inconnu 'unknown'."
+        in errors
+    )
+
+
+#
+# mix_has_channels()
+#
+
+def test_mix_has_channels_unknown(
+    project
+):
+
+    assert project.mix_has_channels(
+        "1:1"
+    ) is False
+
+
+def test_mix_has_channels_empty(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "1:1"
+    ] = {
+        "name": "Mix test",
+        "channels": {}
+    }
+
+    assert project.mix_has_channels(
+        "1:1"
+    ) is False
+
+
+def test_mix_has_channels_configured(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "1:1"
+    ] = {
+        "name": "Mix test",
+        "channels": {
+            "1": {}
+        }
+    }
+
+    assert project.mix_has_channels(
+        "1:1"
+    ) is True
 
 
 def test_update_mix_channel_valid(
@@ -482,6 +854,35 @@ def test_update_mix_channel_remove_field(
             "0:0"
         )["channels"]["1"]
     )
+
+
+def test_update_mix_channel_invalid_channels(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "1:1"
+    ] = {
+        "name": "Mix test",
+        "channels": "abc"
+    }
+
+    success, errors = project.update_mix_channel(
+        "1:1",
+        "1",
+        {
+            "volume": 100
+        }
+    )
+
+    assert success is False
+    assert errors
+
+    assert project.get_mix(
+        "1:1"
+    )["channels"] == "abc"
 
 
 def test_update_mix_channel_invalid_rolls_back(
@@ -778,3 +1179,310 @@ def test_replace_mix_channels_with_preexisting_error(
     assert project.get_mix(
         "1:1"
     ) == "abc"
+
+
+def test_validate_mix_unknown(
+    project
+):
+
+    errors = project.validate_mix(
+        "0:0"
+    )
+
+    assert errors
+    assert any(
+        "Mix inconnu" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_invalid_definition(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = "abc"
+
+    errors = project.validate_mix(
+        "0:0"
+    )
+
+    assert errors
+    assert any(
+        "définition invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_missing_channels(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "name": "Test"
+    }
+
+    errors = project.validate_mix(
+        "0:0"
+    )
+
+    assert any(
+        "channels absent" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_invalid_channels(
+    project
+):
+
+    project.data[
+        "mixes"
+    ][
+        "0:0"
+    ] = {
+        "name": "Test",
+        "channels": "abc"
+    }
+
+    errors = project.validate_mix(
+        "0:0"
+    )
+
+    assert any(
+        "channels invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_channel_id(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "abc",
+        {}
+    )
+
+    assert any(
+        "canal MIDI invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_noncanonical_channel_id(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "01",
+        {}
+    )
+
+    assert any(
+        "canal MIDI invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_out_of_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "17",
+        {}
+    )
+
+    assert any(
+        "canal MIDI hors limites" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_definition(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        "abc"
+    )
+
+    assert any(
+        "définition invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_unknown_field(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "unknown": 1
+        }
+    )
+
+    assert any(
+        "champ inconnu" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_program_not_string(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "program": 123
+        }
+    )
+
+    assert any(
+        "PROGRAM Fusion invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_program_malformed(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "program": "abc"
+        }
+    )
+
+    assert any(
+        "PROGRAM Fusion invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_program_noncanonical(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "program": "01:2"
+        }
+    )
+
+    assert any(
+        "PROGRAM invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_bank_out_of_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "program": "128:0"
+        }
+    )
+
+    assert any(
+        "bank Fusion hors limites" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_program_out_of_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "program": "0:128"
+        }
+    )
+
+    assert any(
+        "program Fusion hors limites" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_unknown_program(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "program": "0:0"
+        }
+    )
+
+    assert any(
+        "PROGRAM global 0:0 inexistant" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_instrument(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "instrument": ""
+        }
+    )
+
+    assert any(
+        "instrument invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_unknown_instrument(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "instrument": "unknown"
+        }
+    )
+
+    assert any(
+        "instrument unknown inexistant" in error
+        for error in errors
+    )

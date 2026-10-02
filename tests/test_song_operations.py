@@ -238,6 +238,71 @@ def test_delete_song_with_preexisting_error(
 
 
 #
+# _ensure_song()
+#
+
+def test_ensure_song_creates_song(
+    project
+):
+
+    song = project._ensure_song(
+        "Song test"
+    )
+
+    assert song == {
+        "name": "Fusion Song Song test",
+        "channels": {}
+    }
+
+    assert project.get_song(
+        "Song test"
+    ) is song
+
+
+def test_ensure_song_existing(
+    project
+):
+
+    add_song(
+        project,
+        name="Nom existant"
+    )
+
+    original = project.get_song(
+        "Song test"
+    )
+
+    song = project._ensure_song(
+        "Song test"
+    )
+
+    assert song is original
+
+    assert song == {
+        "name": "Nom existant",
+        "channels": {}
+    }
+
+
+def test_ensure_song_converts_id_to_string(
+    project
+):
+
+    song = project._ensure_song(
+        123
+    )
+
+    assert project.get_song(
+        "123"
+    ) is song
+
+    assert song == {
+        "name": "Fusion Song 123",
+        "channels": {}
+    }
+
+
+#
 # replace_song_channels()
 #
 
@@ -1549,3 +1614,163 @@ def test_update_song_program_with_preexisting_error(
     assert project.get_mix(
         "1:1"
     ) == "abc"
+
+
+#
+# Validation SONG - branches complémentaires
+#
+
+def test_song_program_id_noncanonical(
+    project
+):
+
+    add_song(
+        project,
+        channels={
+            "1": make_channel(
+                {
+                    "01:2": {}
+                }
+            )
+        }
+    )
+
+    errors = project.validate_song(
+        "Song test"
+    )
+
+    assert any(
+        "PROGRAM invalide (01:2)"
+        in error
+        for error in errors
+    )
+
+
+def test_song_program_bank_out_of_range(
+    project
+):
+
+    add_song(
+        project,
+        channels={
+            "1": make_channel(
+                {
+                    "128:0": {}
+                }
+            )
+        }
+    )
+
+    errors = project.validate_song(
+        "Song test"
+    )
+
+    assert any(
+        "Bank invalide (128)"
+        in error
+        for error in errors
+    )
+
+
+def test_song_program_number_out_of_range(
+    project
+):
+
+    add_song(
+        project,
+        channels={
+            "1": make_channel(
+                {
+                    "0:128": {}
+                }
+            )
+        }
+    )
+
+    errors = project.validate_song(
+        "Song test"
+    )
+
+    assert any(
+        "Program invalide (128)"
+        in error
+        for error in errors
+    )
+
+
+def test_song_program_invalid_instrument(
+    project
+):
+
+    add_song(
+        project,
+        channels={
+            "1": make_channel(
+                {
+                    "0:0": {
+                        "instrument": ""
+                    }
+                }
+            )
+        }
+    )
+
+    errors = project.validate_song(
+        "Song test"
+    )
+
+    assert any(
+        "instrument invalide"
+        in error
+        for error in errors
+    )
+
+
+def test_song_unknown_field(
+    project
+):
+
+    add_song(
+        project
+    )
+
+    project.get_song(
+        "Song test"
+    )[
+        "unknown"
+    ] = 123
+
+    errors = project.validate_song(
+        "Song test"
+    )
+
+    assert any(
+        "champ inconnu 'unknown'"
+        in error
+        for error in errors
+    )
+
+
+def test_song_channels_absent(
+    project
+):
+
+    add_song(
+        project
+    )
+
+    project.get_song(
+        "Song test"
+    ).pop(
+        "channels"
+    )
+
+    errors = project.validate_song(
+        "Song test"
+    )
+
+    assert any(
+        "channels absent"
+        in error
+        for error in errors
+    )

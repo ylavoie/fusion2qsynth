@@ -713,17 +713,6 @@ class FusionProject:
                     old_file
                 )
 
-        #
-        # Nettoyage défensif du temporaire
-        #
-        if os.path.exists(
-            temp_file
-        ):
-
-            os.remove(
-                temp_file
-            )
-
         return True
 
     def archive_if_changed(self):
@@ -3551,6 +3540,10 @@ class FusionProject:
             "name"
         )
 
+        backup = copy.deepcopy(
+            song
+        )
+
         before_errors = self.get_blocking_errors(
             self.validate()
         )
@@ -3563,16 +3556,10 @@ class FusionProject:
 
         if new_errors:
 
-            if old_name is None:
-
-                song.pop(
-                    "name",
-                    None
-                )
-
-            else:
-
-                song["name"] = old_name
+            song.clear()
+            song.update(
+                backup
+            )
 
             return (
                 False,
@@ -3604,30 +3591,9 @@ class FusionProject:
                 ]
             )
 
-        before_errors = self.get_blocking_errors(
-            self.validate()
-        )
-
-        backup = copy.deepcopy(
-            self.data
-        )
-
         del songs[
             song_id
         ]
-
-        new_errors = self.get_new_blocking_errors(
-            before_errors
-        )
-
-        if new_errors:
-
-            self.data = backup
-
-            return (
-                False,
-                new_errors
-            )
 
         return (
             True,
@@ -4900,6 +4866,8 @@ class FusionProject:
                     else None
                 )
 
+                qsynth_configured = False
+
                 try:
 
                     midi_channel = int(
@@ -4920,7 +4888,6 @@ class FusionProject:
                         and
                         1 <= midi_channel <= 16
                     )
-                    qsynth_configured = False
 
                     if (
                         midi_channel_valid
@@ -5691,34 +5658,9 @@ class FusionProject:
                 ]
             )
 
-        before_errors = self.get_blocking_errors(
-            self.validate()
-        )
-
-        old_instrument = copy.deepcopy(
-            instruments[
-                instrument_id
-            ]
-        )
-
         del instruments[
             instrument_id
         ]
-
-        new_errors = self.get_new_blocking_errors(
-            before_errors
-        )
-
-        if new_errors:
-
-            instruments[
-                instrument_id
-            ] = old_instrument
-
-            return (
-                False,
-                new_errors
-            )
 
         return (
             True,

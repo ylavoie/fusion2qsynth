@@ -1,3 +1,5 @@
+from fusion_project import FusionProject
+
 #
 # is_qsynth_ready()
 #
@@ -576,3 +578,59 @@ def test_sort_performance_ids_empty(
         {}
     ) == []
 
+
+def test_sort_performance_ids_numeric_order():
+
+    data = {
+        "10:2": {},
+        "2:10": {},
+        "2:2": {},
+        "0:127": {},
+        "0:1": {}
+    }
+
+    assert FusionProject.sort_performance_ids(
+        data
+    ) == [
+        "0:1",
+        "0:127",
+        "2:2",
+        "2:10",
+        "10:2"
+    ]
+
+
+def test_sort_performance_ids_invalid_after_valid():
+
+    data = {
+        "abc": {},
+        "2:10": {},
+        "invalid": {},
+        "0:1": {}
+    }
+
+    assert FusionProject.sort_performance_ids(
+        data
+    ) == [
+        "0:1",
+        "2:10",
+        "abc",
+        "invalid"
+    ]
+
+
+def test_sort_performance_ids_accepts_non_string_ids():
+
+    data = {
+        12: {},
+        "2:10": {},
+        "0:1": {}
+    }
+
+    assert FusionProject.sort_performance_ids(
+        data
+    ) == [
+        "0:1",
+        "2:10",
+        12
+    ]

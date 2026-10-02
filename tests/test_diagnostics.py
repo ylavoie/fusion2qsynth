@@ -900,6 +900,64 @@ def test_song_diagnostic_invalid_channel_id_not_configured(
     ] is False
 
 
+def test_song_diagnostic_invalid_non_numeric_channel(
+    project
+):
+
+    project.data[
+        "songs"
+    ][
+        "Song test"
+    ] = {
+        "name": "Song test",
+        "channels": {
+            "abc": {
+                "programs": {}
+            }
+        }
+    }
+
+    diagnostic = project.get_song_diagnostic()
+
+    assert len(
+        diagnostic
+    ) == 1
+
+    song = diagnostic[
+        0
+    ]
+
+    assert song[
+        "song"
+    ] == "Song test"
+
+    assert song[
+        "fusion_valid"
+    ] is False
+
+    assert len(
+        song["channels"]
+    ) == 1
+
+    channel = song[
+        "channels"
+    ][
+        0
+    ]
+
+    assert channel[
+        "channel"
+    ] == "abc"
+
+    assert channel[
+        "fusion_valid"
+    ] is False
+
+    assert channel[
+        "qsynth_configured"
+    ] is False
+
+
 def test_song_diagnostic_noncanonical_channel_id_not_configured(
     project
 ):
