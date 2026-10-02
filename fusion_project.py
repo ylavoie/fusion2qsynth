@@ -1439,6 +1439,17 @@ class FusionProject:
         for mix_id, mix in mixes.items():
 
             #
+            # Structure invalide :
+            # laisser validate() la signaler.
+            #
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                continue
+
+            #
             # Nouveau format :
             # rien à migrer.
             #
