@@ -101,10 +101,6 @@ def capture_program(
 
                         original_data = project.snapshot()
 
-                        project.ensure_program(
-                            current_program
-                        )
-
                         ok, errors = project.update_program_part(
                             current_program,
                             "1",
@@ -129,8 +125,7 @@ def capture_program(
 
                                 "velocity_max":
                                     velocity_max
-                            },
-                            allowed_errors=allowed_errors
+                            }
                         )
 
                         if not ok:
@@ -473,14 +468,11 @@ def capture_mix(
                                 ] = {}
 
                             original_data = project.snapshot()
-                            project.ensure_mix(
-                                current_mix
-                            )
+
                             success, errors = (
                                 project.replace_mix_channels(
                                     current_mix,
-                                    channels,
-                                    allowed_errors=allowed_errors
+                                    channels
                                 )
                             )
 
@@ -802,8 +794,6 @@ def capture_song(
 
                     capture_active = False
 
-                    original_data = project.snapshot()
-
                     if not channels:
 
                         print()
@@ -814,6 +804,8 @@ def capture_song(
                         song_id = None
 
                         continue
+
+                    original_data = project.snapshot()
 
                     song = project.ensure_song(
                         song_id
@@ -1061,10 +1053,6 @@ def capture_song(
 
                     for program_id, program_data in unknown_programs.items():
 
-                        project.ensure_program(
-                            program_id
-                        )
-
                         ok, errors = project.update_program_part(
                             program_id,
                             "1",
@@ -1077,8 +1065,7 @@ def capture_song(
 
                                 "program":
                                     program_data["program"]
-                            },
-                            allowed_errors=allowed_errors
+                            }
                         )
 
                         if not ok:
@@ -1126,8 +1113,7 @@ def capture_song(
 
                     ok, errors = project.replace_song_channels(
                         song_id,
-                        merged_channels,
-                        allowed_errors=allowed_errors
+                        merged_channels
                     )
 
                     if not ok:
@@ -1320,7 +1306,7 @@ def main():
         print("1 - MIX")
         print("2 - PROGRAM")
         print("3 - SONG")
-        print("q - Retour")
+        print("Q - Retour")
         print()
 
         choice = input(

@@ -34,3 +34,6 @@ releases/*.tar.xz
 # Archives de MIDI
 Community/*
 FUSION_HD/*
+
+# Couverture de tests
+.coverage

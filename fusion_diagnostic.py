@@ -62,6 +62,36 @@ def print_validation_errors(
 
             continue
 
+        if error.startswith(
+            "MIX "
+        ):
+
+            mix_errors.append(
+                error
+            )
+
+            continue
+
+        if error.startswith(
+            "PROGRAM "
+        ):
+
+            program_errors.append(
+                error
+            )
+
+            continue
+
+        if error.startswith(
+            "SONG "
+        ):
+
+            song_errors.append(
+                error
+            )
+
+            continue
+
         for instrument_id in instrument_ids:
 
             if error.startswith(

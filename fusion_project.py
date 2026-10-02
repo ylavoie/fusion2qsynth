@@ -6,11 +6,13 @@ import shutil
 import time
 import copy
 import re
+import hashlib
 
-from fusion_lib import (
-    note_name, note_range
+from fusion_constants import (
+    PROJECT_FORMAT_VERSION,
+    ARCHIVE_DIR,
+    ARCHIVE_COUNT
 )
-from fusion_constants import PROJECT_FORMAT_VERSION
 
 from fusion_gm_map import (
     FUSION_PROGRAM_BANK_NAMES,
@@ -24,8 +26,6 @@ FUSION_FILE = "fusion.json"
 
 # Sauvegarde
 _BACKUP_COUNT = 3
-ARCHIVE_DIR = "backups"
-ARCHIVE_COUNT = 30
 
 # Journal
 _RECOVERY_LOG = "fusion_recovery.log"
@@ -46,6 +46,25 @@ class FusionProject:
 
         self.load()
 
+    def _empty_project_data(
+        self
+    ):
+
+        return {
+            "format_version":
+                PROJECT_FORMAT_VERSION,
+
+            "banks": {
+                "program": {},
+                "mix": {}
+            },
+
+            "instruments": {},
+            "mixes": {},
+            "programs": {},
+            "songs": {}
+        }
+
     #
     # Chargement / sauvegarde
     #
@@ -55,7 +74,7 @@ class FusionProject:
             self.filename
         ):
 
-            self.data = {}
+            self.data = self._empty_project_data()
 
             return
 
@@ -86,18 +105,18 @@ class FusionProject:
                 f"Fichier {self.filename} invalide."
             )
 
-        self.validate_format_version()
-        self.validate_root_structure()
+        self._validate_format_version()
+        self._validate_root_structure()
 
         allowed_errors = self.get_blocking_errors(
             self.validate()
         )
 
         mix_migration = (
-            self.migrate_legacy_mixes()
+            self._migrate_legacy_mixes()
         )
         song_migration = (
-            self.migrate_legacy_songs()
+            self._migrate_legacy_songs()
         )
 
         migration_needed = (
@@ -143,7 +162,7 @@ class FusionProject:
                     "la migration du projet."
                 )
 
-    def validate_format_version(
+    def _validate_format_version(
         self
     ):
 
@@ -188,7 +207,7 @@ class FusionProject:
                 f"({PROJECT_FORMAT_VERSION})."
             )
 
-    def validate_root_structure(
+    def _validate_root_structure(
         self
     ):
 
@@ -242,29 +261,6 @@ class FusionProject:
                 "dans fusion.json."
             )
 
-    def restore_backup(self):
-
-        backup = self.filename + ".bak"
-
-        if not os.path.exists(
-            backup
-        ):
-
-            return False
-
-        try:
-
-            shutil.copy2(
-                backup,
-                self.filename
-            )
-
-            return True
-
-        except Exception:
-
-            return False
-
     @classmethod
     def restore_from_backup(
         cls,
@@ -285,101 +281,81 @@ class FusionProject:
         project.data = {}
         project.file_time = 0
 
+        temp_file = (
+            FUSION_FILE
+            + ".restore.tmp"
+        )
+
         try:
 
+            #
+            # Travailler sur une copie :
+            # load() peut effectuer des migrations.
+            #
             shutil.copy2(
                 backup,
-                project.filename
+                temp_file
             )
 
-            project.load()
+            candidate = cls(
+                filename=temp_file
+            )
 
-            errors = project.validate()
+            errors = candidate.validate()
 
             if errors:
 
+                project._log_recovery(
+                    "RESTORE_FAILED "
+                    + backup
+                )
+
                 return None
 
-            project.log_recovery(
-                "RESTORE_VALIDATED " + backup
+            #
+            # Le candidat est complètement chargé,
+            # migré et validé.
+            #
+            os.replace(
+                temp_file,
+                FUSION_FILE
             )
 
-            return project
+            candidate.filename = (
+                FUSION_FILE
+            )
+
+            candidate.file_time = (
+                os.path.getmtime(
+                    FUSION_FILE
+                )
+            )
+
+            candidate._log_recovery(
+                "RESTORE_VALIDATED "
+                + backup
+            )
+
+            return candidate
 
         except Exception:
 
-            project.log_recovery(
-                "RESTORE_FAILED " + backup
+            project._log_recovery(
+                "RESTORE_FAILED "
+                + backup
             )
 
             return None
 
-    @classmethod
-    def restore(cls):
+        finally:
 
-        project = cls.__new__(cls)
+            if os.path.exists(
+                temp_file
+            ):
 
-        project.filename = FUSION_FILE
-        project.data = {}
-        project.file_time = 0
-
-        project.log_recovery(
-            "RECOVERY_REQUEST"
-        )
-
-        if not project.restore_backup():
-
-            project.log_recovery(
-                "RESTORE_FAILED"
-            )
-            return None
-
-        try:
-
-            project.load()
-
-        except ProjectRecoveryError:
-
-            project.log_recovery(
-                "RESTORE_FAILED"
-            )
-            return None
-
-        project.log_recovery(
-            "RESTORE_COPY_SUCCESS"
-        )
-        errors = project.validate()
-
-        if errors:
-
-            project.log_recovery(
-                "RESTORE_FAILED"
-            )
-            return None
-
-        project.log_recovery(
-            "RESTORE_VALIDATED"
-        )
-        return project
-
-    @classmethod
-    def get_backup_info(cls,backup):
-
-        if not os.path.exists(
-            backup
-        ):
-
-            return None
-
-        stat = os.stat(
-            backup
-        )
-
-        return {
-            "filename": backup,
-            "size": cls.format_size(stat.st_size),
-            "time": cls.format_time(stat.st_mtime)
-        }
+                os.remove(
+                    temp_file
+                )
 
     @classmethod
     def list_backups(cls):
@@ -400,13 +376,19 @@ class FusionProject:
 
                 continue
 
-            stat = os.stat(filename)
+            stat = os.stat(
+                filename
+            )
 
             backups.append(
                 {
                     "filename": filename,
-                    "size": stat.st_size,
-                    "time": stat.st_mtime
+                    "size": cls._format_size(
+                        stat.st_size
+                    ),
+                    "time": cls._format_time(
+                        stat.st_mtime
+                    )
                 }
             )
 
@@ -522,8 +504,6 @@ class FusionProject:
         filename
     ):
 
-        import hashlib
-
         hasher = hashlib.sha256()
 
         with open(
@@ -542,7 +522,10 @@ class FusionProject:
 
         return hasher.hexdigest()
 
-    def format_size(size):
+    @staticmethod
+    def _format_size(
+        size
+    ):
 
         if size < 1024:
 
@@ -552,13 +535,20 @@ class FusionProject:
 
             return f"{size // 1024} Ko"
 
-        return f"{size / (1024 * 1024):.1f} Mo"
+        return (
+            f"{size / (1024 * 1024):.1f} Mo"
+        )
 
-    def format_time(timestamp):
+    @staticmethod
+    def _format_time(
+        timestamp
+    ):
 
         return time.strftime(
             "%d-%m-%Y %H:%M:%S",
-            time.localtime(timestamp)
+            time.localtime(
+                timestamp
+            )
         )
 
     def get_blocking_errors(
@@ -587,7 +577,7 @@ class FusionProject:
 
     def save_safe(
         self,
-        allowed_errors=None
+        allowed_errors
     ):
 
         errors = self.validate()
@@ -596,13 +586,11 @@ class FusionProject:
             errors
         )
 
-        if allowed_errors is not None:
-
-            blocking_errors = [
-                error
-                for error in blocking_errors
-                if error not in allowed_errors
-            ]
+        blocking_errors = [
+            error
+            for error in blocking_errors
+            if error not in allowed_errors
+        ]
 
         if blocking_errors:
 
@@ -657,6 +645,10 @@ class FusionProject:
             #
             os.replace(
                 temp_file,
+                self.filename
+            )
+
+            self.file_time = os.path.getmtime(
                 self.filename
             )
 
@@ -720,17 +712,6 @@ class FusionProject:
                 os.remove(
                     old_file
                 )
-
-        #
-        # Nettoyage défensif du temporaire
-        #
-        if os.path.exists(
-            temp_file
-        ):
-
-            os.remove(
-                temp_file
-            )
 
         return True
 
@@ -837,7 +818,7 @@ class FusionProject:
                     filename
                 )
 
-                if not cls.archive_is_valid(
+                if not cls._archive_is_valid(
                     full_path
                 ):
 
@@ -861,7 +842,7 @@ class FusionProject:
         return archives
 
     @classmethod
-    def archive_is_valid(
+    def _archive_is_valid(
         cls,
         filename
     ):
@@ -922,41 +903,78 @@ class FusionProject:
         project.data = {}
         project.file_time = 0
 
+        temp_file = (
+            FUSION_FILE
+            + ".restore.tmp"
+        )
+
         try:
 
-            with open(
+            #
+            # Travailler sur une copie :
+            # load() peut effectuer des migrations.
+            #
+            shutil.copy2(
                 archive,
-                "r",
-                encoding="utf-8"
-            ) as f:
+                temp_file
+            )
 
-                data = json.load(
-                    f
-                )
+            candidate = cls(
+                filename=temp_file
+            )
 
-            project.data = data
+            errors = candidate.validate()
+
+            if errors:
+
+                return None
 
             #
-            # Protéger le fichier actuel avant restauration
+            # Le candidat est maintenant chargé,
+            # migré et valide.
+            #
+            # Protéger le projet actif avant
+            # de le remplacer.
             #
             if os.path.exists(
-                project.filename
+                FUSION_FILE
             ):
 
                 project.archive_if_changed()
 
-            shutil.copy(
-                archive,
-                project.filename
+            #
+            # Installation atomique.
+            #
+            os.replace(
+                temp_file,
+                FUSION_FILE
             )
 
-            project.load()
+            candidate.filename = (
+                FUSION_FILE
+            )
 
-            return project
+            candidate.file_time = (
+                os.path.getmtime(
+                    FUSION_FILE
+                )
+            )
+
+            return candidate
 
         except Exception:
 
             return None
+
+        finally:
+
+            if os.path.exists(
+                temp_file
+            ):
+
+                os.remove(
+                    temp_file
+                )
 
     def _rotate_backups(
         self,
@@ -997,10 +1015,6 @@ class FusionProject:
             backup
         )
 
-    def reload(self):
-
-        self.load()
-
     def reload_if_changed(self):
 
         if not os.path.exists(
@@ -1017,6 +1031,9 @@ class FusionProject:
 
             return False
 
+        original_data = self.snapshot()
+        original_file_time = self.file_time
+
         try:
 
             self.load()
@@ -1026,22 +1043,17 @@ class FusionProject:
             RuntimeError
         ):
 
+            self.restore_snapshot(
+                original_data
+            )
+
+            self.file_time = original_file_time
+
             return False
 
         return True
 
-    def backup(self):
-
-        if os.path.exists(
-            self.filename
-        ):
-
-            shutil.copy2(
-                self.filename,
-                self.filename + ".bak"
-            )
-
-    def log_recovery(self, message):
+    def _log_recovery(self, message):
 
         try:
 
@@ -1234,9 +1246,21 @@ class FusionProject:
                 ]
             )
 
+        if isinstance(
+            bank,
+            bool
+        ):
+
+            return (
+                False,
+                [
+                    "Banque invalide."
+                ]
+            )
+
         try:
 
-            bank = int(
+            bank_number = int(
                 bank
             )
 
@@ -1252,7 +1276,18 @@ class FusionProject:
                 ]
             )
 
-        if not 0 <= bank <= 127:
+        if (
+            not 0 <= bank_number <= 127
+            or
+            (
+                isinstance(
+                    bank,
+                    str
+                )
+                and
+                str(bank_number) != bank
+            )
+        ):
 
             return (
                 False,
@@ -1261,6 +1296,7 @@ class FusionProject:
                 ]
             )
 
+        bank = bank_number
         banks = self.data[
             "banks"
         ][
@@ -1340,47 +1376,20 @@ class FusionProject:
         bank
     ):
 
-        if bank_type == "program":
+        if bank_type not in (
+            "program",
+            "mix"
+        ):
 
-            return self.get_custom_program_bank_name(
-                bank
+            raise ValueError(
+                f"Type de banque invalide : {bank_type}"
             )
-
-        if bank_type == "mix":
-
-            return self.get_custom_mix_bank_name(
-                bank
-            )
-
-        raise ValueError(
-            f"Type de banque invalide : {bank_type}"
-        )
-
-    def get_custom_program_bank_name(
-        self,
-        bank
-    ):
 
         return (
             self.data[
                 "banks"
             ][
-                "program"
-            ].get(
-                str(bank)
-            )
-        )
-
-    def get_custom_mix_bank_name(
-        self,
-        bank
-    ):
-
-        return (
-            self.data[
-                "banks"
-            ][
-                "mix"
+                bank_type
             ].get(
                 str(bank)
             )
@@ -1391,20 +1400,9 @@ class FusionProject:
     #
     def get_mixes(self):
 
-        mixes = self.data.get(
+        return self.data[
             "mixes"
-        )
-
-        if not isinstance(
-            mixes,
-            dict
-        ):
-
-            mixes = {}
-
-            self.data["mixes"] = mixes
-
-        return mixes
+        ]
 
     def get_mix(
         self,
@@ -1415,26 +1413,7 @@ class FusionProject:
             mix_id
         )
 
-    def get_mix_channels(
-        self,
-        mix
-    ):
-
-        channels = mix.get(
-            "channels",
-            {}
-        )
-
-        if isinstance(
-            channels,
-            dict
-        ):
-
-            return channels
-
-        return {}
-
-    def migrate_legacy_mixes(
+    def _migrate_legacy_mixes(
         self
     ):
 
@@ -1447,6 +1426,17 @@ class FusionProject:
         instrument_count = 0
 
         for mix_id, mix in mixes.items():
+
+            #
+            # Structure invalide :
+            # laisser validate() la signaler.
+            #
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                continue
 
             #
             # Nouveau format :
@@ -1579,11 +1569,13 @@ class FusionProject:
             mix_id
         )
 
-        if not mix:
+        if mix is None:
 
             return (
                 False,
-                []
+                [
+                    f"Mix inconnu : {mix_id}"
+                ]
             )
 
         old_name = mix.get(
@@ -1633,7 +1625,7 @@ class FusionProject:
             source_mix_id
         )
 
-        if not source:
+        if source is None:
 
             return (
                 False,
@@ -1653,14 +1645,32 @@ class FusionProject:
                 ]
             )
 
-        import copy
+        source_name = source.get(
+            "name"
+        )
+
+        if (
+            not isinstance(
+                source_name,
+                str
+            )
+            or
+            not source_name.strip()
+        ):
+
+            return (
+                False,
+                [
+                    f"Mix source invalide : {source_mix_id}"
+                ]
+            )
 
         new_mix = copy.deepcopy(
             source
         )
 
         new_mix["name"] = self._make_copy_name(
-            source.get('name', source_mix_id)
+            source_name
         )
 
         before_errors = self.get_blocking_errors(
@@ -1702,9 +1712,17 @@ class FusionProject:
             )
 
             if not any(
-                mix.get("name") == candidate
+                isinstance(
+                    mix,
+                    dict
+                )
+                and
+                mix.get(
+                    "name"
+                ) == candidate
                 for mix in self.get_mixes().values()
             ):
+
                 return candidate
 
         index = 2
@@ -1716,9 +1734,17 @@ class FusionProject:
             )
 
             if not any(
-                mix.get("name") == candidate
+                isinstance(
+                    mix,
+                    dict
+                )
+                and
+                mix.get(
+                    "name"
+                ) == candidate
                 for mix in self.get_mixes().values()
             ):
+
                 return candidate
 
             index += 1
@@ -1726,8 +1752,6 @@ class FusionProject:
     def delete_empty_mixes(
         self
     ):
-
-        import copy
 
         mixes = self.get_mixes()
 
@@ -1745,16 +1769,33 @@ class FusionProject:
             self.iter_mixes()
         ):
 
-            if not mix.get(
-                "channels",
-                {}
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                continue
+
+            channels = mix.get(
+                "channels"
+            )
+
+            if (
+                isinstance(
+                    channels,
+                    dict
+                )
+                and
+                not channels
             ):
 
                 removed.append(
                     mix_id
                 )
 
-                del mixes[mix_id]
+                del mixes[
+                    mix_id
+                ]
 
         new_errors = self.get_new_blocking_errors(
             before_errors
@@ -1824,7 +1865,7 @@ class FusionProject:
 
         mixes = self.get_mixes()
 
-        for mix_id in self.sort_mix_ids(
+        for mix_id in self.sort_performance_ids(
             mixes
         ):
 
@@ -1840,23 +1881,45 @@ class FusionProject:
         )
 
     @staticmethod
-    def sort_mix_ids(data):
+    def sort_performance_ids(
+        data
+    ):
 
-        mix_ids = [
-            key
-            for key in data.keys()
-            if ":" in key
-        ]
+        def sort_key(
+            performance_id
+        ):
+
+            try:
+
+                bank, program = (
+                    performance_id.split(
+                        ":"
+                    )
+                )
+
+                return (
+                    0,
+                    int(bank),
+                    int(program)
+                )
+
+            except (
+                AttributeError,
+                TypeError,
+                ValueError
+            ):
+
+                return (
+                    1,
+                    str(performance_id)
+                )
 
         return sorted(
-            mix_ids,
-            key=lambda x: (
-                int(x.split(":")[0]),
-                int(x.split(":")[1])
-            )
+            data.keys(),
+            key=sort_key
         )
 
-    def validate_instrument(
+    def _validate_instrument(
         self,
         instrument_id
     ):
@@ -1957,10 +2020,7 @@ class FusionProject:
             ]
 
             if (
-                not isinstance(
-                    sf2_bank,
-                    int
-                )
+                type(sf2_bank) is not int
                 or
                 not 0 <= sf2_bank <= 16383
             ):
@@ -1976,10 +2036,7 @@ class FusionProject:
             ]
 
             if (
-                not isinstance(
-                    sf2_program,
-                    int
-                )
+                type(sf2_program) is not int
                 or
                 not 0 <= sf2_program <= 127
             ):
@@ -1990,14 +2047,14 @@ class FusionProject:
 
         return errors
 
-    def validate_instruments(self):
+    def _validate_instruments(self):
 
         errors = []
 
         for instrument_id in self.get_instruments():
 
             errors.extend(
-                self.validate_instrument(
+                self._validate_instrument(
                     instrument_id
                 )
             )
@@ -2019,18 +2076,66 @@ class FusionProject:
                 f"Mix inconnu : {mix_id}"
             ]
 
-        return self.validate_mix_data(
+        return self._validate_mix_data(
             mix_id,
             mix
         )
 
-    def validate_mix_data(
+    def _validate_mix_data(
         self,
         mix_id,
         mix
     ):
 
         errors = []
+
+        try:
+
+            bank_text, program_text = (
+                mix_id.split(
+                    ":",
+                    1
+                )
+            )
+
+            bank = int(
+                bank_text
+            )
+
+            program = int(
+                program_text
+            )
+
+            if (
+                str(bank) != bank_text
+                or
+                str(program) != program_text
+            ):
+
+                errors.append(
+                    f"MIX {mix_id} : identifiant invalide."
+                )
+
+        except (
+            ValueError,
+            AttributeError
+        ):
+
+            errors.append(
+                f"MIX {mix_id} : identifiant invalide."
+            )
+
+        else:
+
+            if not (
+                0 <= bank <= 127
+                and
+                0 <= program <= 127
+            ):
+
+                errors.append(
+                    f"MIX {mix_id} : identifiant hors limites."
+                )
 
         if not isinstance(
             mix,
@@ -2110,7 +2215,7 @@ class FusionProject:
         ):
 
             errors.extend(
-                self.validate_mix_channel_data(
+                self._validate_mix_channel_data(
                     mix_id,
                     channel_id,
                     channel
@@ -2119,7 +2224,7 @@ class FusionProject:
 
         return errors
 
-    def validate_mix_channel_data(
+    def _validate_mix_channel_data(
         self,
         mix_id,
         channel_id,
@@ -2150,19 +2255,19 @@ class FusionProject:
                 f"{prefix} : canal MIDI invalide."
             )
 
-            return errors
+        else:
 
-        if str(midi_channel) != channel_id:
+            if str(midi_channel) != channel_id:
 
-            errors.append(
-                f"{prefix} : canal MIDI invalide."
-            )
+                errors.append(
+                    f"{prefix} : canal MIDI invalide."
+                )
 
-        elif not 1 <= midi_channel <= 16:
+            elif not 1 <= midi_channel <= 16:
 
-            errors.append(
-                f"{prefix} : canal MIDI hors limites."
-            )
+                errors.append(
+                    f"{prefix} : canal MIDI hors limites."
+                )
 
         #
         # Définition du canal
@@ -2241,8 +2346,6 @@ class FusionProject:
                             f"{prefix} : PROGRAM invalide ({program_id})."
                         )
 
-                        return errors
-
                 except (
                     ValueError,
                     AttributeError
@@ -2319,56 +2422,9 @@ class FusionProject:
 
         return errors
 
-    def validate_fusion_program_id(
+    def _validate_part_data(
         self,
-        performance_id
-    ):
-
-        if not isinstance(
-            performance_id,
-            str
-        ):
-
-            return False
-
-        try:
-
-            bank_text, program_text = (
-                performance_id.split(
-                    ":",
-                    1
-                )
-            )
-
-            if (
-                str(int(bank_text)) != bank_text
-                or
-                str(int(program_text)) != program_text
-            ):
-
-                return False
-
-            bank = int(
-                bank_text
-            )
-
-            program = int(
-                program_text
-            )
-
-        except ValueError:
-
-            return False
-
-        return (
-            0 <= bank <= 127
-            and
-            0 <= program <= 127
-        )
-
-    def validate_part_data(
-        self,
-        mix_id,
+        program_id,
         part_id,
         part
     ):
@@ -2381,12 +2437,12 @@ class FusionProject:
         ):
 
             errors.append(
-                f"{mix_id} : définition invalide."
+                f"{program_id} : définition invalide."
             )
 
             return errors
 
-        prefix = f"{mix_id} PART {part_id}"
+        prefix = f"{program_id} PART {part_id}"
 
         #
         # Champs autorisés
@@ -2602,12 +2658,65 @@ class FusionProject:
 
         return errors
 
-    def is_qsynth_ready(
+    def is_instrument_soundfont_ready(
+        self,
+        instrument
+    ):
+
+        if not isinstance(
+            instrument,
+            dict
+        ):
+
+            return False
+
+        sf2_bank = instrument.get(
+            "sf2_bank"
+        )
+
+        sf2_program = instrument.get(
+            "sf2_program"
+        )
+
+        if (
+            type(sf2_bank) is not int
+            or
+            not 0 <= sf2_bank <= 16383
+        ):
+
+            return False
+
+        if (
+            type(sf2_program) is not int
+            or
+            not 0 <= sf2_program <= 127
+        ):
+
+            return False
+
+        return True
+
+    def is_soundfont_ready(
         self,
         part
     ):
 
-        if "midi_channel" not in part:
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            return False
+
+        midi_channel = part.get(
+            "midi_channel"
+        )
+
+        if (
+            type(midi_channel) is not int
+            or
+            not 1 <= midi_channel <= 16
+        ):
 
             return False
 
@@ -2615,20 +2724,21 @@ class FusionProject:
             part
         )
 
-        if not instrument:
-
-            return False
-
-        return (
-            "sf2_bank" in instrument
-            and
-            "sf2_program" in instrument
+        return self.is_instrument_soundfont_ready(
+            instrument
         )
 
     def resolve_mix_channel_instrument(
         self,
         channel
     ):
+
+        if not isinstance(
+            channel,
+            dict
+        ):
+
+            return None
 
         #
         # Override local
@@ -2663,20 +2773,9 @@ class FusionProject:
     #
     def get_programs(self):
 
-        programs = self.data.get(
+        return self.data[
             "programs"
-        )
-
-        if not isinstance(
-            programs,
-            dict
-        ):
-
-            programs = {}
-
-            self.data["programs"] = programs
-
-        return programs
+        ]
 
     def get_program(
         self,
@@ -2697,11 +2796,25 @@ class FusionProject:
             program_id
         )
 
-        if not program:
+        if program is None:
 
             return (
                 False,
-                []
+                [
+                    f"PROGRAM inconnu : {program_id}"
+                ]
+            )
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"PROGRAM invalide : {program_id}"
+                ]
             )
 
         before_errors = self.get_blocking_errors(
@@ -2746,8 +2859,6 @@ class FusionProject:
         program_id
     ):
 
-        import copy
-
         programs = self.get_programs()
 
         if program_id not in programs:
@@ -2789,7 +2900,7 @@ class FusionProject:
             []
         )
 
-    def ensure_program(
+    def _ensure_program(
         self,
         program_id
     ):
@@ -2811,20 +2922,44 @@ class FusionProject:
         self,
         program_id,
         part_id,
-        updates,
-        allowed_errors=None
+        updates
     ):
 
-        program = self.get_program(
-            program_id
-        )
-
-        if not program:
+        if not isinstance(
+            updates,
+            dict
+        ):
 
             return (
                 False,
                 [
-                    f"PROGRAM inconnu : {program_id}"
+                    f"{program_id} PART {part_id} : modifications invalides."
+                ]
+            )
+
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        program = self._ensure_program(
+            program_id
+        )
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            self.data = backup
+
+            return (
+                False,
+                [
+                    f"{program_id} : définition invalide."
                 ]
             )
 
@@ -2837,6 +2972,8 @@ class FusionProject:
             dict
         ):
 
+            self.data = backup
+
             return (
                 False,
                 [
@@ -2848,42 +2985,40 @@ class FusionProject:
             part_id
         )
 
-        old_program = copy.deepcopy(
-            program
-        )
-
         part = parts.setdefault(
             part_id,
             {}
         )
 
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            self.data = backup
+
+            return (
+                False,
+                [
+                    f"{program_id} PART {part_id} : définition invalide."
+                ]
+            )
+
         part.update(
             updates
         )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
+        if new_errors:
 
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
-
-            program.clear()
-
-            program.update(
-                old_program
-            )
+            self.data = backup
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -2895,7 +3030,7 @@ class FusionProject:
 
         programs = self.get_programs()
 
-        for program_id in self.sort_mix_ids(
+        for program_id in self.sort_performance_ids(
             programs
         ):
 
@@ -2915,46 +3050,6 @@ class FusionProject:
         program_id
     ):
 
-        try:
-
-            bank_text, program_text = (
-                program_id.split(
-                    ":",
-                    1
-                )
-            )
-
-            bank = int(
-                bank_text
-            )
-
-            program_number = int(
-                program_text
-            )
-
-        except (
-            AttributeError,
-            ValueError
-        ):
-
-            return [
-                f"PROGRAM {program_id} : identifiant invalide."
-            ]
-
-        if (
-            str(bank) != bank_text
-            or
-            str(program_number) != program_text
-            or
-            not 0 <= bank <= 127
-            or
-            not 0 <= program_number <= 127
-        ):
-
-            return [
-                f"PROGRAM {program_id} : identifiant invalide."
-            ]
-
         program = self.get_program(
             program_id
         )
@@ -2965,12 +3060,12 @@ class FusionProject:
                 f"PROGRAM inconnu : {program_id}"
             ]
 
-        return self.validate_program_data(
+        return self._validate_program_data(
             program_id,
             program
         )
 
-    def validate_program_data(
+    def _validate_program_data(
         self,
         program_id,
         program
@@ -2988,6 +3083,52 @@ class FusionProject:
             )
 
             return errors
+
+        program_id_valid = True
+
+        try:
+
+            bank_text, program_text = (
+                program_id.split(
+                    ":",
+                    1
+                )
+            )
+
+            expected_bank = int(
+                bank_text
+            )
+
+            expected_program = int(
+                program_text
+            )
+
+        except (
+            AttributeError,
+            ValueError
+        ):
+
+            program_id_valid = False
+
+        else:
+
+            if (
+                str(expected_bank) != bank_text
+                or
+                str(expected_program) != program_text
+                or
+                not 0 <= expected_bank <= 127
+                or
+                not 0 <= expected_program <= 127
+            ):
+
+                program_id_valid = False
+
+        if not program_id_valid:
+
+            errors.append(
+                f"PROGRAM {program_id} : identifiant invalide."
+            )
 
         #
         # Champs autorisés
@@ -3085,50 +3226,40 @@ class FusionProject:
             return errors
 
         errors.extend(
-            self.validate_part_data(
+            self._validate_part_data(
                 program_id,
                 "1",
                 part
             )
         )
 
-        bank_text, program_text = (
-            program_id.split(":")
-        )
+        if program_id_valid:
 
-        expected_bank = int(
-            bank_text
-        )
+            if (
+                type(part.get("bank")) is int
+                and
+                0 <= part["bank"] <= 127
+                and
+                part["bank"] != expected_bank
+            ):
 
-        expected_program = int(
-            program_text
-        )
+                errors.append(
+                    f"{program_id} PART 1 : "
+                    f"bank Fusion incohérente avec l'identifiant."
+                )
 
-        if (
-            type(part.get("bank")) is int
-            and
-            0 <= part["bank"] <= 127
-            and
-            part["bank"] != expected_bank
-        ):
+            if (
+                type(part.get("program")) is int
+                and
+                0 <= part["program"] <= 127
+                and
+                part["program"] != expected_program
+            ):
 
-            errors.append(
-                f"{program_id} PART 1 : "
-                f"bank Fusion incohérente avec l'identifiant."
-            )
-
-        if (
-            type(part.get("program")) is int
-            and
-            0 <= part["program"] <= 127
-            and
-            part["program"] != expected_program
-        ):
-
-            errors.append(
-                f"{program_id} PART 1 : "
-                f"program Fusion incohérent avec l'identifiant."
-            )
+                errors.append(
+                    f"{program_id} PART 1 : "
+                    f"program Fusion incohérent avec l'identifiant."
+                )
 
         return errors
 
@@ -3137,20 +3268,9 @@ class FusionProject:
     #
     def get_songs(self):
 
-        songs = self.data.get(
+        return self.data[
             "songs"
-        )
-
-        if not isinstance(
-            songs,
-            dict
-        ):
-
-            songs = {}
-
-            self.data["songs"] = songs
-
-        return songs
+        ]
 
     def get_song(
         self,
@@ -3161,7 +3281,7 @@ class FusionProject:
             str(song_id)
         )
 
-    def migrate_legacy_songs(
+    def _migrate_legacy_songs(
         self
     ):
 
@@ -3208,9 +3328,55 @@ class FusionProject:
             for channel_id, channel in channels.items():
 
                 #
+                # Structure invalide :
+                # laisser validate() la signaler.
+                #
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    new_channels[
+                        channel_id
+                    ] = channel
+
+                    continue
+
+                #
                 # Déjà au format v2.9+
                 #
                 if "programs" in channel:
+
+                    new_channels[
+                        channel_id
+                    ] = channel
+
+                    continue
+
+                #
+                # Champs reconnus dans l'ancien format
+                #
+                legacy_fields = {
+                    "bank",
+                    "program",
+                    "volume",
+                    "pan",
+                    "expression",
+                    "reverb",
+                    "chorus",
+                    "instrument"
+                }
+
+                unknown_fields = (
+                    set(channel)
+                    - legacy_fields
+                )
+
+                #
+                # Structure inconnue :
+                # ne pas la transformer silencieusement.
+                #
+                if unknown_fields:
 
                     new_channels[
                         channel_id
@@ -3349,15 +3515,33 @@ class FusionProject:
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
-                []
+                [
+                    f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
             )
 
         old_name = song.get(
             "name"
+        )
+
+        backup = copy.deepcopy(
+            song
         )
 
         before_errors = self.get_blocking_errors(
@@ -3372,16 +3556,10 @@ class FusionProject:
 
         if new_errors:
 
-            if old_name is None:
-
-                song.pop(
-                    "name",
-                    None
-                )
-
-            else:
-
-                song["name"] = old_name
+            song.clear()
+            song.update(
+                backup
+            )
 
             return (
                 False,
@@ -3398,8 +3576,6 @@ class FusionProject:
         song_id
     ):
 
-        import copy
-
         song_id = str(
             song_id
         )
@@ -3415,37 +3591,16 @@ class FusionProject:
                 ]
             )
 
-        before_errors = self.get_blocking_errors(
-            self.validate()
-        )
-
-        backup = copy.deepcopy(
-            self.data
-        )
-
         del songs[
             song_id
         ]
-
-        new_errors = self.get_new_blocking_errors(
-            before_errors
-        )
-
-        if new_errors:
-
-            self.data = backup
-
-            return (
-                False,
-                new_errors
-            )
 
         return (
             True,
             []
         )
 
-    def ensure_song(
+    def _ensure_song(
         self,
         song_id
     ):
@@ -3468,15 +3623,14 @@ class FusionProject:
     def replace_song_channels(
         self,
         song_id,
-        channels,
-        allowed_errors=None
+        channels
     ):
 
         song = self.get_song(
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
@@ -3485,35 +3639,39 @@ class FusionProject:
                 ]
             )
 
-        old_song = copy.deepcopy(
-            song
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        backup = copy.deepcopy(
+            self.data
         )
 
         song["channels"] = channels
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
+        if new_errors:
 
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
-
-            song.clear()
-
-            song.update(
-                old_song
-            )
+            self.data = backup
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3526,20 +3684,47 @@ class FusionProject:
         song_id,
         channel_id,
         updates=None,
-        remove_fields=None,
-        allowed_errors=None
+        remove_fields=None
     ):
 
         song = self.get_song(
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
                 [
                     f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
+        if (
+            updates is not None
+            and
+            not isinstance(
+                updates,
+                dict
+            )
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} : modifications invalides."
                 ]
             )
 
@@ -3579,6 +3764,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_song = copy.deepcopy(
             song
         )
@@ -3598,19 +3787,11 @@ class FusionProject:
                     None
                 )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             song.clear()
 
@@ -3620,7 +3801,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3634,20 +3815,48 @@ class FusionProject:
         channel_id,
         program_id,
         updates=None,
-        remove_fields=None,
-        allowed_errors=None
+        remove_fields=None
     ):
 
         song = self.get_song(
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
                 [
                     f"SONG inconnue : {song_id}"
+                ]
+            )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
+        if (
+            updates is not None
+            and
+            not isinstance(
+                updates,
+                dict
+            )
+        ):
+
+            return (
+                False,
+                [
+                    f"{song_id} CH {channel_id} "
+                    f"PROGRAM {program_id} : modifications invalides."
                 ]
             )
 
@@ -3721,6 +3930,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_song = copy.deepcopy(
             song
         )
@@ -3740,19 +3953,11 @@ class FusionProject:
                     None
                 )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             song.clear()
 
@@ -3762,7 +3967,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3774,15 +3979,14 @@ class FusionProject:
         self,
         song_id,
         old_channel_id,
-        new_channel_id,
-        allowed_errors=None
+        new_channel_id
     ):
 
         song = self.get_song(
             song_id
         )
 
-        if not song:
+        if song is None:
 
             return (
                 False,
@@ -3790,6 +3994,19 @@ class FusionProject:
                     f"SONG inconnue : {song_id}"
                 ]
             )
+
+        if not isinstance(
+            song,
+            dict
+        ):
+
+            return (
+                False,
+                [
+                    f"SONG invalide : {song_id}"
+                ]
+            )
+
 
         channels = song.get(
             "channels"
@@ -3833,6 +4050,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_song = copy.deepcopy(
             song
         )
@@ -3843,19 +4064,11 @@ class FusionProject:
             old_channel_id
         )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             song.clear()
 
@@ -3865,7 +4078,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -3893,7 +4106,7 @@ class FusionProject:
             self.get_songs()
         )
 
-    def validate_song_channel_data(
+    def _validate_song_channel_data(
         self,
         song_id,
         channel_id,
@@ -3955,14 +4168,6 @@ class FusionProject:
             errors.append(
                 f"{song_id} CH {channel_id} : "
                 "canal MIDI invalide."
-            )
-
-        if not (
-            1 <= midi_channel <= 16
-        ):
-
-            errors.append(
-                f"{song_id} CH {channel_id} : canal MIDI invalide."
             )
 
         programs = channel.get(
@@ -4154,43 +4359,6 @@ class FusionProject:
 
         return errors
 
-    def validate_song_channel(
-        self,
-        song_id,
-        channel_id
-    ):
-
-        song = self.get_song(
-            song_id
-        )
-
-        if not song:
-
-            return [
-                f"SONG inconnue : {song_id}"
-            ]
-
-        channels = song.get(
-            "channels",
-            {}
-        )
-
-        channel = channels.get(
-            str(channel_id)
-        )
-
-        if channel is None:
-
-            return [
-                f"{song_id} CH {channel_id} : canal inconnu."
-            ]
-
-        return self.validate_song_channel_data(
-            song_id,
-            str(channel_id),
-            channel
-        )
-
     def validate_song(
         self,
         song_id
@@ -4206,12 +4374,12 @@ class FusionProject:
                 f"SONG inconnue : {song_id}"
             ]
 
-        return self.validate_song_data(
+        return self._validate_song_data(
             song_id,
             song
         )
 
-    def validate_song_data(
+    def _validate_song_data(
         self,
         song_id,
         song
@@ -4285,7 +4453,7 @@ class FusionProject:
         for channel_id, channel in channels.items():
 
             errors.extend(
-                self.validate_song_channel_data(
+                self._validate_song_channel_data(
                     song_id,
                     channel_id,
                     channel
@@ -4327,7 +4495,10 @@ class FusionProject:
             program_id
         )
 
-        if not program:
+        if not isinstance(
+            program,
+            dict
+        ):
 
             return None
 
@@ -4336,14 +4507,15 @@ class FusionProject:
             {}
         )
 
-        if len(parts) != 1:
+        if not isinstance(
+            parts,
+            dict
+        ):
 
             return None
 
-        part = next(
-            iter(
-                parts.values()
-            )
+        part = parts.get(
+            "1"
         )
 
         return self.resolve_part_instrument(
@@ -4353,15 +4525,37 @@ class FusionProject:
     #
     # Diagnostic
     #
+
     def get_mix_diagnostic(
         self
     ):
 
+        def channel_sort_key(
+            item
+        ):
+            channel_id = item[0]
+
+            try:
+
+                return (
+                    0,
+                    int(channel_id)
+                )
+
+            except (
+                TypeError,
+                ValueError
+            ):
+
+                return (
+                    1,
+                    str(channel_id)
+                )
         result = []
 
         for mix_id, mix in self.iter_mixes():
 
-            mix_errors = self.validate_mix_data(
+            mix_errors = self._validate_mix_data(
                 mix_id,
                 mix
             )
@@ -4415,12 +4609,10 @@ class FusionProject:
 
             for channel_id, channel in sorted(
                 channels.items(),
-                key=lambda item: int(
-                    item[0]
-                )
+                key=channel_sort_key
             ):
                 errors = (
-                    self.validate_mix_channel_data(
+                    self._validate_mix_channel_data(
                         mix_id,
                         channel_id,
                         channel
@@ -4437,7 +4629,7 @@ class FusionProject:
                     ].append(
                         {
                             "channel":
-                                int(channel_id),
+                                channel_id,
 
                             "program":
                                 None,
@@ -4445,7 +4637,7 @@ class FusionProject:
                             "fusion_valid":
                                 False,
 
-                            "qsynth_configured":
+                            "soundfont_configured":
                                 False,
 
                             "instrument":
@@ -4454,6 +4646,27 @@ class FusionProject:
                     )
 
                     continue
+
+                try:
+
+                    midi_channel = int(
+                        channel_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
+                ):
+
+                    midi_channel_valid = False
+
+                else:
+
+                    midi_channel_valid = (
+                        str(midi_channel) == channel_id
+                        and
+                        1 <= midi_channel <= 16
+                    )
 
                 instrument = (
                     self.resolve_mix_channel_instrument(
@@ -4466,7 +4679,7 @@ class FusionProject:
                 ].append(
                     {
                         "channel":
-                            int(channel_id),
+                            channel_id,
 
                         "program":
                             channel.get(
@@ -4476,8 +4689,13 @@ class FusionProject:
                         "fusion_valid":
                             len(errors) == 0,
 
-                        "qsynth_configured":
-                            instrument is not None,
+                        "soundfont_configured": (
+                            midi_channel_valid
+                            and
+                            self.is_instrument_soundfont_ready(
+                                instrument
+                            )
+                        ),
 
                         "instrument":
                             instrument
@@ -4492,11 +4710,18 @@ class FusionProject:
 
         return result
 
-    def get_program_diagnostic(self):
+    def get_program_diagnostic(
+        self
+    ):
 
         results = []
 
         for program_id, program in self.iter_programs():
+
+            errors = self._validate_program_data(
+                program_id,
+                program
+            )
 
             if not isinstance(
                 program,
@@ -4508,228 +4733,55 @@ class FusionProject:
                         "program": program_id,
                         "name": program_id,
                         "fusion_valid": False,
-                        "qsynth_configured": False,
-                        "errors": [
-                            "Définition invalide"
-                        ]
+                        "soundfont_configured": False,
+                        "errors": errors
                     }
                 )
 
                 continue
 
             parts = program.get(
-                "parts",
-                {}
+                "parts"
             )
 
-            if not isinstance(
-                parts,
-                dict
-            ):
-
-                results.append(
-                    {
-                        "program": program_id,
-                        "name": program.get(
-                            "name",
-                            ""
-                        ),
-                        "fusion_valid": False,
-                        "qsynth_configured": False,
-                        "errors": [
-                            "PARTS invalide"
-                        ]
-                    }
+            part = (
+                parts.get(
+                    "1"
                 )
-
-                continue
-
-            part = parts.get(
-                "1"
+                if isinstance(
+                    parts,
+                    dict
+                )
+                else None
             )
-
-            result = {
-                "program": program_id,
-                "name": program.get(
-                    "name",
-                    ""
-                ),
-                "fusion_valid": False,
-                "qsynth_configured": False,
-                "errors": []
-            }
-
-            if part is None:
-
-                result["errors"].append(
-                    "PART absente"
-                )
-
-            elif not isinstance(
-                part,
-                dict
-            ):
-
-                result["errors"].append(
-                    "PART invalide"
-                )
-
-            else:
-
-                result["fusion_valid"] = True
-
-                #
-                # Validation Fusion
-                #
-
-                if "midi_channel" not in part:
-
-                    result["fusion_valid"] = False
-                    result["errors"].append(
-                        "Canal MIDI absent"
-                    )
-
-                else:
-
-                    midi_channel = part[
-                        "midi_channel"
-                    ]
-
-                    if (
-                        type(midi_channel) is not int
-                        or
-                        not 1 <= midi_channel <= 16
-                    ):
-
-                        result["fusion_valid"] = False
-                        result["errors"].append(
-                            f"Canal MIDI invalide ({midi_channel})"
-                        )
-
-                #
-                # Plage de notes
-                #
-                has_note_min = (
-                    "note_min" in part
-                )
-
-                has_note_max = (
-                    "note_max" in part
-                )
-
-                if (
-                    has_note_min
-                    != has_note_max
-                ):
-
-                    result["fusion_valid"] = False
-                    result[
-                        "errors"
-                    ].append(
-                        "Zone de notes incomplète"
-                    )
-
-                elif has_note_min:
-
-                    note_min = part[
-                        "note_min"
-                    ]
-
-                    note_max = part[
-                        "note_max"
-                    ]
-
-                    if not (
-                        type(note_min) is int
-                        and
-                        type(note_max) is int
-                        and
-                        0 <= note_min <= note_max <= 127
-                    ):
-
-                        result["fusion_valid"] = False
-                        result[
-                            "errors"
-                        ].append(
-                            "Zone de notes invalide"
-                        )
-
-                #
-                # Plage de vélocité
-                #
-                has_velocity_min = (
-                    "velocity_min" in part
-                )
-
-                has_velocity_max = (
-                    "velocity_max" in part
-                )
-
-                if (
-                    has_velocity_min
-                    != has_velocity_max
-                ):
-
-                    result["fusion_valid"] = False
-                    result[
-                        "errors"
-                    ].append(
-                        "Zone de vélocité incomplète"
-                    )
-
-                elif has_velocity_min:
-
-                    velocity_min = part[
-                        "velocity_min"
-                    ]
-
-                    velocity_max = part[
-                        "velocity_max"
-                    ]
-
-                    if not (
-                        type(velocity_min) is int
-                        and
-                        type(velocity_max) is int
-                        and
-                        0 <= velocity_min <= velocity_max <= 127
-                    ):
-
-                        result["fusion_valid"] = False
-                        result[
-                            "errors"
-                        ].append(
-                            "Zone de vélocité invalide"
-                        )
-
-                result["qsynth_configured"] = (
-                    self.is_qsynth_ready(
-                        part
-                    )
-                )
-                #
-                # Référence instrument invalide
-                #
-                instrument_id = part.get(
-                    "instrument"
-                )
-
-                if (
-                    instrument_id is not None
-                    and
-                    self.get_instrument(
-                        instrument_id
-                    ) is None
-                ):
-
-                    result["fusion_valid"] = False
-
-                    result["errors"].append(
-                        f"Instrument inexistant ({instrument_id})"
-                    )
 
             results.append(
-                result
+                {
+                    "program": program_id,
+
+                    "name": program.get(
+                        "name",
+                        ""
+                    ),
+
+                    "fusion_valid":
+                        len(errors) == 0,
+
+                    "soundfont_configured":
+                        (
+                            isinstance(
+                                part,
+                                dict
+                            )
+                            and
+                            self.is_soundfont_ready(
+                                part
+                            )
+                        ),
+
+                    "errors":
+                        errors
+                }
             )
 
         return results
@@ -4742,7 +4794,7 @@ class FusionProject:
 
         for song_id, song in self.iter_songs():
 
-            song_errors = self.validate_song_data(
+            song_errors = self._validate_song_data(
                 song_id,
                 song
             )
@@ -4793,7 +4845,7 @@ class FusionProject:
 
             for channel_id, channel in channels.items():
 
-                errors = self.validate_song_channel_data(
+                errors = self._validate_song_channel_data(
                     song_id,
                     channel_id,
                     channel
@@ -4803,20 +4855,52 @@ class FusionProject:
                     len(errors) == 0
                 )
 
-                programs = channel.get(
-                    "programs"
+                programs = (
+                    channel.get(
+                        "programs"
+                    )
+                    if isinstance(
+                        channel,
+                        dict
+                    )
+                    else None
                 )
 
-                qsynth_configured = False
+                soundfont_configured = False
 
-                if isinstance(
-                    programs,
-                    dict
+                try:
+
+                    midi_channel = int(
+                        channel_id
+                    )
+
+                except (
+                    TypeError,
+                    ValueError
                 ):
 
-                    if programs:
+                    midi_channel_valid = False
 
-                        qsynth_configured = True
+                else:
+
+                    midi_channel_valid = (
+                        str(midi_channel) == channel_id
+                        and
+                        1 <= midi_channel <= 16
+                    )
+
+                    if (
+                        midi_channel_valid
+                        and
+                        isinstance(
+                            programs,
+                            dict
+                        )
+                        and
+                        programs
+                    ):
+
+                        soundfont_configured = True
 
                         for (
                             program_id,
@@ -4828,7 +4912,7 @@ class FusionProject:
                                 dict
                             ):
 
-                                qsynth_configured = False
+                                soundfont_configured = False
                                 break
 
                             instrument = (
@@ -4838,9 +4922,11 @@ class FusionProject:
                                 )
                             )
 
-                            if not instrument:
+                            if not self.is_instrument_soundfont_ready(
+                                instrument
+                            ):
 
-                                qsynth_configured = False
+                                soundfont_configured = False
                                 break
 
                 song_diagnostic[
@@ -4849,8 +4935,8 @@ class FusionProject:
                     {
                         "channel": channel_id,
                         "fusion_valid": fusion_valid,
-                        "qsynth_configured":
-                            qsynth_configured
+                        "soundfont_configured":
+                            soundfont_configured
                     }
                 )
 
@@ -4867,29 +4953,25 @@ class FusionProject:
                 "total": 0,
                 "ok": 0,
                 "unconfigured": 0,
-                "error": 0,
-                "info": 0
+                "error": 0
             },
             "mixes": {
                 "total": 0,
                 "ok": 0,
                 "unconfigured": 0,
-                "error": 0,
-                "info": 0
+                "error": 0
             },
             "programs": {
                 "total": 0,
                 "ok": 0,
                 "unconfigured": 0,
-                "error": 0,
-                "info": 0
+                "error": 0
             },
             "songs": {
                 "total": 0,
                 "ok": 0,
                 "unconfigured": 0,
-                "error": 0,
-                "info": 0
+                "error": 0
             }
         }
 
@@ -4899,7 +4981,7 @@ class FusionProject:
 
             summary["instruments"]["total"] += 1
 
-            errors = self.validate_instrument(
+            errors = self._validate_instrument(
                 instrument_id
             )
 
@@ -4935,7 +5017,7 @@ class FusionProject:
                 1
                 for unit in units
                 if unit.get(
-                    "qsynth_configured",
+                    "soundfont_configured",
                     False
                 )
             )
@@ -4959,16 +5041,6 @@ class FusionProject:
 
                 summary["mixes"]["ok"] += 1
 
-            #
-            # Information historique :
-            # plusieurs PARTs sur un même canal.
-            #
-            if mix.get(
-                "shared_channels"
-            ):
-
-                summary["mixes"]["info"] += 1
-
         # PROGRAM
 
         for program in self.get_program_diagnostic():
@@ -4983,7 +5055,7 @@ class FusionProject:
                 summary["programs"]["error"] += 1
 
             elif not program.get(
-                "qsynth_configured",
+                "soundfont_configured",
                 False
             ):
 
@@ -5009,11 +5081,11 @@ class FusionProject:
                 False
             )
 
-            qsynth_configured = (
+            soundfont_configured = (
                 bool(channels)
                 and all(
                     channel.get(
-                        "qsynth_configured",
+                        "soundfont_configured",
                         False
                     )
                     for channel in channels
@@ -5024,7 +5096,7 @@ class FusionProject:
 
                 summary["songs"]["error"] += 1
 
-            elif not qsynth_configured:
+            elif not soundfont_configured:
 
                 summary["songs"]["unconfigured"] += 1
 
@@ -5035,216 +5107,6 @@ class FusionProject:
         return summary
 
     #
-    # Affichage
-    #
-    def print_mix(
-        self,
-        mix_id
-    ):
-
-        mix = self.get_mix(
-            mix_id
-        )
-
-        if not mix:
-
-            print(
-                "Mix inconnu :",
-                mix_id
-            )
-
-            return
-
-        print()
-
-        print(
-            "Mix :",
-            mix_id,
-            "-",
-            mix.get(
-                "name",
-                mix_id
-            )
-        )
-
-        if "channels" in mix:
-
-            channels = mix.get(
-                "channels",
-                {}
-            )
-
-            for channel_id, channel in sorted(
-                channels.items(),
-                key=lambda item: int(
-                    item[0]
-                )
-            ):
-
-                program_id = channel.get(
-                    "program"
-                )
-
-                instrument = (
-                    self.resolve_mix_channel_instrument(
-                        channel
-                    )
-                )
-
-                instrument_name = (
-                    instrument.get(
-                        "name",
-                        "?"
-                    )
-                    if instrument
-                    else "Non configuré"
-                )
-
-                print()
-
-                print(
-                    "CH",
-                    channel_id
-                )
-
-                print(
-                    " PROGRAM    :",
-                    (
-                        program_id
-                        if program_id
-                        else "?"
-                    )
-                )
-
-                print(
-                    " Instrument :",
-                    instrument_name
-                )
-
-            return
-
-    def print_part(
-        self,
-        part_id,
-        part,
-        fusion_name=None
-    ):
-
-        print()
-
-        print(
-            "PART",
-            part_id
-        )
-
-        print("----------------")
-
-        print(
-            "Nom Fusion     :",
-            (
-                fusion_name
-                if fusion_name is not None
-                else part.get(
-                    "fusion_name",
-                    "Non défini"
-                )
-            )
-        )
-
-        bank = part.get("bank")
-
-        print(
-            "Fusion Bank    :",
-            (
-                f"{self.get_program_bank_name(bank)} ({bank})"
-                if bank is not None
-                else "?"
-            )
-        )
-
-        print(
-            "Fusion Program :",
-            part.get(
-                "program",
-                "?"
-            )
-        )
-
-
-        instrument = self.resolve_part_instrument(
-            part
-        )
-
-
-        if instrument:
-
-            print(
-                "Instrument     :",
-                instrument.get(
-                    "name",
-                    "?"
-                )
-            )
-
-            print(
-                "SF2 Bank       :",
-                instrument.get(
-                    "sf2_bank",
-                    0
-                )
-            )
-
-            print(
-                "SF2 Program    :",
-                instrument.get(
-                    "sf2_program",
-                    0
-                )
-            )
-
-        else:
-
-            print(
-                "Instrument     : Non configuré"
-            )
-
-
-        print(
-            "Canal MIDI     :",
-            part.get(
-                "midi_channel",
-                "?"
-            )
-        )
-
-        print(
-            "Plage          :",
-            note_range(
-                part.get(
-                    "note_min",
-                    None
-                ),
-                part.get(
-                    "note_max",
-                    None
-                )
-            )
-        )
-
-        print(
-            "Velocity       :",
-            part.get(
-                "velocity_min",
-                0
-            ),
-            "-",
-            part.get(
-                "velocity_max",
-                127
-            )
-        )
-
-    #
     # Validation
     #
     def validate(self):
@@ -5252,16 +5114,14 @@ class FusionProject:
         errors = []
 
         errors.extend(
-            self.validate_banks()
+            self._validate_banks()
         )
 
         errors.extend(
-            self.validate_instruments()
+            self._validate_instruments()
         )
 
-        for mix_id in self.sort_mix_ids(
-            self.get_mixes()
-        ):
+        for mix_id in self.get_mixes():
 
             errors.extend(
                 self.validate_mix(
@@ -5269,7 +5129,7 @@ class FusionProject:
                 )
             )
 
-        for program_id, program in self.iter_programs():
+        for program_id in self.get_programs():
 
             errors.extend(
                 self.validate_program(
@@ -5277,7 +5137,7 @@ class FusionProject:
                 )
             )
 
-        for song_id, song in self.iter_songs():
+        for song_id in self.get_songs():
 
             errors.extend(
                 self.validate_song(
@@ -5287,7 +5147,7 @@ class FusionProject:
 
         return errors
 
-    def validate_bank_names(
+    def _validate_bank_names(
         self,
         bank_type
     ):
@@ -5343,7 +5203,7 @@ class FusionProject:
 
         return errors
 
-    def validate_banks(
+    def _validate_banks(
         self
     ):
 
@@ -5404,13 +5264,13 @@ class FusionProject:
             return errors
 
         errors.extend(
-            self.validate_bank_names(
+            self._validate_bank_names(
                 "program"
             )
         )
 
         errors.extend(
-            self.validate_bank_names(
+            self._validate_bank_names(
                 "mix"
             )
         )
@@ -5437,7 +5297,7 @@ class FusionProject:
             )
         )
 
-    def ensure_mix(
+    def _ensure_mix(
         self,
         mix_id
     ):
@@ -5460,15 +5320,14 @@ class FusionProject:
         mix_id,
         channel_id,
         updates=None,
-        remove_fields=None,
-        allowed_errors=None
+        remove_fields=None
     ):
 
         mix = self.get_mix(
             mix_id
         )
 
-        if not mix:
+        if mix is None:
 
             return (
                 False,
@@ -5513,6 +5372,10 @@ class FusionProject:
                 ]
             )
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
         old_mix = copy.deepcopy(
             mix
         )
@@ -5532,19 +5395,11 @@ class FusionProject:
                     None
                 )
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
-
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
+        if new_errors:
 
             mix.clear()
 
@@ -5554,7 +5409,7 @@ class FusionProject:
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -5565,59 +5420,48 @@ class FusionProject:
     def replace_mix_channels(
         self,
         mix_id,
-        channels,
-        allowed_errors=None
+        channels
     ):
 
-        mix = self.get_mix(
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
+        mix = self._ensure_mix(
             mix_id
         )
 
-        if not mix:
+        if not isinstance(
+            mix,
+            dict
+        ):
+
+            self.data = backup
 
             return (
                 False,
                 [
-                    f"Mix inconnu : {mix_id}"
+                    f"{mix_id} : définition invalide."
                 ]
             )
 
-        #
-        # Sauvegarde complète de l'ancien MIX
-        # pour permettre un rollback exact.
-        #
-        old_mix = copy.deepcopy(
-            mix
-        )
-
-        #
-        # Modèle MIX par canal
-        #
         mix["channels"] = channels
 
-        errors = self.get_blocking_errors(
-            self.validate()
+        new_errors = self.get_new_blocking_errors(
+            before_errors
         )
 
-        if allowed_errors is not None:
+        if new_errors:
 
-            errors = [
-                error
-                for error in errors
-                if error not in allowed_errors
-            ]
-
-        if errors:
-
-            mix.clear()
-
-            mix.update(
-                old_mix
-            )
+            self.data = backup
 
             return (
                 False,
-                errors
+                new_errors
             )
 
         return (
@@ -5625,45 +5469,14 @@ class FusionProject:
             []
         )
 
-    def prepare_capture(
-        self,
-        mix_id
-    ):
-
-        mixes = self.get_mixes()
-
-        if mix_id not in mixes:
-
-            mixes[mix_id] = {
-
-                "name":
-                    f"Fusion Mix {mix_id}",
-
-                "channels": {}
-
-            }
-
-            return True
-
-        if (
-            "channels" in mixes[mix_id]
-            and
-            mixes[mix_id]["channels"]
-        ):
-
-            return False
-
-        return True
-
     #
     # Instruments
     #
     def get_instruments(self):
 
-        return self.data.get(
-            "instruments",
-            {}
-        )
+        return self.data[
+            "instruments"
+        ]
 
     def get_instrument(
         self,
@@ -5680,6 +5493,13 @@ class FusionProject:
         self,
         part
     ):
+
+        if not isinstance(
+            part,
+            dict
+        ):
+
+            return None
 
         if "instrument" in part:
 
@@ -5720,17 +5540,45 @@ class FusionProject:
         instrument
     ):
 
-        if "instruments" not in self.data:
+        instruments = self.get_instruments()
 
-            self.data["instruments"] = {}
+        if instrument_id in instruments:
 
-        if instrument_id in self.data["instruments"]:
+            return (
+                False,
+                [
+                    f"Instrument existant : {instrument_id}"
+                ]
+            )
 
-            return False
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
 
-        self.data["instruments"][instrument_id] = instrument
+        instruments[
+            instrument_id
+        ] = instrument
 
-        return True
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
+
+        if new_errors:
+
+            instruments.pop(
+                instrument_id,
+                None
+            )
+
+            return (
+                False,
+                new_errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def update_instrument(
         self,
@@ -5738,13 +5586,50 @@ class FusionProject:
         instrument
     ):
 
-        if "instruments" not in self.data:
+        instruments = self.get_instruments()
 
-            self.data["instruments"] = {}
+        if instrument_id not in instruments:
 
-        self.data["instruments"][instrument_id] = instrument
+            return (
+                False,
+                [
+                    f"Instrument inconnu : {instrument_id}"
+                ]
+            )
 
-        return True
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        old_instrument = copy.deepcopy(
+            instruments[
+                instrument_id
+            ]
+        )
+
+        instruments[
+            instrument_id
+        ] = instrument
+
+        new_errors = self.get_new_blocking_errors(
+            before_errors
+        )
+
+        if new_errors:
+
+            instruments[
+                instrument_id
+            ] = old_instrument
+
+            return (
+                False,
+                new_errors
+            )
+
+        return (
+            True,
+            []
+        )
 
     def remove_instrument(
         self,
@@ -5755,17 +5640,32 @@ class FusionProject:
 
         if instrument_id not in instruments:
 
-            return False
+            return (
+                False,
+                [
+                    f"Instrument inconnu : {instrument_id}"
+                ]
+            )
 
         if self.find_instrument_usage(
             instrument_id
         ):
 
-            return False
+            return (
+                False,
+                [
+                    f"Instrument utilisé : {instrument_id}"
+                ]
+            )
 
-        del instruments[instrument_id]
+        del instruments[
+            instrument_id
+        ]
 
-        return True
+        return (
+            True,
+            []
+        )
 
     def find_instrument_usage(
         self,
@@ -5779,10 +5679,32 @@ class FusionProject:
         #
         for program_id, program in self.iter_programs():
 
-            for part_id, part in program.get(
-                "parts",
-                {}
-            ).items():
+            if not isinstance(
+                program,
+                dict
+            ):
+
+                continue
+
+            parts = program.get(
+                "parts"
+            )
+
+            if not isinstance(
+                parts,
+                dict
+            ):
+
+                continue
+
+            for part_id, part in parts.items():
+
+                if not isinstance(
+                    part,
+                    dict
+                ):
+
+                    continue
 
                 if part.get(
                     "instrument"
@@ -5801,10 +5723,32 @@ class FusionProject:
         #
         for mix_id, mix in self.iter_mixes():
 
-            for channel_id, channel in mix.get(
-                "channels",
-                {}
-            ).items():
+            if not isinstance(
+                mix,
+                dict
+            ):
+
+                continue
+
+            channels = mix.get(
+                "channels"
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                continue
+
+            for channel_id, channel in channels.items():
+
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    continue
 
                 if channel.get(
                     "instrument"
@@ -5823,15 +5767,52 @@ class FusionProject:
         #
         for song_id, song in self.iter_songs():
 
-            for channel_id, channel in song.get(
-                "channels",
-                {}
-            ).items():
+            if not isinstance(
+                song,
+                dict
+            ):
 
-                for program_id, program_data in channel.get(
-                    "programs",
-                    {}
-                ).items():
+                continue
+
+            channels = song.get(
+                "channels"
+            )
+
+            if not isinstance(
+                channels,
+                dict
+            ):
+
+                continue
+
+            for channel_id, channel in channels.items():
+
+                if not isinstance(
+                    channel,
+                    dict
+                ):
+
+                    continue
+
+                programs = channel.get(
+                    "programs"
+                )
+
+                if not isinstance(
+                    programs,
+                    dict
+                ):
+
+                    continue
+
+                for program_id, program_data in programs.items():
+
+                    if not isinstance(
+                        program_data,
+                        dict
+                    ):
+
+                        continue
 
                     if program_data.get(
                         "instrument"
@@ -5847,3 +5828,9 @@ class FusionProject:
                         )
 
         return usages
+
+    def count_instruments(self):
+
+        return len(
+            self.get_instruments()
+        )

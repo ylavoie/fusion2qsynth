@@ -1,5 +1,120 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.20
+
+### Architecture de `FusionProject`
+
+* Refactorisation importante de `FusionProject` afin de simplifier et consolider son API interne.
+* Simplification des accès aux données PROGRAM, MIX, SONG et instruments.
+* Suppression de méthodes devenues inutilisées ou redondantes.
+* Réduction des manipulations directes des structures internes du projet.
+* Harmonisation des opérations de modification autour des mêmes mécanismes de validation et de restauration.
+* Consolidation des opérations transactionnelles afin qu’une modification invalide restaure l’état précédent.
+* Nettoyage de l’API à la suite des refactorisations successives.
+
+### Validation du projet
+
+* Renforcement de la validation des PROGRAM, MIX, SONG et instruments.
+* Validation plus stricte des identifiants PROGRAM au format `bank:program`.
+* Vérification de la cohérence entre l’identifiant d’un PROGRAM et les valeurs Fusion `bank` et `program` de sa PART.
+* Renforcement de la validation des PARTs de PROGRAM et des canaux MIX et SONG.
+* Détection plus robuste des structures invalides, champs inconnus, types incorrects et valeurs hors limites.
+* Conservation des erreurs préexistantes avec `allowed_errors` afin qu’elles ne bloquent pas une modification valide sans introduire de nouvelle erreur.
+* Centralisation de la comparaison des erreurs avant et après modification avec `get_blocking_errors()` et `get_new_blocking_errors()`.
+
+### Opérations de modification
+
+* Durcissement des opérations de création, modification, renommage et suppression des PROGRAM, MIX, SONG et instruments.
+* Restauration automatique des données lorsqu’une opération introduit une nouvelle erreur de validation.
+* Renforcement de `update_program_part()`, `update_mix_channel()`, `update_song_channel()` et `update_song_program()`.
+* Renforcement des opérations de remplacement et de déplacement des canaux.
+* Vérification systématique de l’existence et de la structure des objets avant leur modification.
+* Suppression de branches de rollback devenues impossibles lorsque la validation globale garantit déjà l’intégrité référentielle.
+* Simplification du code résultant après identification et suppression de chemins morts.
+
+### Instruments et résolution SoundFont
+
+* Renforcement des opérations de gestion des instruments globaux.
+* Validation plus stricte des banques et programmes SoundFont.
+* Renforcement de la résolution des instruments globaux et des overrides locaux.
+* Vérification systématique de l’utilisation d’un instrument avant sa suppression.
+* Consolidation de la recherche d’utilisation des instruments dans les PROGRAM, MIX et SONG.
+* Renommage de `is_instrument_qsynth_ready()` en `is_instrument_soundfont_ready()`.
+* Renommage de `is_qsynth_ready()` en `is_soundfont_ready()`.
+* Remplacement de `qsynth_configured` par `soundfont_configured` dans les diagnostics.
+* Utilisation de « SoundFont » pour désigner la configuration SF2 et de « FluidSynth » pour désigner le moteur sonore.
+* Conservation de `Fusion2QSynth` comme nom du projet.
+
+### Diagnostics
+
+* Renforcement des diagnostics PROGRAM, MIX, SONG et instruments.
+* Harmonisation des diagnostics avec les fonctions de validation canoniques de `FusionProject`.
+* `get_program_diagnostic()` utilise désormais `_validate_program_data()` au lieu de maintenir une validation parallèle.
+* Réutilisation de `_validate_part_data()` par la validation PROGRAM afin d’éviter la duplication des règles.
+* Renforcement du diagnostic des canaux SONG invalides, y compris les identifiants de canaux non numériques.
+* Amélioration de la distinction entre données Fusion valides et configuration SoundFont prête à être utilisée.
+* Renforcement du résumé global de diagnostic du projet.
+
+### Chargement et migrations
+
+* Durcissement du chargement de `fusion.json`.
+* Validation explicite de la version du format et de la structure racine du projet.
+* Renforcement de la gestion des fichiers JSON invalides et des possibilités de récupération.
+* Consolidation de la migration des anciens MIX utilisant la structure `parts`.
+* Consolidation de la migration des anciennes SONG vers la structure actuelle à PROGRAMs multiples par canal.
+* Validation des canaux MIDI pendant les migrations.
+* Détection des canaux MIDI absents, invalides, hors limites ou utilisés par plusieurs PARTs.
+* Préparation complète des migrations avant modification des données afin de garantir leur atomicité.
+* Sauvegarde automatique du projet lorsqu’une migration est effectuée.
+* Échec explicite du chargement si une migration ne peut pas être sauvegardée.
+
+### Sauvegardes, backups et archives
+
+* Renforcement de `save_safe()` et de ses mécanismes de nettoyage.
+* Conservation de la sauvegarde réussie même lorsqu’une rotation des backups échoue.
+* Nettoyage défensif des fichiers temporaires et intermédiaires.
+* Renforcement de la rotation et de la gestion des backups.
+* Renforcement de la création, de la détection et de la restauration des archives.
+* Comparaison du contenu avant création d’une nouvelle archive afin d’éviter les archives identiques inutiles.
+* Renforcement du rechargement et de la restauration de l’état précédent en cas d’échec.
+* Validation des scénarios de récupération après fichiers invalides ou opérations interrompues.
+
+### Performances et interface
+
+* Renforcement des fonctions d’accès et de résolution des performances PROGRAM, MIX et SONG.
+* Harmonisation de la sélection assistée des MIX et SONG.
+* Normalisation du comportement des commandes de retour et de sortie dans les menus.
+* Adaptation de l’Éditeur aux API consolidées de `FusionProject`.
+* Remplacement des libellés historiques « QSynth » par « SoundFont » lorsque l’interface présente une configuration d’instrument.
+* Utilisation de « FluidSynth » lorsque l’interface désigne le moteur sonore.
+
+### Tests automatisés
+
+* Introduction d’une suite de tests de régression basée sur `pytest`.
+* Ajout d’un environnement de test commun avec `tests/conftest.py`.
+* Ajout de tests dédiés au chargement du projet et à la validation de sa structure.
+* Ajout de tests pour les PROGRAM, MIX, SONG et instruments.
+* Ajout de tests pour la résolution des instruments et des performances.
+* Ajout de tests pour les diagnostics.
+* Ajout de tests pour les migrations legacy.
+* Ajout de tests pour `save_safe()`, les backups, les archives, le rechargement et les restaurations.
+* Ajout de tests des cas invalides et des chemins de rollback afin de vérifier le comportement défensif de l’API.
+* Ajout de `.coverage` aux fichiers ignorés par Git.
+
+### Validation
+
+* Ajout et extension d’une suite de tests de régression couvrant les opérations principales de `FusionProject`.
+* Validation des opérations PROGRAM, MIX, SONG et instruments.
+* Validation des mécanismes de sauvegarde, backups, archives, restauration et rechargement.
+* Validation des migrations des anciennes structures MIX et SONG.
+* Validation des diagnostics, de la résolution des instruments et de l’état de préparation FluidSynth.
+* Validation des cas invalides et des mécanismes de rollback des mutations.
+* Suppression de branches défensives devenues inatteignables après analyse par les tests.
+* Suite finale : **443 tests réussis**.
+* Couverture de `fusion_project.py` : **100 %**.
+
+---
+
 ## Fusion2QSynth v2.19
 
 ### Sélection assistée des PROGRAM

@@ -6,7 +6,7 @@ Constantes globales Fusion2QSynth
 
 PROJECT = "Fusion2QSynth"
 
-VERSION = "2.19.0"
+VERSION = "2.20.0"
 PROJECT_FORMAT_VERSION = 2
 
 
@@ -15,6 +15,11 @@ PROJECT_FORMAT_VERSION = 2
 LOG_FILE = "fusion.log"
 
 LAST_PERFORMANCE_FILE = "last_performance.json"
+
+# Archives
+
+ARCHIVE_DIR = "backups"
+ARCHIVE_COUNT = 30
 
 # MIDI
 

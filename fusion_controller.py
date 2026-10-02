@@ -123,7 +123,7 @@ def choose_controller_mode():
         print("1 - PROGRAM")
         print("2 - MIX")
         print("3 - SONG")
-        print("q - Retour")
+        print("Q - Retour")
         print()
 
         choice = input(
@@ -172,9 +172,9 @@ def print_mode_diagnostic(
                 "OK"
                 if program["fusion_valid"]
                 else "ERREUR",
-                "QSynth:",
+                "SoundFond:",
                 "OK"
-                if program["qsynth_configured"]
+                if program["soundfont_configured"]
                 else "Non configuré"
             )
 
@@ -228,9 +228,9 @@ def print_mode_diagnostic(
                     "OK"
                     if channel["fusion_valid"]
                     else "ERREUR",
-                    "QSynth:",
+                    "SoundFond:",
                     "OK"
-                    if channel["qsynth_configured"]
+                    if channel["soundfont_configured"]
                     else "Non configuré"
                 )
 
@@ -272,23 +272,14 @@ def print_mode_diagnostic(
                         ]
                         else "ERREUR"
                     ),
-                    "QSynth:",
+                    "SoundFond:",
                     (
                         "OK"
                         if channel[
-                            "qsynth_configured"
+                            "soundfont_configured"
                         ]
                         else "Non configuré"
                     )
-                )
-
-            if "shared_channels" in mix:
-
-                print(
-                    " ⚠ Canaux partagés :",
-                    mix[
-                        "shared_channels"
-                    ]
                 )
 
         print()

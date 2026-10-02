@@ -31,17 +31,22 @@ def show_status(project):
     )
 
     print(
-        "Mix enregistrés      :",
+        "Instruments enregistrés :",
+        status["instrument_count"]
+    )
+
+    print(
+        "Mix enregistrés         :",
         status["mix_count"]
     )
 
     print(
-        "Programs enregistrés :",
+        "Programs enregistrés    :",
         status["program_count"]
     )
 
     print(
-        "Songs enregistrées   :",
+        "Songs enregistrées      :",
         status["song_count"]
     )
 
@@ -70,28 +75,26 @@ def choose_backup_restore():
         start=1
     ):
 
-        info = FusionProject.get_backup_info(backup["filename"])
-
         print(
             index,
             "-",
-            info["filename"]
+            backup["filename"]
         )
 
         print(
             "   Taille :",
-            info["size"]
+            backup["size"]
         )
 
         print(
             "   Date   :",
-            info["time"]
+            backup["time"]
         )
 
         print()
 
     print(
-        "q - Annuler"
+        "Q - Annuler"
     )
 
     choix = input("> ")
@@ -145,7 +148,7 @@ def choose_archive_restore():
 
     print()
     print(
-        "q - Annuler"
+        "Q - Annuler"
     )
 
     choix = input("> ")
@@ -226,7 +229,7 @@ def main():
 
         print()
         print("==========================")
-        print(" Fusion → QSynth")
+        print(" Fusion → FluidSynth")
         print("==========================")
 
         show_status(project)
