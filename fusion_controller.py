@@ -172,7 +172,7 @@ def print_mode_diagnostic(
                 "OK"
                 if program["fusion_valid"]
                 else "ERREUR",
-                "SoundFond:",
+                "SoundFont:",
                 "OK"
                 if program["soundfont_configured"]
                 else "Non configuré"
@@ -228,7 +228,7 @@ def print_mode_diagnostic(
                     "OK"
                     if channel["fusion_valid"]
                     else "ERREUR",
-                    "SoundFond:",
+                    "SoundFont:",
                     "OK"
                     if channel["soundfont_configured"]
                     else "Non configuré"
@@ -272,7 +272,7 @@ def print_mode_diagnostic(
                         ]
                         else "ERREUR"
                     ),
-                    "SoundFond:",
+                    "SoundFont:",
                     (
                         "OK"
                         if channel[
