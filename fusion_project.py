@@ -3248,18 +3248,18 @@ class FusionProject:
                     f"bank Fusion incohérente avec l'identifiant."
                 )
 
-        if (
-            type(part.get("program")) is int
-            and
-            0 <= part["program"] <= 127
-            and
-            part["program"] != expected_program
-        ):
+            if (
+                type(part.get("program")) is int
+                and
+                0 <= part["program"] <= 127
+                and
+                part["program"] != expected_program
+            ):
 
-            errors.append(
-                f"{program_id} PART 1 : "
-                f"program Fusion incohérent avec l'identifiant."
-            )
+                errors.append(
+                    f"{program_id} PART 1 : "
+                    f"program Fusion incohérent avec l'identifiant."
+                )
 
         return errors
 

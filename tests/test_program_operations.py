@@ -1059,3 +1059,37 @@ def test_program_incoherent_bank(
         "bank Fusion incohérente avec l'identifiant."
         in errors
     )
+
+
+def test_validate_program_invalid_id_with_valid_part_program(
+    project
+):
+
+    project.data[
+        "programs"
+    ][
+        "invalid"
+    ] = {
+        "name": "Invalid",
+        "parts": {
+            "1": {
+                "midi_channel": 1,
+                "bank": 0,
+                "program": 0
+            }
+        }
+    }
+
+    errors = project._validate_program_data(
+        "invalid",
+        project.data[
+            "programs"
+        ][
+            "invalid"
+        ]
+    )
+
+    assert (
+        "PROGRAM invalid : identifiant invalide."
+        in errors
+    )
