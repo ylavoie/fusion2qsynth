@@ -2658,7 +2658,7 @@ class FusionProject:
 
         return errors
 
-    def is_instrument_qsynth_ready(
+    def is_instrument_soundfont_ready(
         self,
         instrument
     ):
@@ -2696,7 +2696,7 @@ class FusionProject:
 
         return True
 
-    def is_qsynth_ready(
+    def is_soundfont_ready(
         self,
         part
     ):
@@ -2724,7 +2724,7 @@ class FusionProject:
             part
         )
 
-        return self.is_instrument_qsynth_ready(
+        return self.is_instrument_soundfont_ready(
             instrument
         )
 
@@ -4637,7 +4637,7 @@ class FusionProject:
                             "fusion_valid":
                                 False,
 
-                            "qsynth_configured":
+                            "soundfont_configured":
                                 False,
 
                             "instrument":
@@ -4689,10 +4689,10 @@ class FusionProject:
                         "fusion_valid":
                             len(errors) == 0,
 
-                        "qsynth_configured": (
+                        "soundfont_configured": (
                             midi_channel_valid
                             and
-                            self.is_instrument_qsynth_ready(
+                            self.is_instrument_soundfont_ready(
                                 instrument
                             )
                         ),
@@ -4733,7 +4733,7 @@ class FusionProject:
                         "program": program_id,
                         "name": program_id,
                         "fusion_valid": False,
-                        "qsynth_configured": False,
+                        "soundfont_configured": False,
                         "errors": errors
                     }
                 )
@@ -4767,14 +4767,14 @@ class FusionProject:
                     "fusion_valid":
                         len(errors) == 0,
 
-                    "qsynth_configured":
+                    "soundfont_configured":
                         (
                             isinstance(
                                 part,
                                 dict
                             )
                             and
-                            self.is_qsynth_ready(
+                            self.is_soundfont_ready(
                                 part
                             )
                         ),
@@ -4866,7 +4866,7 @@ class FusionProject:
                     else None
                 )
 
-                qsynth_configured = False
+                soundfont_configured = False
 
                 try:
 
@@ -4900,7 +4900,7 @@ class FusionProject:
                         programs
                     ):
 
-                        qsynth_configured = True
+                        soundfont_configured = True
 
                         for (
                             program_id,
@@ -4912,7 +4912,7 @@ class FusionProject:
                                 dict
                             ):
 
-                                qsynth_configured = False
+                                soundfont_configured = False
                                 break
 
                             instrument = (
@@ -4922,11 +4922,11 @@ class FusionProject:
                                 )
                             )
 
-                            if not self.is_instrument_qsynth_ready(
+                            if not self.is_instrument_soundfont_ready(
                                 instrument
                             ):
 
-                                qsynth_configured = False
+                                soundfont_configured = False
                                 break
 
                 song_diagnostic[
@@ -4935,8 +4935,8 @@ class FusionProject:
                     {
                         "channel": channel_id,
                         "fusion_valid": fusion_valid,
-                        "qsynth_configured":
-                            qsynth_configured
+                        "soundfont_configured":
+                            soundfont_configured
                     }
                 )
 
@@ -5017,7 +5017,7 @@ class FusionProject:
                 1
                 for unit in units
                 if unit.get(
-                    "qsynth_configured",
+                    "soundfont_configured",
                     False
                 )
             )
@@ -5055,7 +5055,7 @@ class FusionProject:
                 summary["programs"]["error"] += 1
 
             elif not program.get(
-                "qsynth_configured",
+                "soundfont_configured",
                 False
             ):
 
@@ -5081,11 +5081,11 @@ class FusionProject:
                 False
             )
 
-            qsynth_configured = (
+            soundfont_configured = (
                 bool(channels)
                 and all(
                     channel.get(
-                        "qsynth_configured",
+                        "soundfont_configured",
                         False
                     )
                     for channel in channels
@@ -5096,7 +5096,7 @@ class FusionProject:
 
                 summary["songs"]["error"] += 1
 
-            elif not qsynth_configured:
+            elif not soundfont_configured:
 
                 summary["songs"]["unconfigured"] += 1
 

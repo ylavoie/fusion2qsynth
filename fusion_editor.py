@@ -920,7 +920,7 @@ def edit_mix_channels(
                 f"CH {channel_id:>2} | "
                 f"PROGRAM {program_id or '?':<7} | "
                 f"{program_name or '?':<25} | "
-                f"QSynth : {instrument_name}"
+                f"SoundFond : {instrument_name}"
             )
 
         print()
@@ -3063,7 +3063,7 @@ def list_mixes(
             1
             for unit in units
             if unit.get(
-                "qsynth_configured",
+                "soundfont_configured",
                 False
             )
         )
@@ -3716,7 +3716,7 @@ def list_programs(
             state = "error"
 
         elif not status.get(
-            "qsynth_configured",
+            "soundfont_configured",
             False
         ):
 

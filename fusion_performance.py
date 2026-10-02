@@ -417,7 +417,7 @@ def load_program(
         )
     )
 
-    if not project.is_qsynth_ready(
+    if not project.is_soundfont_ready(
         part
     ):
 
@@ -685,7 +685,7 @@ def load_song_program(
         )
     )
 
-    if not project.is_instrument_qsynth_ready(
+    if not project.is_instrument_soundfont_ready(
         instrument
     ):
 

@@ -1,10 +1,10 @@
 from fusion_project import FusionProject
 
 #
-# is_qsynth_ready()
+# is_soundfont_ready()
 #
 
-def test_is_qsynth_ready_global_instrument(
+def test_is_soundfont_ready_global_instrument(
     project
 ):
 
@@ -23,12 +23,12 @@ def test_is_qsynth_ready_global_instrument(
         "instrument": "piano"
     }
 
-    assert project.is_qsynth_ready(
+    assert project.is_soundfont_ready(
         part
     ) is True
 
 
-def test_is_qsynth_ready_legacy_instrument(
+def test_is_soundfont_ready_legacy_instrument(
     project
 ):
 
@@ -38,12 +38,12 @@ def test_is_qsynth_ready_legacy_instrument(
         "sf2_program": 0
     }
 
-    assert project.is_qsynth_ready(
+    assert project.is_soundfont_ready(
         part
     ) is True
 
 
-def test_is_qsynth_ready_invalid_part(
+def test_is_soundfont_ready_invalid_part(
     project
 ):
 
@@ -54,12 +54,12 @@ def test_is_qsynth_ready_invalid_part(
         123
     ):
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is False
 
 
-def test_is_qsynth_ready_missing_midi_channel(
+def test_is_soundfont_ready_missing_midi_channel(
     project
 ):
 
@@ -68,12 +68,12 @@ def test_is_qsynth_ready_missing_midi_channel(
         "sf2_program": 0
     }
 
-    assert project.is_qsynth_ready(
+    assert project.is_soundfont_ready(
         part
     ) is False
 
 
-def test_is_qsynth_ready_invalid_midi_channel(
+def test_is_soundfont_ready_invalid_midi_channel(
     project
 ):
 
@@ -90,12 +90,12 @@ def test_is_qsynth_ready_invalid_midi_channel(
             "sf2_program": 0
         }
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is False
 
 
-def test_is_qsynth_ready_midi_channel_boundaries(
+def test_is_soundfont_ready_midi_channel_boundaries(
     project
 ):
 
@@ -110,12 +110,12 @@ def test_is_qsynth_ready_midi_channel_boundaries(
             "sf2_program": 0
         }
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is True
 
 
-def test_is_qsynth_ready_unknown_instrument(
+def test_is_soundfont_ready_unknown_instrument(
     project
 ):
 
@@ -124,12 +124,12 @@ def test_is_qsynth_ready_unknown_instrument(
         "instrument": "unknown"
     }
 
-    assert project.is_qsynth_ready(
+    assert project.is_soundfont_ready(
         part
     ) is False
 
 
-def test_is_qsynth_ready_invalid_sf2_bank(
+def test_is_soundfont_ready_invalid_sf2_bank(
     project
 ):
 
@@ -146,12 +146,12 @@ def test_is_qsynth_ready_invalid_sf2_bank(
             "sf2_program": 0
         }
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is False
 
 
-def test_is_qsynth_ready_sf2_bank_boundaries(
+def test_is_soundfont_ready_sf2_bank_boundaries(
     project
 ):
 
@@ -166,12 +166,12 @@ def test_is_qsynth_ready_sf2_bank_boundaries(
             "sf2_program": 0
         }
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is True
 
 
-def test_is_qsynth_ready_invalid_sf2_program(
+def test_is_soundfont_ready_invalid_sf2_program(
     project
 ):
 
@@ -188,12 +188,12 @@ def test_is_qsynth_ready_invalid_sf2_program(
             "sf2_program": sf2_program
         }
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is False
 
 
-def test_is_qsynth_ready_sf2_program_boundaries(
+def test_is_soundfont_ready_sf2_program_boundaries(
     project
 ):
 
@@ -208,23 +208,23 @@ def test_is_qsynth_ready_sf2_program_boundaries(
             "sf2_program": sf2_program
         }
 
-        assert project.is_qsynth_ready(
+        assert project.is_soundfont_ready(
             part
         ) is True
 
 
-def test_is_qsynth_ready_incomplete_sf2(
+def test_is_soundfont_ready_incomplete_sf2(
     project
 ):
 
-    assert project.is_qsynth_ready(
+    assert project.is_soundfont_ready(
         {
             "midi_channel": 1,
             "sf2_bank": 0
         }
     ) is False
 
-    assert project.is_qsynth_ready(
+    assert project.is_soundfont_ready(
         {
             "midi_channel": 1,
             "sf2_program": 0

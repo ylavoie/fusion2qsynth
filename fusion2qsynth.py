@@ -229,7 +229,7 @@ def main():
 
         print()
         print("==========================")
-        print(" Fusion → QSynth")
+        print(" Fusion → FluidSynth")
         print("==========================")
 
         show_status(project)

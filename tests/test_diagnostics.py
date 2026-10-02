@@ -75,7 +75,7 @@ def test_program_diagnostic_valid_and_configured(
             "program": "0:0",
             "name": "PROGRAM test",
             "fusion_valid": True,
-            "qsynth_configured": True,
+            "soundfont_configured": True,
             "errors": []
         }
     ]
@@ -97,7 +97,7 @@ def test_program_diagnostic_valid_but_not_configured(
     ] is True
 
     assert result[0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
     assert result[0][
@@ -132,7 +132,7 @@ def test_program_diagnostic_invalid_but_configured(
     ] is False
 
     assert result[0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is True
 
     assert result[0][
@@ -165,7 +165,7 @@ def test_program_diagnostic_invalid_definition(
     ] is False
 
     assert result[0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
     assert result[0][
@@ -193,7 +193,7 @@ def test_program_diagnostic_invalid_parts(
     ] is False
 
     assert result[0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
     assert result[0][
@@ -221,7 +221,7 @@ def test_program_diagnostic_missing_part_1(
     ] is False
 
     assert result[0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -241,7 +241,7 @@ def test_program_diagnostic_invalid_sf2_not_configured(
     result = project.get_program_diagnostic()
 
     assert result[0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -345,7 +345,7 @@ def test_mix_diagnostic_valid_and_configured(
                     "channel": "1",
                     "program": None,
                     "fusion_valid": True,
-                    "qsynth_configured": True,
+                    "soundfont_configured": True,
                     "instrument": {
                         "name": "Piano",
                         "sf2_bank": 0,
@@ -383,7 +383,7 @@ def test_mix_diagnostic_valid_but_not_configured(
     ] is True
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
     assert channel[
@@ -424,7 +424,7 @@ def test_mix_diagnostic_invalid_but_configured(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is True
 
 
@@ -493,7 +493,7 @@ def test_mix_diagnostic_invalid_channel_definition(
         "channel": "1",
         "program": None,
         "fusion_valid": False,
-        "qsynth_configured": False,
+        "soundfont_configured": False,
         "instrument": None
     }
 
@@ -526,7 +526,7 @@ def test_mix_diagnostic_invalid_channel_id_not_configured(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -558,7 +558,7 @@ def test_mix_diagnostic_noncanonical_channel_id_not_configured(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -587,7 +587,7 @@ def test_mix_diagnostic_invalid_sf2_not_configured(
     ][0]
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -710,7 +710,7 @@ def test_song_diagnostic_valid_and_configured(
                 {
                     "channel": "1",
                     "fusion_valid": True,
-                    "qsynth_configured": True
+                    "soundfont_configured": True
                 }
             ]
         }
@@ -745,7 +745,7 @@ def test_song_diagnostic_valid_but_not_configured(
     ] is True
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -786,7 +786,7 @@ def test_song_diagnostic_invalid_but_configured(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is True
 
 
@@ -860,7 +860,7 @@ def test_song_diagnostic_invalid_channel_definition(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -896,7 +896,7 @@ def test_song_diagnostic_invalid_channel_id_not_configured(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -954,7 +954,7 @@ def test_song_diagnostic_invalid_non_numeric_channel(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -990,7 +990,7 @@ def test_song_diagnostic_noncanonical_channel_id_not_configured(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -1020,7 +1020,7 @@ def test_song_diagnostic_invalid_program_definition(
     ] is False
 
     assert channel[
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -1051,7 +1051,7 @@ def test_song_diagnostic_invalid_sf2_not_configured(
     assert result[0][
         "channels"
     ][0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -1082,7 +1082,7 @@ def test_song_diagnostic_all_programs_must_be_configured(
     assert result[0][
         "channels"
     ][0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is False
 
 
@@ -1114,7 +1114,7 @@ def test_song_diagnostic_inherits_global_program(
     assert result[0][
         "channels"
     ][0][
-        "qsynth_configured"
+        "soundfont_configured"
     ] is True
 
 #

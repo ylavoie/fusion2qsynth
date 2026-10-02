@@ -172,9 +172,9 @@ def print_mode_diagnostic(
                 "OK"
                 if program["fusion_valid"]
                 else "ERREUR",
-                "QSynth:",
+                "SoundFond:",
                 "OK"
-                if program["qsynth_configured"]
+                if program["soundfont_configured"]
                 else "Non configuré"
             )
 
@@ -228,9 +228,9 @@ def print_mode_diagnostic(
                     "OK"
                     if channel["fusion_valid"]
                     else "ERREUR",
-                    "QSynth:",
+                    "SoundFond:",
                     "OK"
-                    if channel["qsynth_configured"]
+                    if channel["soundfont_configured"]
                     else "Non configuré"
                 )
 
@@ -272,11 +272,11 @@ def print_mode_diagnostic(
                         ]
                         else "ERREUR"
                     ),
-                    "QSynth:",
+                    "SoundFond:",
                     (
                         "OK"
                         if channel[
-                            "qsynth_configured"
+                            "soundfont_configured"
                         ]
                         else "Non configuré"
                     )
