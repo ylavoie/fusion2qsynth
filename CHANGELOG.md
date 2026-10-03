@@ -1,5 +1,95 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.21
+
+### Contrôleur Live
+
+* Ajout de tests de régression dédiés à la boucle du Contrôleur Live.
+* Validation du chargement et de l’activation des performances PROGRAM, MIX et SONG.
+* Validation du routage des messages MIDI et des changements de performance.
+* Validation de la gestion de l’état du contrôleur et de sa persistance.
+* Renforcement de la couverture des scénarios d’utilisation du Contrôleur Live.
+
+### Capture et Monitor MIDI
+
+* Ajout d’une couverture automatisée étendue des workflows de capture Fusion.
+* Validation des principaux scénarios de capture PROGRAM, MIX et SONG.
+* Validation du traitement des messages MIDI utilisés pendant la capture.
+* Ajout de tests dédiés au Monitor MIDI.
+* Validation de l’affichage des notes, contrôleurs et autres événements MIDI reçus du Fusion.
+
+### Éditeur
+
+* Ajout d’une couverture automatisée complète de l’Éditeur Fusion.
+* Validation des workflows d’édition des MIX, PROGRAM et SONG.
+* Validation de la sélection et de la modification des canaux, PARTs et instruments.
+* Validation des opérations de renommage et de suppression.
+* Validation des mécanismes de sauvegarde et de restauration utilisés par l’Éditeur.
+* Validation des menus de gestion des instruments et des banques Fusion.
+* Validation des fonctions de préécoute et de test MIDI.
+* Validation des chemins d’annulation, des entrées invalides et des opérations refusées.
+* Couverture de `fusion_editor.py` portée à **100 %**.
+
+### Diagnostics et fonctions communes
+
+* Ajout de tests dédiés aux fonctions de diagnostic.
+* Validation de l’affichage et du résumé des diagnostics du projet.
+* Ajout d’une couverture complète des fonctions communes de `fusion_lib.py`.
+* Ajout d’une couverture complète de la gestion des noms de banques Fusion.
+* Ajout d’une couverture complète de l’état persistant du Contrôleur Live.
+* Renforcement des tests de chargement et de résolution des performances.
+
+### SoundFont et suggestions
+
+* Ajout d’une couverture complète de la logique de suggestions d’instruments.
+* Ajout d’une couverture complète de la bibliothèque SoundFont.
+* Validation de la lecture, de l’analyse et de la résolution des presets SoundFont.
+* Correction du libellé « SoundFond » en « SoundFont » dans le Contrôleur Live et l’Éditeur.
+
+### Architecture et points d’entrée
+
+* Suppression des points d’entrée directs des modules applicatifs qui ne constituent pas des commandes autonomes.
+* Conservation des points d’entrée uniquement pour les programmes et outils destinés à être exécutés directement.
+* Renforcement de la séparation entre modules applicatifs, commandes autonomes et outils de validation.
+
+### Tests automatisés
+
+* Extension importante de la suite de tests de régression introduite en v2.20.
+* Ajout de tests pour le chargement des performances.
+* Ajout de tests pour la boucle et les workflows du Contrôleur Live.
+* Ajout de tests pour l’état du contrôleur.
+* Ajout de tests pour les noms de banques Fusion.
+* Ajout de tests pour les fonctions communes.
+* Ajout de tests pour les diagnostics.
+* Ajout de tests pour l’orchestrateur principal `fusion2qsynth.py`.
+* Ajout de tests pour les suggestions et la bibliothèque SoundFont.
+* Ajout de tests pour les workflows de capture.
+* Ajout de tests pour le Monitor MIDI.
+* Extension majeure des tests de l’Éditeur jusqu’à couverture complète de son code.
+
+### Couverture
+
+* Ajout de `.coveragerc` afin de définir explicitement le périmètre de couverture du code applicatif.
+* Exclusion des fichiers de tests du calcul de couverture.
+* Exclusion des outils autonomes de référence et de validation du calcul de couverture applicatif.
+* Conservation dans le rapport des modules applicatifs comportant des chemins volontairement non couverts.
+* Couverture finale du code applicatif : **99 %**.
+* Code applicatif mesuré : **4 810 instructions**.
+* Instructions non couvertes : **10**.
+* `fusion_editor.py` : **100 %**.
+* `fusion_project.py` : **100 %**.
+* La majorité des autres modules applicatifs atteignent également **100 %**.
+
+### Validation
+
+* Validation complète de la suite `pytest`.
+* Validation complète avec `integration-globale.py`.
+* Vérification des workflows principaux de l’application après extension de la couverture.
+* Tous les tests automatisés sont réussis.
+* Tous les contrôles de l’intégration globale sont réussis.
+
+---
+
 ## Fusion2QSynth v2.20
 
 ### Architecture de `FusionProject`

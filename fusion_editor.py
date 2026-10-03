@@ -920,7 +920,7 @@ def edit_mix_channels(
                 f"CH {channel_id:>2} | "
                 f"PROGRAM {program_id or '?':<7} | "
                 f"{program_name or '?':<25} | "
-                f"SoundFond : {instrument_name}"
+                f"SoundFont : {instrument_name}"
             )
 
         print()
@@ -6484,7 +6484,3 @@ def main():
         elif choix.lower() == "q":
 
             break
-
-if __name__ == "__main__":
-
-    main()

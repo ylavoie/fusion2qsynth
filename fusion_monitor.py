@@ -254,7 +254,3 @@ def main():
             print()
             print("Retour au menu")
             return
-
-if __name__ == "__main__":
-
-    main()
