@@ -2,7 +2,7 @@
 
 Interface MIDI entre un **Alesis Fusion 8HD** et **FluidSynth**, permettant d'utiliser des SoundFonts SF2 avec les PROGRAM, MIX et SONG du Fusion.
 
-**Version : 2.21**
+**Version : 2.22**
 
 ---
 
@@ -224,6 +224,10 @@ Il permet d'observer notamment :
 * plages de vélocité.
 
 Les informations capturées sont intégrées au projet par `FusionProject`.
+
+Pour les MIX, les canaux actifs sont appris à partir des événements MIDI
+observés. Les plages de notes et de vélocité effectivement observées sont
+enregistrées pour chaque canal.
 
 ---
 
@@ -536,8 +540,9 @@ Il permet notamment :
 * de gérer les PROGRAM ;
 * de gérer les MIX ;
 * de gérer les SONG ;
-* d'éditer les PARTs ;
-* d'éditer les canaux SONG ;
+* d'éditer les PARTs des PROGRAM ;
+* d'éditer les canaux MIX et SONG ;
+* de consulter et modifier les plages de notes et de vélocité ;
 * d'associer des instruments SoundFont ;
 * de créer et modifier la bibliothèque d'instruments ;
 * de rechercher des suggestions ;

@@ -10,7 +10,8 @@ from fusion_controller_state import (
 
 from fusion_lib import (
     panic,
-    log_event
+    log_event,
+    note_name
 )
 
 from fusion_diagnostic import (
@@ -155,6 +156,50 @@ def print_mix(
                 )
                 if instrument
                 else "Non configuré"
+            )
+
+            note_min = channel.get(
+                "note_min"
+            )
+
+            note_max = channel.get(
+                "note_max"
+            )
+
+            velocity_min = channel.get(
+                "velocity_min"
+            )
+
+            velocity_max = channel.get(
+                "velocity_max"
+            )
+
+            print(
+                " Notes      :",
+                (
+                    f"{note_name(note_min)} - "
+                    f"{note_name(note_max)}"
+                    if (
+                        note_min is not None
+                        and
+                        note_max is not None
+                    )
+                    else "?"
+                )
+            )
+
+            print(
+                " Vélocité   :",
+                (
+                    f"{velocity_min} - "
+                    f"{velocity_max}"
+                    if (
+                        velocity_min is not None
+                        and
+                        velocity_max is not None
+                    )
+                    else "?"
+                )
             )
 
             print()

@@ -895,8 +895,18 @@ def test_capture_mix_success(
     assert project.replaced == (
         "8:12",
         {
-            "1": {},
-            "3": {},
+            "1": {
+                "note_min": 48,
+                "note_max": 72,
+                "velocity_min": 40,
+                "velocity_max": 110
+            },
+            "3": {
+                "note_min": 60,
+                "note_max": 60,
+                "velocity_min": 80,
+                "velocity_max": 80
+            },
         }
     )
 
