@@ -1486,3 +1486,133 @@ def test_validate_mix_channel_unknown_instrument(
         "instrument unknown inexistant" in error
         for error in errors
     )
+
+
+def test_validate_mix_channel_valid_ranges(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "note_min": 36,
+            "note_max": 84,
+            "velocity_min": 1,
+            "velocity_max": 127
+        }
+    )
+
+    assert errors == []
+
+
+def test_validate_mix_channel_incomplete_note_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "note_min": 36
+        }
+    )
+
+    assert any(
+        "zone de notes incomplète" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_note_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "note_min": 84,
+            "note_max": 36
+        }
+    )
+
+    assert any(
+        "zone de notes invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_note_type(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "note_min": True,
+            "note_max": 84
+        }
+    )
+
+    assert any(
+        "zone de notes invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_incomplete_velocity_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "velocity_min": 1
+        }
+    )
+
+    assert any(
+        "plage de vélocité incomplète" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_velocity_range(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "velocity_min": 100,
+            "velocity_max": 50
+        }
+    )
+
+    assert any(
+        "plage de vélocité invalide" in error
+        for error in errors
+    )
+
+
+def test_validate_mix_channel_invalid_velocity_type(
+    project
+):
+
+    errors = project._validate_mix_channel_data(
+        "0:0",
+        "1",
+        {
+            "velocity_min": True,
+            "velocity_max": 127
+        }
+    )
+
+    assert any(
+        "plage de vélocité invalide" in error
+        for error in errors
+    )

@@ -1,6 +1,6 @@
 # Fusion2QSynth – Architecture
 
-Version : 2.7
+Version : 2.22
 
 ---
 
@@ -210,57 +210,27 @@ La sauvegarde est effectuée par FusionProject.save_safe().
 
 ##### MIX
 
-La sélection d'un MIX transmet sur le canal MIDI principal du Fusion :
+La sélection du MIX n'identifie pas les PROGRAM utilisés par ses PARTs.
 
-* la banque du MIX par `CC0` ;
-* le numéro du MIX par `Program Change`.
+Pendant la période de capture, Fusion2QSynth découvre les canaux actifs à
+partir des messages `note_on` réellement observés.
 
-Ces informations identifient le MIX sous la forme :
+Chaque nouveau canal MIDI observé crée une entrée dans `channels`. La clé
+de cette entrée correspond directement au numéro de canal MIDI utilisateur,
+de `1` à `16`.
 
-```text
-bank:program
-```
+Les notes et vélocités observées pendant la capture permettent de déterminer
+et d'enregistrer, pour chaque canal du MIX, les plages de notes et de
+vélocité effectivement observées.
 
-La sélection du MIX n'identifie pas les PROGRAM utilisés par ses PARTS.
+La capture ne déduit pas automatiquement le PROGRAM Fusion associé à chaque
+canal à partir du message ayant servi à sélectionner le MIX.
 
-Pendant la période de capture, Fusion2QSynth découvre les PARTS à partir
-des messages `note_on` réellement observés.
-
-Chaque nouveau canal MIDI observé crée une PART contenant initialement :
-
-```json
-{
-  "midi_channel": 1
-}
-```
-
-Le numéro de canal varie naturellement selon le canal observé.
-
-La capture ne déduit donc pas les champs `bank` et `program` des PARTS
-à partir du message ayant servi à sélectionner le MIX.
-
-Les notes et vélocités sont observées pendant la capture, mais leurs
-plages ne sont actuellement pas enregistrées dans les PARTS d'un MIX.
-
-Pour les MIX ROM des banques 0 et 1, une recapture peut préserver les
-métadonnées déjà connues d'une PART lorsque son canal MIDI correspond
-à celui d'une ancienne PART.
-
-Les champs pouvant être préservés sont :
-
-* `bank` ;
-* `program` ;
-* `instrument` ;
-* `fusion_name`.
-
-Pour les MIX HD/User, ces anciennes métadonnées ne sont pas
-automatiquement réutilisées.
-
-Si le MIX contient déjà des PARTS, l'utilisateur doit confirmer leur
+Si le MIX contient déjà des canaux, l'utilisateur doit confirmer leur
 remplacement.
 
-Les nouvelles PARTS sont validées par `FusionProject.replace_mix_parts()`
-avant la sauvegarde définitive par `FusionProject.save_safe()`.
+Les nouveaux canaux sont validés par `FusionProject` avant la sauvegarde
+définitive par `FusionProject.save_safe()`.
 
 ##### SONG
 
@@ -1162,15 +1132,6 @@ chaînes de caractères.
 
 `fusion_diagnostic.py` fournit un affichage spécialisé pour ces erreurs.
 
-Le type :
-
-```text
-missing_instrument
-```
-
-indique qu'une PART de MIX référence un instrument absent de la bibliothèque
-du projet.
-
 Le diagnostic affiche alors notamment :
 
 ```text
@@ -1182,14 +1143,6 @@ Instrument
 
 Cette information peut ensuite être utilisée par l'Éditeur pour proposer
 une réparation assistée.
-
-Le type :
-
-```text
-midi_channel_conflict
-```
-
-signale que plusieurs PARTS d'un même MIX utilisent le même canal MIDI.
 
 Le diagnostic affiche :
 
@@ -2834,22 +2787,16 @@ sans modifier la représentation persistante de la bibliothèque SoundFont.
 
 ##### Collecte des noms Fusion
 
-Le script parcourt les trois types de performances enregistrés dans le
-projet :
+Le script parcourt les performances enregistrées dans le projet afin de
+collecter les noms Fusion disponibles.
 
-```text
-MIX
-PROGRAM
-SONG
-```
-
-Pour les MIX et PROGRAM, il récupère le champ :
+Pour les PROGRAM, il récupère le champ :
 
 ```text
 fusion_name
 ```
 
-des PARTS.
+de leur PART.
 
 Pour les SONG, il récupère le même champ dans les canaux.
 
@@ -3339,61 +3286,46 @@ MIX
  |
  +-- name
  |
- +-- parts
+ +-- channels
       |
       +-- 1
       +-- 2
       +-- ...
 ```
 
-Chaque PART peut contenir notamment :
+Chaque canal peut contenir notamment :
 
 ```text
-midi_channel
-bank
 program
 note_min
 note_max
 velocity_min
 velocity_max
 instrument
-fusion_name
 ```
 
-Le numéro de PART est une clé interne au MIX.
+La clé de chaque entrée de `channels` représente directement le canal MIDI
+utilisé par cette partie du MIX.
+
+Les canaux MIDI stockés dans `fusion.json` utilisent la numérotation utilisateur :
+
+1 .. 16
+
+Les modules utilisant Mido effectuent la conversion vers :
+
+0 .. 15
+
+au moment de communiquer avec la bibliothèque MIDI.
 
 Le champ :
 
 ```text
-midi_channel
-```
-
-détermine le canal MIDI utilisé par cette PART.
-
-Les canaux MIDI stockés dans `fusion.json` utilisent la numérotation utilisateur :
-
-```text
-1 .. 16
-```
-
-Les modules utilisant Mido effectuent la conversion vers :
-
-```text
-0 .. 15
-```
-
-au moment de communiquer avec la bibliothèque MIDI.
-
-Les champs :
-
-```text
-bank
 program
 ```
 
-d'une PART représentent le PROGRAM Fusion associé à cette PART.
+d'un canal représente le PROGRAM Fusion associé à ce canal.
 
-Ils ne représentent pas les coordonnées SoundFont.
+Il ne représente pas les coordonnées SoundFont.
 
 Le preset SoundFont utilisé est déterminé par la référence :
 
@@ -3755,7 +3687,9 @@ CC0 / CC32 / Program Change
 
 Une banque MIX identifie une performance MIX.
 
-La banque d'une PART d'un MIX appartient en revanche à l'espace des PROGRAM du Fusion.
+Les informations de banque et de PROGRAM éventuellement associées aux sons
+utilisés par les PARTs d'un MIX appartiennent à l'espace des PROGRAM du Fusion.
+Elles sont distinctes de la banque servant à identifier le MIX lui-même.
 
 La banque SoundFont appartient exclusivement à la configuration FluidSynth et ne doit jamais remplacer les données de banque reçues du Fusion.
 
@@ -3835,7 +3769,8 @@ La capture décrit donc ce qui a été observé sur le Fusion et ne suppose pas 
 
 ### Données Fusion
 
-Lorsque les informations correspondantes sont disponibles, une PART peut également conserver :
+Pour une PART de PROGRAM, lorsque les informations correspondantes sont
+disponibles, la capture peut également conserver :
 
 ```text
 bank
@@ -3843,9 +3778,13 @@ program
 fusion_name
 ```
 
-Ces données appartiennent à l'espace des PROGRAM du Fusion.
+Pour un canal de MIX, le PROGRAM Fusion associé peut être conservé dans
+le champ `program` lorsqu'il est connu. La sélection d'un MIX ne permet
+cependant pas, à elle seule, d'identifier automatiquement le PROGRAM
+Fusion utilisé par chacun de ses canaux.
 
-Elles ne représentent pas le preset SoundFont utilisé par FluidSynth.
+Ces informations Fusion ne représentent pas le preset SoundFont utilisé
+par FluidSynth.
 
 L'association avec un preset SoundFont est réalisée séparément par la référence :
 
@@ -3871,16 +3810,16 @@ PROGRAM
 
 MIX
     |
-    +-- parts
+    +-- channels
          |
-         +-- PART 1
-         +-- PART 2
+         +-- canal 1
+         +-- canal 2
          +-- ...
 ```
 
 Un PROGRAM comporte normalement une seule PART.
 
-Un MIX peut contenir plusieurs PARTs utilisant des canaux MIDI différents.
+Un MIX peut contenir plusieurs canaux MIDI correspondant aux PARTs observées sur le Fusion.
 
 Les canaux enregistrés dans le modèle utilisent la numérotation :
 
@@ -3940,7 +3879,7 @@ La sélection du son FluidSynth constitue une étape distincte :
 Capture Fusion
       |
       v
-bank / program / canal / plages
+données Fusion / canal / plages observées
       |
       v
 fusion.json
@@ -4023,9 +3962,9 @@ MIX
 SONG
 ```
 
-Pour un PROGRAM ou un MIX, l'édition porte principalement sur les PARTs.
+Pour un PROGRAM, l'édition porte principalement sur sa PART.
 
-Une PART peut notamment être configurée avec :
+Une PART de PROGRAM peut notamment être configurée avec :
 
 ```text
 midi_channel
@@ -4039,7 +3978,23 @@ instrument
 fusion_name
 ```
 
-Pour une SONG, l'édition s'effectue par canal MIDI.
+Pour un MIX, l'édition s'effectue par canal MIDI.
+
+Un canal de MIX peut notamment contenir :
+
+```text
+program
+note_min
+note_max
+velocity_min
+velocity_max
+instrument
+```
+
+Les plages de notes et de vélocité peuvent être apprises pendant la capture
+puis consultées ou modifiées dans l'Éditeur.
+
+Pour une SONG, l'édition s'effectue également par canal MIDI.
 
 Un canal peut notamment contenir :
 
@@ -4470,13 +4425,20 @@ fusion_performance.py
       v
 FusionProject
       |
-      +-- PROGRAM ou MIX
+      +-- PROGRAM
+      |     |
+      |     +-- PART
+      |           |
+      |           +-- midi_channel
+      |           +-- instrument
       |
-      v
-PARTs
-      |
-      +-- midi_channel
-      +-- instrument
+      +-- MIX
+            |
+            +-- channels
+                  |
+                  +-- canal MIDI
+                        |
+                        +-- instrument
       |
       v
 Bibliothèque instruments
@@ -4488,7 +4450,8 @@ Bibliothèque instruments
 FluidSynth
 ```
 
-Pour chaque PART active, l'instrument configuré est résolu dans la bibliothèque du projet.
+Pour chaque PART active d'un PROGRAM ou chaque canal actif d'un MIX,
+l'instrument configuré est résolu dans la bibliothèque du projet.
 
 Les coordonnées SoundFont sont ensuite converties en messages MIDI nécessaires à la programmation du canal FluidSynth.
 
@@ -4804,9 +4767,12 @@ Une donnée provenant de la Capture ou de l'Éditeur passe par les mêmes règle
 
 ### Validation des performances
 
-Les PROGRAM et MIX sont validés à partir de leurs PARTs.
+Les PROGRAM sont validés à partir de leurs PARTs.
 
-Les contrôles portent notamment sur la structure de la performance et sur les paramètres contenus dans chaque PART.
+Les MIX sont validés à partir de leurs canaux.
+
+Les contrôles portent notamment sur la structure de la performance et sur
+les paramètres contenus dans chaque PART de PROGRAM ou chaque canal de MIX.
 
 Les canaux MIDI persistants doivent respecter la convention du projet :
 
@@ -4814,7 +4780,7 @@ Les canaux MIDI persistants doivent respecter la convention du projet :
 1 .. 16
 ```
 
-Une même performance doit également conserver une structure cohérente entre ses PARTs.
+Chaque performance doit également conserver une structure cohérente avec son type.
 
 Les SONG sont validées selon leur structure par canaux :
 
@@ -5236,14 +5202,6 @@ get_blocking_errors()
 ```
 
 afin de déterminer si l'état courant du projet peut être persisté.
-
-Les conflits de canaux MIDI représentés par :
-
-```text
-midi_channel_conflict
-```
-
-ne sont pas considérés comme bloquants par `get_blocking_errors()`.
 
 La méthode `save_safe()` accepte également :
 
@@ -7520,6 +7478,10 @@ velocity_max
 ```
 
 à partir des événements réellement observés.
+
+Dans le modèle persistant d'un MIX, le canal MIDI est représenté par la clé
+de l'entrée correspondante dans `channels`. Les plages observées sont
+enregistrées dans cette entrée.
 
 Cela signifie que la capture dépend de ce qui est effectivement joué pendant la phase d'apprentissage.
 

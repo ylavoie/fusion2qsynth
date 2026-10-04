@@ -463,9 +463,26 @@ def capture_mix(
                                     part["midi_channel"]
                                 )
 
+                                observations = notes_seen[
+                                    part["midi_channel"] - 1
+                                ]
+
                                 channels[
                                     channel_id
-                                ] = {}
+                                ] = {
+                                    "note_min": min(
+                                        observations["notes"]
+                                    ),
+                                    "note_max": max(
+                                        observations["notes"]
+                                    ),
+                                    "velocity_min": min(
+                                        observations["velocity"]
+                                    ),
+                                    "velocity_max": max(
+                                        observations["velocity"]
+                                    )
+                                }
 
                             original_data = project.snapshot()
 

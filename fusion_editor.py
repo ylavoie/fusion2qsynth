@@ -1184,6 +1184,162 @@ def edit_mix_channel(
                 "⚠ Sauvegarde non effectuée."
             )
 
+    def edit_mix_channel_ranges(
+        project,
+        mix_id,
+        channel_id,
+        channel
+    ):
+
+        updates = {}
+
+        print()
+
+        note_min = channel.get(
+            "note_min"
+        )
+
+        print(
+            "Note min actuelle :",
+            (
+                note_name(note_min)
+                if note_min is not None
+                else "non spécifiée"
+            )
+        )
+
+        value = read_note(
+            "Nouvelle note min (Entrée = conserver) : "
+        )
+
+        if value is not None:
+
+            updates["note_min"] = value
+
+        effective_note_min = updates.get(
+            "note_min",
+            channel.get(
+                "note_min",
+                0
+            )
+        )
+
+        print()
+
+        note_max = channel.get(
+            "note_max"
+        )
+
+        print(
+            "Note max actuelle :",
+            (
+                note_name(note_max)
+                if note_max is not None
+                else "non spécifiée"
+            )
+        )
+
+        value = read_note(
+            "Nouvelle note max (Entrée = conserver) : ",
+            minimum=effective_note_min
+        )
+
+        if value is not None:
+
+            updates["note_max"] = value
+
+        print()
+
+        print(
+            "Velocity min :",
+            channel.get(
+                "velocity_min",
+                "non spécifiée"
+            )
+        )
+
+        value = read_int(
+            "Nouvelle velocity min (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["velocity_min"] = value
+
+        print()
+
+        print(
+            "Velocity max :",
+            channel.get(
+                "velocity_max",
+                "non spécifiée"
+            )
+        )
+
+        value = read_int(
+            "Nouvelle velocity max (Entrée = conserver) : ",
+            0,
+            127
+        )
+
+        if value is not None:
+
+            updates["velocity_max"] = value
+
+        if not updates:
+
+            print(
+                "Aucune modification."
+            )
+
+            return
+
+        allowed_errors = (
+            project.get_blocking_errors(
+                project.validate()
+            )
+        )
+
+        original_data = project.snapshot()
+
+        ok, errors = project.update_mix_channel(
+            mix_id,
+            channel_id,
+            updates=updates
+        )
+
+        if not ok:
+
+            print(
+                "Plages non modifiées."
+            )
+
+            print_error_messages(
+                errors
+            )
+
+            return
+
+        if project.save_safe(
+            allowed_errors=allowed_errors
+        ):
+
+            print(
+                "Plages modifiées."
+            )
+
+        else:
+
+            project.restore_snapshot(
+                original_data
+            )
+
+            print(
+                "⚠ Sauvegarde non effectuée."
+            )
+
     def remove_mix_channel_instrument(
         project,
         mix_id,
@@ -1321,6 +1477,50 @@ def edit_mix_channel(
             fusion_name or "?"
         )
 
+        note_min = channel.get(
+            "note_min"
+        )
+
+        note_max = channel.get(
+            "note_max"
+        )
+
+        velocity_min = channel.get(
+            "velocity_min"
+        )
+
+        velocity_max = channel.get(
+            "velocity_max"
+        )
+
+        print(
+            "Zone de notes  :",
+            (
+                f"{note_name(note_min)} - "
+                f"{note_name(note_max)}"
+                if (
+                    note_min is not None
+                    and
+                    note_max is not None
+                )
+                else "?"
+            )
+        )
+
+        print(
+            "Vélocité       :",
+            (
+                f"{velocity_min} - "
+                f"{velocity_max}"
+                if (
+                    velocity_min is not None
+                    and
+                    velocity_max is not None
+                )
+                else "?"
+            )
+        )
+
         print(
             "Instrument local :",
             (
@@ -1359,6 +1559,10 @@ def edit_mix_channel(
         )
 
         print(
+            "4 - Modifier les plages"
+        )
+
+        print(
             "Q - Retour"
         )
 
@@ -1387,6 +1591,15 @@ def edit_mix_channel(
         elif choice == "3":
 
             remove_mix_channel_instrument(
+                project,
+                mix_id,
+                channel_id,
+                channel
+            )
+
+        elif choice == "4":
+
+            edit_mix_channel_ranges(
                 project,
                 mix_id,
                 channel_id,

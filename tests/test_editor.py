@@ -2098,71 +2098,6 @@ def test_edit_mix_channel_display_and_quit(
     assert "Instrument effectif : Effective Piano" in output
 
 
-def test_edit_mix_channel_display_and_quit(
-    monkeypatch,
-    capsys
-):
-
-    channel = {
-        "program": "2:10",
-        "instrument": "local"
-    }
-
-    class Project:
-
-        def get_program(
-            self,
-            program_id
-        ):
-
-            assert program_id == "2:10"
-
-            return {
-                "name": "Fusion Piano"
-            }
-
-        def get_instrument(
-            self,
-            instrument_id
-        ):
-
-            assert instrument_id == "local"
-
-            return {
-                "name": "Local Piano"
-            }
-
-        def resolve_mix_channel_instrument(
-            self,
-            selected
-        ):
-
-            assert selected is channel
-
-            return {
-                "name": "Effective Piano"
-            }
-
-    monkeypatch.setattr(
-        "builtins.input",
-        lambda prompt: "q"
-    )
-
-    fusion_editor.edit_mix_channel(
-        Project(),
-        "0:1",
-        "3",
-        channel
-    )
-
-    output = capsys.readouterr().out
-
-    assert "PROGRAM Fusion : 2:10" in output
-    assert "Nom Fusion     : Fusion Piano" in output
-    assert "Instrument local : Local Piano" in output
-    assert "Instrument effectif : Effective Piano" in output
-
-
 def test_edit_mix_channel_program_cancel(
     monkeypatch,
     capsys
@@ -2205,6 +2140,300 @@ def test_edit_mix_channel_program_cancel(
     )
 
 
+def test_edit_mix_channel_ranges_success(
+    monkeypatch,
+    capsys
+):
+
+    channel = {
+        "note_min": 36,
+        "note_max": 84,
+        "velocity_min": 10,
+        "velocity_max": 120
+    }
+
+    class Project:
+
+        def __init__(self):
+
+            self.update = None
+            self.saved_errors = None
+
+        def resolve_mix_channel_instrument(
+            self,
+            channel
+        ):
+
+            return None
+
+        def validate(self):
+
+            return [
+                "existing-error"
+            ]
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            assert errors == [
+                "existing-error"
+            ]
+
+            return [
+                "blocking-error"
+            ]
+
+        def snapshot(self):
+
+            return {
+                "original": True
+            }
+
+        def update_mix_channel(
+            self,
+            mix_id,
+            channel_id,
+            updates=None,
+            remove_fields=None
+        ):
+
+            self.update = (
+                mix_id,
+                channel_id,
+                updates,
+                remove_fields
+            )
+
+            return (
+                True,
+                []
+            )
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            self.saved_errors = (
+                allowed_errors
+            )
+
+            return True
+
+    project = Project()
+
+    responses = iter([
+        "4",
+        "48",
+        "72",
+        "20",
+        "100",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix_channel(
+        project,
+        "0:1",
+        "3",
+        channel
+    )
+
+    assert project.update == (
+        "0:1",
+        "3",
+        {
+            "note_min": 48,
+            "note_max": 72,
+            "velocity_min": 20,
+            "velocity_max": 100
+        },
+        None
+    )
+
+    assert project.saved_errors == [
+        "blocking-error"
+    ]
+
+    assert (
+        "Plages modifiées."
+        in capsys.readouterr().out
+    )
+
+
+def test_edit_mix_channel_ranges_no_change(
+    monkeypatch,
+    capsys
+):
+
+    channel = {
+        "note_min": 36,
+        "note_max": 84,
+        "velocity_min": 10,
+        "velocity_max": 120
+    }
+
+    class Project:
+
+        def resolve_mix_channel_instrument(
+            self,
+            channel
+        ):
+
+            return None
+
+        def validate(self):
+
+            raise AssertionError(
+                "validate ne doit pas être appelé"
+            )
+
+        def update_mix_channel(
+            self,
+            *args,
+            **kwargs
+        ):
+
+            raise AssertionError(
+                "update_mix_channel ne doit pas être appelé"
+            )
+
+        def save_safe(
+            self,
+            **kwargs
+        ):
+
+            raise AssertionError(
+                "save_safe ne doit pas être appelé"
+            )
+
+    responses = iter([
+        "4",
+        "",
+        "",
+        "",
+        "",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix_channel(
+        Project(),
+        "0:1",
+        "3",
+        channel
+    )
+
+    assert (
+        "Aucune modification."
+        in capsys.readouterr().out
+    )
+
+
+def test_edit_mix_channel_ranges_update_failure(
+    monkeypatch,
+    capsys
+):
+
+    channel = {}
+
+    class Project:
+
+        def resolve_mix_channel_instrument(
+            self,
+            channel
+        ):
+
+            return None
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {}
+
+        def update_mix_channel(
+            self,
+            *args,
+            **kwargs
+        ):
+
+            return (
+                False,
+                [
+                    "Erreur plages"
+                ]
+            )
+
+        def save_safe(
+            self,
+            **kwargs
+        ):
+
+            raise AssertionError(
+                "save_safe ne doit pas être appelé"
+            )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_error_messages",
+        lambda errors:
+            print(*errors)
+    )
+
+    responses = iter([
+        "4",
+        "48",
+        "72",
+        "20",
+        "100",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix_channel(
+        Project(),
+        "0:1",
+        "3",
+        channel
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Plages non modifiées."
+        in output
+    )
+
+    assert "Erreur plages" in output
+
+
 def test_edit_mix_channel_program_selection_cancel(
     monkeypatch
 ):
@@ -2244,6 +2473,102 @@ def test_edit_mix_channel_program_selection_cancel(
         "0:1",
         "1",
         channel
+    )
+
+
+def test_edit_mix_channel_ranges_save_failure(
+    monkeypatch,
+    capsys
+):
+
+    channel = {}
+
+    snapshot = {
+        "original": True
+    }
+
+    class Project:
+
+        def __init__(self):
+
+            self.restored = None
+
+        def resolve_mix_channel_instrument(
+            self,
+            channel
+        ):
+
+            return None
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return snapshot
+
+        def update_mix_channel(
+            self,
+            *args,
+            **kwargs
+        ):
+
+            return (
+                True,
+                []
+            )
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return False
+
+        def restore_snapshot(
+            self,
+            data
+        ):
+
+            self.restored = data
+
+    project = Project()
+
+    responses = iter([
+        "4",
+        "48",
+        "72",
+        "20",
+        "100",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix_channel(
+        project,
+        "0:1",
+        "3",
+        channel
+    )
+
+    assert project.restored is snapshot
+
+    assert (
+        "⚠ Sauvegarde non effectuée."
+        in capsys.readouterr().out
     )
 
 

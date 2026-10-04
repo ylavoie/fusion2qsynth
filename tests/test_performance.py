@@ -235,7 +235,11 @@ def test_print_mix_channels(
         "name": "Test Mix",
         "channels": {
             "10": {
-                "program": "1:20"
+                "program": "1:20",
+                "note_min": 48,
+                "note_max": 72,
+                "velocity_min": 20,
+                "velocity_max": 110
             },
             "2": {}
         }
@@ -279,7 +283,10 @@ def test_print_mix_channels(
     ) < output.index(
         "CH 10"
     )
-
+    assert "Notes      : C3 - C5" in output
+    assert "Vélocité   : 20 - 110" in output
+    assert "Notes      : ?" in output
+    assert "Vélocité   : ?" in output
 
 def test_print_mix_instrument_without_name(
     project,
@@ -314,6 +321,7 @@ def test_print_mix_instrument_without_name(
     output = capsys.readouterr().out
 
     assert "Instrument : ?" in output
+
 
 def test_load_mix_unknown(
     project,

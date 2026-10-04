@@ -2288,7 +2288,11 @@ class FusionProject:
         #
         allowed_fields = {
             "program",
-            "instrument"
+            "instrument",
+            "note_min",
+            "note_max",
+            "velocity_min",
+            "velocity_max"
         }
 
         for field in channel:
@@ -2418,6 +2422,90 @@ class FusionProject:
                 errors.append(
                     f"{prefix} : instrument "
                     f"{instrument_id} inexistant."
+                )
+
+        #
+        # Zone de notes
+        #
+        has_note_min = (
+            "note_min" in channel
+        )
+
+        has_note_max = (
+            "note_max" in channel
+        )
+
+        if (
+            has_note_min
+            != has_note_max
+        ):
+
+            errors.append(
+                f"{prefix} : zone de notes incomplète."
+            )
+
+        elif has_note_min:
+
+            note_min = channel[
+                "note_min"
+            ]
+
+            note_max = channel[
+                "note_max"
+            ]
+
+            if (
+                type(note_min) is not int
+                or
+                type(note_max) is not int
+                or
+                not 0 <= note_min <= note_max <= 127
+            ):
+
+                errors.append(
+                    f"{prefix} : zone de notes invalide."
+                )
+
+        #
+        # Plage de vélocité
+        #
+        has_velocity_min = (
+            "velocity_min" in channel
+        )
+
+        has_velocity_max = (
+            "velocity_max" in channel
+        )
+
+        if (
+            has_velocity_min
+            != has_velocity_max
+        ):
+
+            errors.append(
+                f"{prefix} : plage de vélocité incomplète."
+            )
+
+        elif has_velocity_min:
+
+            velocity_min = channel[
+                "velocity_min"
+            ]
+
+            velocity_max = channel[
+                "velocity_max"
+            ]
+
+            if (
+                type(velocity_min) is not int
+                or
+                type(velocity_max) is not int
+                or
+                not 0 <= velocity_min <= velocity_max <= 127
+            ):
+
+                errors.append(
+                    f"{prefix} : plage de vélocité invalide."
                 )
 
         return errors
