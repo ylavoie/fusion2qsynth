@@ -2,7 +2,7 @@
 
 Interface MIDI entre un **Alesis Fusion 8HD** et **FluidSynth**, permettant d'utiliser des SoundFonts SF2 avec les PROGRAM, MIX et SONG du Fusion.
 
-**Version : 2.21**
+**Version : 2.22**
 
 ---
 

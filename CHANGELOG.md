@@ -1,5 +1,65 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.22
+
+### Capture des MIX
+
+* Ajout de l’apprentissage des plages de notes et de vélocité pour les canaux des MIX.
+* Détermination des plages à partir des événements MIDI réellement observés pendant la capture.
+* Enregistrement de `note_min`, `note_max`, `velocity_min` et `velocity_max` pour chaque canal détecté.
+* Conservation du principe selon lequel la sélection d’un MIX n’identifie pas automatiquement le PROGRAM Fusion utilisé par chacun de ses canaux.
+
+### Modèle des MIX
+
+* Extension des canaux de MIX afin de prendre en charge les plages de notes et de vélocité.
+* Validation des plages de notes dans l’intervalle MIDI `0..127`.
+* Validation des plages de vélocité dans l’intervalle MIDI `0..127`.
+* Validation de la présence conjointe des bornes minimale et maximale d’une plage.
+* Maintien du PROGRAM Fusion associé à un canal comme information optionnelle lorsqu’il est connu.
+
+### Éditeur
+
+* Affichage des plages de notes et de vélocité apprises pour chaque canal d’un MIX.
+* Ajout de la modification manuelle des plages de notes et de vélocité d’un canal de MIX.
+* Prise en charge de la saisie des notes par numéro MIDI ou par nom de note.
+* Conservation de l’état antérieur du projet lorsqu’une modification ne peut pas être sauvegardée.
+* Affichage explicite des plages inconnues pour les anciens MIX ne possédant pas encore ces informations.
+
+### Contrôleur Live
+
+* Affichage des plages de notes et de vélocité connues lors de la présentation d’un MIX.
+* Les plages apprises demeurent des informations descriptives et ne sont pas utilisées pour filtrer les notes pendant l’exécution.
+* Le routage temps réel continue de reposer sur les canaux MIDI actifs du MIX.
+
+### Architecture et documentation
+
+* Mise à jour du modèle documenté des MIX afin de représenter directement leurs canaux par `channels`.
+* Suppression de la représentation historique des MIX basée sur `parts` et `midi_channel`.
+* Distinction explicite entre une PART de PROGRAM et un canal de MIX dans la documentation.
+* Mise à jour des flux de capture, d’édition, de validation et de chargement des performances.
+* Suppression de références documentaires à d’anciens diagnostics et mécanismes de préservation qui ne sont plus présents dans le code.
+* Mise à jour du README pour documenter l’apprentissage et l’édition des plages des canaux de MIX.
+
+### Tests automatisés
+
+* Ajout de tests de validation des plages de notes et de vélocité des canaux de MIX.
+* Ajout de tests de capture des plages observées pour plusieurs canaux MIDI.
+* Ajout de tests pour l’affichage et la modification des plages dans l’Éditeur.
+* Ajout de tests des chemins d’échec de modification et de sauvegarde.
+* Extension des tests d’affichage des MIX avec les plages apprises.
+* Suppression d’une définition de test dupliquée dans les tests de l’Éditeur.
+
+### Validation
+
+* Validation complète de la suite `pytest`.
+* **942 tests automatisés réussis**.
+* Validation des nouveaux workflows d’apprentissage, d’affichage et d’édition des plages des canaux de MIX.
+* Vérification des principaux workflows existants après l’évolution du modèle des MIX.
+* Validation complète avec `integration-globale.py`.
+* Tous les contrôles de l’intégration globale sont réussis.
+
+---
+
 ## Fusion2QSynth v2.21
 
 ### Contrôleur Live
