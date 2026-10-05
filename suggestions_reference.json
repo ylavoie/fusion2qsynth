@@ -3,7 +3,7 @@
   "limit": 3,
   "soundfont": "/usr/share/sounds/sf2/MuseScore_General.sf2",
   "sf2_library_sha256": "bfbbcb2a7504054a6560ec2857377fca7b1652f7c4eacf2264642ea1460c1694",
-  "fusion_catalog_sha256": "99bed5ad403aa2d9c9f59a9c00e18cb7b5e4fb3a62cffef40c9484e779159a28",
+  "fusion_catalog_sha256": "f75d5b300cca51f38c5926fe7ee263cc98700ec8966e0da69976de68128f5994",
   "programs": {
     "0:0": {
       "name": "Holy Grail Grand Piano",
@@ -1998,7 +1998,7 @@
       }
     },
     "0:94": {
-      "name": "oxide",
+      "name": "Oxide",
       "suggestions": {
         "fx": [
           {
@@ -2545,23 +2545,23 @@
       }
     },
     "1:1": {
-      "name": "Nashville Piano",
+      "name": "Monster Piano",
       "suggestions": {
         "piano": [
           {
             "bank": 0,
             "program": 0,
-            "score": 0.5384615384615384
+            "score": 0.9833333333333334
           },
           {
             "bank": 0,
-            "program": 1,
-            "score": 0.5242424242424243
+            "program": 3,
+            "score": 0.6206896551724138
           },
           {
             "bank": 8,
             "program": 0,
-            "score": 0.48484848484848486
+            "score": 0.5806451612903226
           }
         ]
       }
@@ -5131,23 +5131,23 @@
       }
     },
     "2:3": {
-      "name": "FallenOnHardTines",
+      "name": "Elektrik Suitcase",
       "suggestions": {
         "electric_piano": [
           {
-            "bank": 8,
+            "bank": 0,
             "program": 4,
-            "score": 0.45714285714285713
-          },
-          {
-            "bank": 8,
-            "program": 5,
-            "score": 0.30303030303030304
+            "score": 0.9
           },
           {
             "bank": 0,
             "program": 5,
-            "score": 0.2702702702702703
+            "score": 0.5294117647058824
+          },
+          {
+            "bank": 8,
+            "program": 4,
+            "score": 0.375
           }
         ]
       }
@@ -5236,13 +5236,13 @@
       }
     },
     "2:7": {
-      "name": "FM-EP Ana Layer",
+      "name": "Bright Stage EP",
       "suggestions": {
         "electric_piano": [
           {
             "bank": 0,
-            "program": 5,
-            "score": 0.4375
+            "program": 4,
+            "score": 0.6941176470588235
           },
           {
             "bank": 8,
@@ -5250,9 +5250,9 @@
             "score": 0.35714285714285715
           },
           {
-            "bank": 0,
+            "bank": 8,
             "program": 4,
-            "score": 0.29411764705882354
+            "score": 0.3333333333333333
           }
         ]
       }
@@ -6990,23 +6990,23 @@
       }
     },
     "2:96": {
-      "name": "J Pad",
+      "name": "VJ Pad",
       "suggestions": {
         "pad": [
           {
             "bank": 0,
             "program": 89,
-            "score": 0.6153846153846154
+            "score": 0.9714285714285714
           },
           {
             "bank": 0,
             "program": 94,
-            "score": 0.6153846153846154
+            "score": 0.5714285714285714
           },
           {
             "bank": 0,
             "program": 93,
-            "score": 0.5714285714285714
+            "score": 0.5333333333333333
           }
         ]
       }
@@ -7491,7 +7491,7 @@
       }
     },
     "3:0": {
-      "name": "Rock & Roll Piano                     ",
+      "name": "Rock & Roll Piano",
       "suggestions": {
         "piano": [
           {
