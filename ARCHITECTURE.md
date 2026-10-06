@@ -1,6 +1,6 @@
 # Fusion2QSynth – Architecture
 
-Version : 2.22
+Version : 2.23
 
 ---
 
@@ -843,10 +843,12 @@ du projet.
 L'Éditeur permet notamment :
 
 * de consulter les PROGRAM ;
+* de filtrer les PROGRAM par catégorie Fusion ;
 * de filtrer les PROGRAM à configurer ou en erreur ;
 * de modifier l'instrument SoundFont associé ;
 * de modifier les paramètres de la PART ;
 * de modifier le nom Fusion ;
+* d'assigner, modifier ou supprimer la catégorie Fusion ;
 * de renommer un PROGRAM ;
 * de supprimer un PROGRAM.
 
@@ -872,21 +874,41 @@ Les valeurs saisies sont vérifiées avant leur persistance.
 L'Éditeur permet notamment :
 
 * de consulter les MIX ;
+* de filtrer les MIX par catégorie Fusion ;
 * de filtrer les MIX à configurer ou en erreur ;
 * de renommer un MIX ;
 * de dupliquer un MIX ;
 * de supprimer un MIX ;
 * de supprimer les MIX vides ;
-* de modifier individuellement les PARTS ;
-* de modifier l'instrument associé à une PART ;
-* de modifier les paramètres d'une PART ;
-* de modifier son nom Fusion ;
-* de tester séparément les PARTS ;
-* de tester simultanément l'ensemble des PARTS configurées.
+* d'assigner, modifier ou supprimer la catégorie Fusion ;
+* de modifier individuellement les canaux ;
+* de modifier l'instrument associé à un canal ;
+* de modifier les paramètres d'un canal ;
+* de modifier les plages de notes et de vélocité d'un canal ;
+* de tester séparément les canaux ;
+* de tester simultanément l'ensemble des canaux configurés.
 
 Lors de la sélection d'un instrument, l'utilisateur peut écouter le nouvel
 instrument ou effectuer une comparaison A/B avant de conserver
 l'association.
+
+Les catégories des PROGRAM et MIX utilisent le référentiel défini dans
+`fusion_gm_map.py`.
+
+L'Éditeur présente le code et son libellé, par exemple :
+
+```text
+A - Piano
+O - Drum/Perc
+```
+
+La sélection d'une catégorie modifie explicitement le champ category de la
+performance. L'Éditeur ne tente pas de déduire cette valeur à partir de
+l'identifiant Fusion.
+
+Le même mécanisme est utilisé pour les banques ROM et les banques utilisateur.
+Une performance sans catégorie demeure valide et peut recevoir sa catégorie
+ultérieurement.
 
 ##### SONG
 
@@ -1222,6 +1244,7 @@ Ses données couvrent plusieurs domaines distincts :
 
 ```text
 noms des banques Fusion
+catégories Fusion
 référentiel General MIDI
 indices de correspondance Fusion → GM
 kits de batterie
@@ -1270,6 +1293,73 @@ BANK n
 est utilisée.
 
 `fusion_mix_bank_name()` applique le même principe aux banques MIX.
+
+##### Catégories Fusion
+
+`FUSION_CATEGORIES` constitue le référentiel statique des catégories utilisées
+par les PROGRAM et les MIX du Fusion.
+
+La table associe les codes canoniques :
+
+```text
+A .. Q
+```
+
+à leurs libellés Fusion :
+
+```text
+Piano
+Chromatic
+Organ
+Guitar
+Bass
+Strings
+Ensemble
+Brass
+Reed
+Pipe
+Lead
+Pad
+Synth FX
+Ethnic
+Drum/Perc
+Sound FX
+OTHER
+```
+
+Les fonctions :
+
+```text
+fusion_category_name()
+fusion_category_id()
+```
+
+permettent respectivement de convertir un code en libellé et un libellé en code.
+
+`fusion_gm_map.py` définit uniquement le référentiel des catégories. Il ne
+détermine pas la catégorie d'un PROGRAM ou d'un MIX.
+
+La catégorie effectivement assignée est conservée dans le modèle persistant
+par FusionProject.
+
+En particulier, aucune correspondance entre l'identifiant d'un PROGRAM ou
+d'un MIX et une catégorie ne doit être déduite de sa position dans une banque.
+
+Cette formulation maintient une séparation importante :
+
+```text
+fusion_gm_map.py
+        |
+        +-- connaît A = Piano, B = Chromatic, ...
+        |
+        X  ne choisit pas la catégorie
+        |
+FusionProject
+        |
+        +-- conserve category = "A"
+```
+
+Et elle reste cohérente avec le rôle actuel de fusion_gm_map.py, qui fournit déjà les tables statiques mais ne réalise pas lui-même la recherche SoundFont.
 
 ##### Banques SONG
 
@@ -3228,8 +3318,9 @@ PROGRAM
  |
  +-- name
  |
- +-- parts
-      |
+ +-- category
+ |
+ +-- parts      |
       +-- 1
            |
            +-- midi_channel
@@ -3254,6 +3345,20 @@ Les données réellement présentes dépendent des informations capturées et de
 ```text
 instruments
 ```
+
+Le champ optionnel :
+
+```text
+category
+```
+
+contient la catégorie Fusion assignée au PROGRAM sous la forme d'un code
+canonique de A à Q.
+
+La catégorie appartient au PROGRAM lui-même et non à sa PART.
+
+Elle est explicitement assignée à partir des informations du Fusion ou par
+l'utilisateur. Elle n'est jamais déduite de l'identifiant bank:program.
 
 ---
 
@@ -3286,12 +3391,21 @@ MIX
  |
  +-- name
  |
+ +-- category
+ |
  +-- channels
       |
       +-- 1
       +-- 2
       +-- ...
 ```
+
+Comme pour un PROGRAM, le champ optionnel `category` contient la catégorie
+Fusion assignée au MIX sous la forme d'un code canonique de `A` à `Q`.
+
+La catégorie appartient au MIX dans son ensemble et non à l'un de ses canaux.
+Elle est explicitement assignée et n'est jamais déduite de l'identifiant
+`bank:program`.
 
 Chaque canal peut contenir notamment :
 
@@ -3339,6 +3453,40 @@ Tous les champs ne sont pas nécessairement présents.
 
 L'absence d'une information peut signifier qu'elle n'a pas été observée pendant la capture ou qu'elle n'a pas encore été configurée dans l'Éditeur.
 
+### Catégories PROGRAM et MIX
+
+Les PROGRAM et MIX utilisent le même référentiel de catégories Fusion :
+
+```text
+A - Piano
+B - Chromatic
+C - Organ
+D - Guitar
+E - Bass
+F - Strings
+G - Ensemble
+H - Brass
+I - Reed
+J - Pipe
+K - Lead
+L - Pad
+M - Synth FX
+N - Ethnic
+O - Drum/Perc
+P - Sound FX
+Q - OTHER
+
+Seul le code A..Q est conservé dans fusion.json. Le libellé correspondant
+est fourni par fusion_gm_map.py.
+
+L'absence du champ category signifie simplement qu'aucune catégorie n'est
+encore assignée. Cette situation est valide, notamment pour des PROGRAM ou MIX
+créés dans les banques utilisateur.
+
+L'identifiant Fusion et la catégorie constituent deux informations
+indépendantes. Une catégorie ne doit donc jamais être inférée à partir du
+numéro de banque, du numéro de PROGRAM/MIX ou de la représentation de
+l'identifiant affichée par le Fusion.
 ---
 
 ### SONG
@@ -4762,6 +4910,35 @@ FusionProject
 La validation ne dépend donc pas de l'interface qui a produit les données.
 
 Une donnée provenant de la Capture ou de l'Éditeur passe par les mêmes règles de cohérence.
+
+Pour les PROGRAM et les MIX, le champ optionnel `category` est également
+validé par `FusionProject`.
+
+Lorsqu'il est présent, sa valeur doit correspondre à l'un des codes canoniques
+définis dans `FUSION_CATEGORIES` :
+
+```text
+A .. Q
+```
+
+L'absence de `category` est valide. Elle représente une performance dont la
+catégorie n'a pas encore été assignée.
+
+La validation vérifie uniquement que la catégorie enregistrée appartient au
+référentiel Fusion. Elle ne tente pas de déterminer ou de corriger une
+catégorie à partir de l'identifiant `bank:program`.
+
+Cela établit clairement les trois propriétés importantes :
+
+```text
+category absente     -> valide
+category = A..Q      -> valide
+autre valeur         -> erreur
+```
+
+et surtout :
+
+`validation != inférence`
 
 ---
 

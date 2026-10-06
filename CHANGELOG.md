@@ -1,5 +1,65 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.23
+
+### Catégories Fusion
+
+* Ajout de la prise en charge des catégories officielles du Fusion pour les PROGRAM et les MIX.
+* Définition des 17 catégories Fusion `A` à `Q`, de `Piano` à `OTHER`.
+* Stockage de la catégorie sous forme de code canonique `A..Q` dans les données du PROGRAM ou du MIX.
+* La catégorie est une propriété globale du PROGRAM ou du MIX et non d’une PART ou d’un canal.
+* La catégorie utilisée est celle explicitement assignée au PROGRAM ou au MIX ; elle n’est jamais inférée à partir de l’ID Fusion.
+* Prise en charge identique des catégories pour les banques ROM et les banques utilisateur.
+
+### Modèle et validation
+
+* Ajout de la propriété optionnelle `category` aux PROGRAM et aux MIX.
+* Validation des catégories selon la table officielle `A..Q`.
+* Ajout des fonctions de conversion entre le code d’une catégorie et son nom Fusion.
+* Ajout des accesseurs et mutateurs de catégorie pour les PROGRAM et les MIX.
+* Possibilité de supprimer une catégorie précédemment assignée.
+* Conservation de la compatibilité avec les PROGRAM et MIX existants ne possédant aucune catégorie.
+
+### Éditeur
+
+* Affichage de la catégorie des PROGRAM et des MIX sous la forme `A - Piano`, `O - Drum/Perc`, etc.
+* Affichage explicite de `-` lorsqu’aucune catégorie n’est assignée.
+* Ajout du filtrage des listes de PROGRAM et de MIX par catégorie Fusion.
+* Ajout d’un sélecteur commun des catégories Fusion.
+* Ajout de l’assignation, de la modification et de la suppression de la catégorie d’un PROGRAM.
+* Ajout de l’assignation, de la modification et de la suppression de la catégorie d’un MIX.
+* Prise en charge de l’édition des catégories dans les banques utilisateur.
+* Conservation de l’état antérieur du projet lorsqu’une modification ne peut pas être sauvegardée.
+
+### Données Fusion
+
+* Intégration dans `fusion.json` des catégories provenant des tables de référence des PROGRAM et MIX du Fusion.
+* Validation indépendante des banques, des noms de presets et des catégories avant l’intégration des données.
+* Les PROGRAM et MIX utilisateur absents des tables de référence demeurent sans catégorie jusqu’à leur assignation manuelle.
+* Mise à jour de la référence des suggestions après l’enrichissement des données Fusion.
+
+### Tests automatisés
+
+* Ajout de tests de la table et des fonctions de conversion des catégories Fusion.
+* Ajout de tests de validation des catégories des PROGRAM et des MIX.
+* Ajout de tests des accesseurs et mutateurs de catégorie.
+* Ajout de tests d’affichage et de filtrage par catégorie dans l’Éditeur.
+* Ajout de tests d’assignation, de modification et de suppression des catégories.
+* Ajout de tests spécifiques aux PROGRAM et MIX des banques utilisateur.
+* Ajout de tests des chemins d’annulation, de catégorie inchangée, de refus de modification et d’échec de sauvegarde.
+
+### Validation
+
+* Validation complète de la suite `pytest`.
+* **984 tests automatisés réussis**.
+* **251 tests de l’Éditeur réussis**.
+* Validation des workflows d’affichage, de filtrage et d’édition des catégories PROGRAM et MIX.
+* Validation des catégories des banques utilisateur sans traitement particulier ni inférence depuis l’ID Fusion.
+* Validation complète avec `integration-globale.py`.
+* Tous les contrôles de l’intégration globale sont réussis.
+
+---
+
 ## Fusion2QSynth v2.22
 
 ### Capture des MIX

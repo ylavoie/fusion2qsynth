@@ -2,7 +2,7 @@
 
 Interface MIDI entre un **Alesis Fusion 8HD** et **FluidSynth**, permettant d'utiliser des SoundFonts SF2 avec les PROGRAM, MIX et SONG du Fusion.
 
-**Version : 2.22**
+**Version : 2.23**
 
 ---
 
@@ -539,6 +539,8 @@ Il permet notamment :
 
 * de gérer les PROGRAM ;
 * de gérer les MIX ;
+* d'afficher et filtrer les PROGRAM et MIX par catégorie Fusion ;
+* d'assigner, modifier ou supprimer la catégorie d'un PROGRAM ou d'un MIX ;
 * de gérer les SONG ;
 * d'éditer les PARTs des PROGRAM ;
 * d'éditer les canaux MIX et SONG ;
@@ -549,6 +551,11 @@ Il permet notamment :
 * de prévisualiser des presets ;
 * de tester les PARTs d'un MIX ;
 * de valider et réparer le projet.
+
+Les PROGRAM et MIX peuvent recevoir une catégorie Fusion officielle de `A` à `Q`.
+La catégorie est enregistrée explicitement dans le projet et n'est pas déduite de
+l'identifiant Fusion. Les banques ROM et les banques utilisateur utilisent le
+même mécanisme.
 
 Le flux général d'association est :
 
