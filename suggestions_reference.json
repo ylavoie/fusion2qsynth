@@ -3,7 +3,7 @@
   "limit": 3,
   "soundfont": "/usr/share/sounds/sf2/MuseScore_General.sf2",
   "sf2_library_sha256": "bfbbcb2a7504054a6560ec2857377fca7b1652f7c4eacf2264642ea1460c1694",
-  "fusion_catalog_sha256": "f75d5b300cca51f38c5926fe7ee263cc98700ec8966e0da69976de68128f5994",
+  "fusion_catalog_sha256": "f328f135dcbfbde0e8d58a7e115101d7a0a891df324a3eba8900025e203300bd",
   "programs": {
     "0:0": {
       "name": "Holy Grail Grand Piano",
@@ -5214,23 +5214,23 @@
       }
     },
     "2:6": {
-      "name": "Millennium FM EPno",
+      "name": "Old Faithful",
       "suggestions": {
         "electric_piano": [
           {
             "bank": 0,
-            "program": 5,
-            "score": 0.8
+            "program": 4,
+            "score": 0.4645161290322581
           },
           {
             "bank": 8,
             "program": 5,
-            "score": 0.5161290322580645
+            "score": 0.24
           },
           {
-            "bank": 0,
+            "bank": 8,
             "program": 4,
-            "score": 0.43243243243243246
+            "score": 0.2222222222222222
           }
         ]
       }

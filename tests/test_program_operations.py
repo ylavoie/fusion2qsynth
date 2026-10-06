@@ -1093,3 +1093,226 @@ def test_validate_program_invalid_id_with_valid_part_program(
         "PROGRAM invalid : identifiant invalide."
         in errors
     )
+
+
+def test_validate_program_category_valid(
+    project
+):
+
+    program = {
+        "name": "Test",
+        "category": "A",
+        "parts": {
+            "1": {
+                "bank": 0,
+                "program": 0,
+                "midi_channel": 1
+            }
+        }
+    }
+
+    errors = project._validate_program_data(
+        "0:0",
+        program
+    )
+
+    assert not errors
+
+
+def test_validate_program_category_invalid(
+    project
+):
+
+    program = {
+        "name": "Test",
+        "category": "X",
+        "parts": {
+            "1": {
+                "bank": 0,
+                "program": 0,
+                "midi_channel": 1
+            }
+        }
+    }
+
+    errors = project._validate_program_data(
+        "0:0",
+        program
+    )
+
+    assert any(
+        "catégorie invalide"
+        in error
+        for error in errors
+    )
+
+
+def test_get_program_category(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "parts": {}
+    }
+
+    assert (
+        project.get_program_category(
+            "0:0"
+        )
+        == "A"
+    )
+
+
+def test_get_program_category_missing(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "parts": {}
+    }
+
+    assert (
+        project.get_program_category(
+            "0:0"
+        )
+        is None
+    )
+
+
+def test_get_program_category_unknown(
+    project
+):
+
+    assert (
+        project.get_program_category(
+            "99:99"
+        )
+        is None
+    )
+
+
+def test_set_program_category(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "parts": {}
+    }
+
+    result = project.set_program_category(
+        "0:0",
+        "A"
+    )
+
+    assert result is True
+
+    assert (
+        project.data["programs"]["0:0"]["category"]
+        == "A"
+    )
+
+
+def test_set_program_category_replace(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "parts": {}
+    }
+
+    result = project.set_program_category(
+        "0:0",
+        "O"
+    )
+
+    assert result is True
+
+    assert (
+        project.data["programs"]["0:0"]["category"]
+        == "O"
+    )
+
+
+def test_set_program_category_remove(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "parts": {}
+    }
+
+    result = project.set_program_category(
+        "0:0",
+        None
+    )
+
+    assert result is True
+
+    assert (
+        "category"
+        not in project.data["programs"]["0:0"]
+    )
+
+
+def test_set_program_category_invalid(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "parts": {}
+    }
+
+    result = project.set_program_category(
+        "0:0",
+        "X"
+    )
+
+    assert result is False
+
+    assert (
+        project.data["programs"]["0:0"]["category"]
+        == "A"
+    )
+
+
+def test_set_program_category_unknown(
+    project
+):
+
+    result = project.set_program_category(
+        "99:99",
+        "A"
+    )
+
+    assert result is False
+
+def test_set_program_category_remove_missing(
+    project
+):
+
+    project.data["programs"]["0:0"] = {
+        "name": "Test",
+        "parts": {}
+    }
+
+    result = project.set_program_category(
+        "0:0",
+        None
+    )
+
+    assert result is True
+
+    assert (
+        "category"
+        not in project.data["programs"]["0:0"]
+    )

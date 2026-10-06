@@ -15,6 +15,7 @@ from fusion_constants import (
 )
 
 from fusion_gm_map import (
+    FUSION_CATEGORIES,
     FUSION_PROGRAM_BANK_NAMES,
     FUSION_MIX_BANK_NAMES,
     fusion_program_bank_name,
@@ -2153,6 +2154,7 @@ class FusionProject:
         #
         allowed_fields = {
             "name",
+            "category",
             "channels"
         }
 
@@ -2185,6 +2187,20 @@ class FusionProject:
 
             errors.append(
                 f"{mix_id} : nom invalide."
+            )
+
+        category = mix.get(
+            "category"
+        )
+
+        if (
+            category is not None
+            and
+            category not in FUSION_CATEGORIES
+        ):
+
+            errors.append(
+                f"{mix_id} : catégorie invalide."
             )
 
         if "channels" not in mix:
@@ -2856,6 +2872,54 @@ class FusionProject:
             program_id
         )
 
+    def get_mix_category(
+        self,
+        mix_id
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return None
+
+        return mix.get(
+            "category"
+        )
+
+    def set_mix_category(
+        self,
+        mix_id,
+        category
+    ):
+
+        mix = self.get_mix(
+            mix_id
+        )
+
+        if not mix:
+
+            return False
+
+        if category is None:
+
+            mix.pop(
+                "category",
+                None
+            )
+
+            return True
+
+        if category not in FUSION_CATEGORIES:
+
+            return False
+
+        mix["category"] = category
+
+        return True
+
     #
     # Accès Program
     #
@@ -3223,6 +3287,7 @@ class FusionProject:
         #
         allowed_fields = {
             "name",
+            "category",
             "parts"
         }
 
@@ -3258,6 +3323,20 @@ class FusionProject:
 
             errors.append(
                 f"{program_id} : nom invalide."
+            )
+
+        category = program.get(
+            "category"
+        )
+
+        if (
+            category is not None
+            and
+            category not in FUSION_CATEGORIES
+        ):
+
+            errors.append(
+                f"{program_id} : catégorie invalide."
             )
 
         if "parts" not in program:
@@ -3350,6 +3429,54 @@ class FusionProject:
                 )
 
         return errors
+
+    def get_program_category(
+        self,
+        program_id
+    ):
+
+        program = self.get_program(
+            program_id
+        )
+
+        if not program:
+
+            return None
+
+        return program.get(
+            "category"
+        )
+
+    def set_program_category(
+        self,
+        program_id,
+        category
+    ):
+
+        program = self.get_program(
+            program_id
+        )
+
+        if not program:
+
+            return False
+
+        if category is None:
+
+            program.pop(
+                "category",
+                None
+            )
+
+            return True
+
+        if category not in FUSION_CATEGORIES:
+
+            return False
+
+        program["category"] = category
+
+        return True
 
     #
     # Accès Song

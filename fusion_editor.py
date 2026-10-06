@@ -15,6 +15,11 @@ from fusion_diagnostic import (
     print_error_messages
 )
 
+from fusion_gm_map import (
+    FUSION_CATEGORIES,
+    fusion_category_name
+)
+
 from fusion_performance import (
     print_mix
 )
@@ -814,6 +819,10 @@ def edit_mix(project,mix_id):
         )
 
         print(
+            "5 - Modifier la catégorie"
+        )
+
+        print(
             "Q - Retour"
         )
 
@@ -844,6 +853,14 @@ def edit_mix(project,mix_id):
                 project,
                 mix_id,
                 mix
+            )
+
+        elif choix == "5":
+
+            edit_fusion_category(
+                project,
+                mix_id,
+                "mix"
             )
 
         elif choix.lower() == "q":
@@ -1776,6 +1793,164 @@ def choose_fusion_program_bank(
 
         print(
             "Banque Fusion invalide."
+        )
+
+def choose_fusion_category(
+    allow_none=False
+):
+
+    print()
+
+    print(
+        "Catégories Fusion"
+    )
+
+    print(
+        "-----------------"
+    )
+
+    for category, name in (
+        FUSION_CATEGORIES.items()
+    ):
+
+        print(
+            f"{category} - {name}"
+        )
+
+    if allow_none:
+
+        print(
+            "- - Sans catégorie"
+        )
+
+    print(
+        "q - Annuler"
+    )
+
+    while True:
+
+        print()
+
+        choice = input(
+            "> "
+        ).strip()
+
+        if choice.lower() == "q":
+
+            return None
+
+        if (
+            allow_none
+            and
+            choice == "-"
+        ):
+
+            return "-"
+
+        choice = choice.upper()
+
+        if choice in FUSION_CATEGORIES:
+
+            return choice
+
+        print(
+            "Catégorie invalide."
+        )
+
+def edit_fusion_category(
+    project,
+    object_id,
+    object_type
+):
+
+    if object_type == "program":
+
+        category = project.get_program_category(
+            object_id
+        )
+
+        setter = project.set_program_category
+
+    elif object_type == "mix":
+
+        category = project.get_mix_category(
+            object_id
+        )
+
+        setter = project.set_mix_category
+
+    else:
+
+        return
+
+    print()
+
+    if category:
+
+        print(
+            "Catégorie actuelle :",
+            f"{category} - "
+            f"{FUSION_CATEGORIES[category]}"
+        )
+
+    else:
+
+        print(
+            "Catégorie actuelle :",
+            "Sans catégorie"
+        )
+
+    new_category = choose_fusion_category(
+        allow_none=True
+    )
+
+    if new_category is None:
+
+        return
+
+    if new_category == "-":
+
+        new_category = None
+
+    if new_category == category:
+
+        return
+
+    allowed_errors = (
+        project.get_blocking_errors(
+            project.validate()
+        )
+    )
+
+    original_data = project.snapshot()
+
+    if not setter(
+        object_id,
+        new_category
+    ):
+
+        print(
+            "Modification refusée."
+        )
+
+        return
+
+    if project.save_safe(
+        allowed_errors=allowed_errors
+    ):
+
+        print(
+            "Catégorie modifiée."
+        )
+
+    else:
+
+        project.restore_snapshot(
+            original_data
+        )
+
+        print(
+            "⚠ Sauvegarde non effectuée."
         )
 
 def choose_mix_id(
@@ -3216,7 +3391,8 @@ def test_mix_channels_all(
 
 def list_mixes(
     project,
-    status_filter=None
+    status_filter=None,
+    category_filter=None
 ):
 
     print()
@@ -3236,18 +3412,31 @@ def list_mixes(
     print(
         f"{'ID':<10}"
         f"{'Nom':<30}"
+        f"{'Catégorie':<18}"
         f"{'Canaux':>7}"
         f"{'Configurés':>14}"
         f"{'État':>24}"
     )
 
     print(
-        "-" * 85
+        "-" * 103
     )
 
     displayed = []
 
     for mix_id, mix in project.iter_mixes():
+
+        category = project.get_mix_category(
+            mix_id
+        )
+
+        if (
+            category_filter is not None
+            and
+            category != category_filter
+        ):
+
+            continue
 
         mix_diag = diagnostic.get(
             mix_id,
@@ -3341,9 +3530,24 @@ def list_mixes(
 
             state = "OK"
 
+        if category is not None:
+
+            category_name = fusion_category_name(
+                category
+            )
+
+            category_display = (
+                f"{category} - {category_name}"
+            )
+
+        else:
+
+            category_display = "-"
+
         print(
             f"{mix_id:<10}"
             f"{mix.get('name', ''):<30}"
+            f"{category_display:<18}"
             f"{total:>7}"
             f"{f'{configured}/{total}':>14}"
             f"{state:>24}"
@@ -3892,7 +4096,8 @@ def validate_and_repair(
 
 def list_programs(
     project,
-    status_filter=None
+    status_filter=None,
+    category_filter=None
 ):
 
     programs = list(
@@ -3915,6 +4120,18 @@ def list_programs(
     filtered_programs = []
 
     for program_id, program in programs:
+
+        category = project.get_program_category(
+            program_id
+        )
+
+        if (
+            category_filter is not None
+            and
+            category != category_filter
+        ):
+
+            continue
 
         status = diagnostic.get(
             program_id,
@@ -3949,7 +4166,8 @@ def list_programs(
                 (
                     program_id,
                     program,
-                    state
+                    state,
+                    category
                 )
             )
 
@@ -3963,6 +4181,7 @@ def list_programs(
     print(
         f"{'ID':<10}"
         f"{'Nom':<28}"
+        f"{'Catégorie':<18}"
         f"{'CH':>4}"
         f"  {'Banque Fusion':<22}"
         f"{'Prog':>5}"
@@ -3971,12 +4190,17 @@ def list_programs(
     )
 
     print(
-        "-" * 115
+        "-" * 133
     )
 
     displayed = []
 
-    for program_id, program, state_code in filtered_programs:
+    for (
+        program_id,
+        program,
+        state_code,
+        category
+    ) in filtered_programs:
 
         part = program.get(
             "parts",
@@ -3995,6 +4219,20 @@ def list_programs(
             if bank is not None
             else "?"
         )
+
+        if category is not None:
+
+            category_name = fusion_category_name(
+                category
+            )
+
+            category_display = (
+                f"{category} - {category_name}"
+            )
+
+        else:
+
+            category_display = "-"
 
         instrument_name = (
             "Non configuré"
@@ -4037,6 +4275,7 @@ def list_programs(
         print(
             f"{program_id:<10}"
             f"{program.get('name', ''):<28}"
+            f"{category_display:<18}"
             f"{part.get('midi_channel', '?'):>4}"
             f"  {bank_name:<22}"
             f"{part.get('program', '?'):>5}"
@@ -4284,6 +4523,7 @@ def edit_program(
         print("1 - Modifier l'instrument")
         print("2 - Modifier les paramètres")
         print("3 - Modifier le nom Fusion")
+        print("4 - Modifier la catégorie")
         print("Q - Retour")
 
         choice = input(
@@ -4460,6 +4700,14 @@ def edit_program(
                 print(
                     "⚠ Sauvegarde non effectuée."
                 )
+
+        elif choice == "4":
+
+            edit_fusion_category(
+                project,
+                program_id,
+                "program"
+            )
 
         elif choice.lower() == "q":
 
@@ -5986,11 +6234,12 @@ def main():
             print(" MIX ")
             print("===================")
             print("1 - Liste complète")
-            print("2 - À configurer")
-            print("3 - En erreur")
-            print("4 - Éditer")
-            print("5 - Supprimer")
-            print("6 - Supprimer les MIX vides")
+            print("2 - Liste par catégorie")
+            print("3 - À configurer")
+            print("4 - En erreur")
+            print("5 - Éditer")
+            print("6 - Supprimer")
+            print("7 - Supprimer les MIX vides")
             print("Q - Retour")
 
             choice = input(
@@ -6004,6 +6253,19 @@ def main():
                 )
 
             elif choice == "2":
+
+                category = choose_fusion_category()
+
+                if category is None:
+
+                    continue
+
+                list_mixes(
+                    project,
+                    category_filter=category
+                )
+
+            elif choice == "3":
 
                 while True:
 
@@ -6032,7 +6294,7 @@ def main():
                         mix_id
                     )
 
-            elif choice == "3":
+            elif choice == "4":
 
                 while True:
 
@@ -6062,7 +6324,7 @@ def main():
                     )
 
 
-            elif choice == "4":
+            elif choice == "5":
 
                 mix_id = choose_mix_id(
                     project
@@ -6077,11 +6339,11 @@ def main():
                     mix_id
                 )
 
-            elif choice == "5":
+            elif choice == "6":
 
                 delete_mix_menu()
 
-            elif choice == "6":
+            elif choice == "7":
 
                 delete_empty_mixes_menu()
 
@@ -6270,11 +6532,12 @@ def main():
             print(" PROGRAMS ")
             print("===================")
             print("1 - Liste complète")
-            print("2 - À configurer")
-            print("3 - En erreur")
-            print("4 - Éditer")
-            print("5 - Renommer")
-            print("6 - Supprimer")
+            print("2 - Liste par catégorie")
+            print("3 - À configurer")
+            print("4 - En erreur")
+            print("5 - Éditer")
+            print("6 - Renommer")
+            print("7 - Supprimer")
             print("Q - Retour")
 
             choice = input(
@@ -6288,6 +6551,19 @@ def main():
                 )
 
             elif choice == "2":
+
+                category = choose_fusion_category()
+
+                if category is None:
+
+                    continue
+
+                list_programs(
+                    project,
+                    category_filter=category
+                )
+
+            elif choice == "3":
 
                 while True:
 
@@ -6316,7 +6592,7 @@ def main():
                         program_id
                     )
 
-            elif choice == "3":
+            elif choice == "4":
 
                 while True:
 
@@ -6345,7 +6621,7 @@ def main():
                         program_id
                     )
 
-            elif choice == "4":
+            elif choice == "5":
 
                 program_id = choose_program_id(
                     project
@@ -6360,11 +6636,11 @@ def main():
                     program_id
                 )
 
-            elif choice == "5":
+            elif choice == "6":
 
                 rename_program_menu()
 
-            elif choice == "6":
+            elif choice == "7":
 
                 delete_program_menu()
 

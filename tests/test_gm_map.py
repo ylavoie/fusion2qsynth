@@ -2,8 +2,70 @@ from fusion_gm_map import (
     fusion_program_bank_name,
     fusion_mix_bank_name,
     fusion_song_bank_name,
+    fusion_category_name,
+    fusion_category_id
 )
 
+def test_fusion_category_name():
+
+    assert (
+        fusion_category_name(
+            "A"
+        )
+        == "Piano"
+    )
+
+    assert (
+        fusion_category_name(
+            "O"
+        )
+        == "Drum/Perc"
+    )
+
+    assert (
+        fusion_category_name(
+            "Q"
+        )
+        == "OTHER"
+    )
+
+    assert (
+        fusion_category_name(
+            "X"
+        )
+        is None
+    )
+
+
+def test_fusion_category_id():
+
+    assert (
+        fusion_category_id(
+            "Piano"
+        )
+        == "A"
+    )
+
+    assert (
+        fusion_category_id(
+            "Drum/Perc"
+        )
+        == "O"
+    )
+
+    assert (
+        fusion_category_id(
+            "OTHER"
+        )
+        == "Q"
+    )
+
+    assert (
+        fusion_category_id(
+            "Unknown"
+        )
+        is None
+    )
 
 def test_program_bank_name_known():
 

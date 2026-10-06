@@ -3391,6 +3391,246 @@ def test_edit_mix_channel_instrument_save_failure(
     )
 
 
+def test_edit_mix_category_user_bank(
+    monkeypatch,
+    capsys
+):
+
+    categories = []
+
+    mix = {
+        "name": "User Mix",
+        "channels": {}
+    }
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            assert mix_id == "2:0"
+
+            return mix
+
+        def validate_mix(
+            self,
+            mix_id
+        ):
+
+            return []
+
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            return mix.get(
+                "category"
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {}
+
+        def set_mix_category(
+            self,
+            mix_id,
+            category
+        ):
+
+            categories.append(
+                (
+                    mix_id,
+                    category
+                )
+            )
+
+            mix["category"] = category
+
+            return True
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return True
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_mix",
+        lambda project, mix_id: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "O"
+    )
+
+    responses = iter([
+        "5",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix(
+        Project(),
+        "2:0"
+    )
+
+    assert categories == [
+        (
+            "2:0",
+            "O"
+        )
+    ]
+
+    assert (
+        "Catégorie modifiée."
+        in capsys.readouterr().out
+    )
+
+
+def test_edit_mix_category_save_failure(
+    monkeypatch,
+    capsys
+):
+
+    restored = []
+
+    mix = {
+        "name": "User Mix",
+        "category": "A",
+        "channels": {}
+    }
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return mix
+
+        def validate_mix(
+            self,
+            mix_id
+        ):
+
+            return []
+
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            return mix.get(
+                "category"
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {
+                "snapshot": True
+            }
+
+        def set_mix_category(
+            self,
+            mix_id,
+            category
+        ):
+
+            mix["category"] = category
+
+            return True
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return False
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            restored.append(
+                snapshot
+            )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_mix",
+        lambda project, mix_id: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "D"
+    )
+
+    responses = iter([
+        "5",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix(
+        Project(),
+        "2:0"
+    )
+
+    assert restored == [
+        {
+            "snapshot": True
+        }
+    ]
+
+    assert (
+        "Sauvegarde non effectuée."
+        in capsys.readouterr().out
+    )
+
+
 def test_remove_mix_channel_instrument_none(
     monkeypatch,
     capsys
@@ -6449,6 +6689,17 @@ def test_list_mixes_all_states(
                 }
             ]
 
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            if mix_id == "0:0":
+
+                return "A"
+
+            return None
+
     result = fusion_editor.list_mixes(
         Project()
     )
@@ -6465,6 +6716,19 @@ def test_list_mixes_all_states(
     output = capsys.readouterr().out
 
     assert "Mix disponibles : 6" in output
+    assert "Catégorie" in output
+    assert "A - Piano" in output
+
+    lines = output.splitlines()
+
+    empty_line = next(
+        line
+        for line in lines
+        if line.startswith("0:1")
+    )
+
+    assert "Empty" in empty_line
+    assert "-" in empty_line
 
     assert "Erreur Fusion" in output
     assert "À configurer" in output
@@ -6584,12 +6848,145 @@ def test_list_mixes_filters(
                 }
             ]
 
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            return None
+
     result = fusion_editor.list_mixes(
         Project(),
         status_filter
     )
 
     assert result == expected
+
+    capsys.readouterr()
+
+
+def test_list_mixes_category_filter(
+    capsys
+):
+
+    class Project:
+
+        def count_mixes(self):
+
+            return 3
+
+        def iter_mixes(self):
+
+            return iter([
+                ("0:0", {"name": "Piano Mix"}),
+                ("0:1", {"name": "Drum Mix"}),
+                ("0:2", {"name": "No Category"})
+            ])
+
+        def get_mix_diagnostic(self):
+
+            return []
+
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            return {
+                "0:0": "A",
+                "0:1": "O"
+            }.get(
+                mix_id
+            )
+
+    result = fusion_editor.list_mixes(
+        Project(),
+        category_filter="A"
+    )
+
+    assert result == [
+        "0:0"
+    ]
+
+    output = capsys.readouterr().out
+
+    assert "Piano Mix" in output
+    assert "Drum Mix" not in output
+    assert "No Category" not in output
+
+
+def test_list_mixes_category_and_status_filter(
+    capsys
+):
+
+    class Project:
+
+        def count_mixes(self):
+
+            return 3
+
+        def iter_mixes(self):
+
+            return iter([
+                ("0:0", {"name": "Piano Configured"}),
+                ("0:1", {"name": "Piano Unconfigured"}),
+                ("0:2", {"name": "Drum Unconfigured"})
+            ])
+
+        def get_mix_diagnostic(self):
+
+            return [
+                {
+                    "mix": "0:0",
+                    "channels": [
+                        {
+                            "fusion_valid": True,
+                            "soundfont_configured": True
+                        }
+                    ]
+                },
+                {
+                    "mix": "0:1",
+                    "channels": [
+                        {
+                            "fusion_valid": True,
+                            "soundfont_configured": False
+                        }
+                    ]
+                },
+                {
+                    "mix": "0:2",
+                    "channels": [
+                        {
+                            "fusion_valid": True,
+                            "soundfont_configured": False
+                        }
+                    ]
+                }
+            ]
+
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            return {
+                "0:0": "A",
+                "0:1": "A",
+                "0:2": "O"
+            }.get(
+                mix_id
+            )
+
+    result = fusion_editor.list_mixes(
+        Project(),
+        status_filter="unconfigured",
+        category_filter="A"
+    )
+
+    assert result == [
+        "0:1"
+    ]
 
     capsys.readouterr()
 
@@ -8324,6 +8721,17 @@ def test_list_programs_all_states(
 
             return None
 
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            if program_id == "0:0":
+
+                return "A"
+
+            return None
+
     result = fusion_editor.list_programs(
         Project()
     )
@@ -8342,6 +8750,20 @@ def test_list_programs_all_states(
     assert "Erreur Fusion" in output
     assert "À configurer" in output
     assert "OK" in output
+
+    assert "Catégorie" in output
+    assert "A - Piano" in output
+
+    lines = output.splitlines()
+
+    unconfigured_line = next(
+        line
+        for line in lines
+        if line.startswith("0:1")
+    )
+
+    assert "Unconfigured" in unconfigured_line
+    assert "-" in unconfigured_line
 
     assert "Grand Piano" in output
     assert "Non configuré" in output
@@ -8420,12 +8842,174 @@ def test_list_programs_filters(
                 }
             ]
 
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            return None
+
     result = fusion_editor.list_programs(
         Project(),
         status_filter
     )
 
     assert result == expected
+
+
+def test_list_programs_category_filter(
+    capsys
+):
+
+    class Project:
+
+        def iter_programs(self):
+
+            return iter([
+                (
+                    "0:0",
+                    {
+                        "name": "Piano",
+                        "parts": {}
+                    }
+                ),
+                (
+                    "0:1",
+                    {
+                        "name": "Drums",
+                        "parts": {}
+                    }
+                ),
+                (
+                    "0:2",
+                    {
+                        "name": "No Category",
+                        "parts": {}
+                    }
+                )
+            ])
+
+        def get_program_diagnostic(self):
+
+            return [
+                {
+                    "program": "0:0",
+                    "fusion_valid": True,
+                    "soundfont_configured": False
+                },
+                {
+                    "program": "0:1",
+                    "fusion_valid": True,
+                    "soundfont_configured": False
+                },
+                {
+                    "program": "0:2",
+                    "fusion_valid": True,
+                    "soundfont_configured": False
+                }
+            ]
+
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            return {
+                "0:0": "A",
+                "0:1": "O"
+            }.get(
+                program_id
+            )
+
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            return "?"
+
+        def get_instrument(
+            self,
+            instrument_id
+        ):
+
+            return None
+
+    result = fusion_editor.list_programs(
+        Project(),
+        category_filter="A"
+    )
+
+    assert result == [
+        "0:0"
+    ]
+
+    output = capsys.readouterr().out
+
+    assert "Piano" in output
+    assert "Drums" not in output
+    assert "No Category" not in output
+    assert "A - Piano" in output
+
+
+def test_list_programs_category_and_status_filter(
+    capsys
+):
+
+    class Project:
+
+        def iter_programs(self):
+
+            return iter([
+                ("0:0", {"name": "Piano Configured"}),
+                ("0:1", {"name": "Piano Unconfigured"}),
+                ("0:2", {"name": "Drum Unconfigured"})
+            ])
+
+        def get_program_diagnostic(self):
+
+            return [
+                {
+                    "program": "0:0",
+                    "fusion_valid": True,
+                    "soundfont_configured": True
+                },
+                {
+                    "program": "0:1",
+                    "fusion_valid": True,
+                    "soundfont_configured": False
+                },
+                {
+                    "program": "0:2",
+                    "fusion_valid": True,
+                    "soundfont_configured": False
+                }
+            ]
+
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            return {
+                "0:0": "A",
+                "0:1": "A",
+                "0:2": "O"
+            }.get(
+                program_id
+            )
+
+    result = fusion_editor.list_programs(
+        Project(),
+        status_filter="unconfigured",
+        category_filter="A"
+    )
+
+    assert result == [
+        "0:1"
+    ]
+
+    capsys.readouterr()
 
 
 @pytest.mark.parametrize(
@@ -8475,6 +9059,13 @@ def test_list_programs_filter_empty(
                     "soundfont_configured": True
                 }
             ]
+
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            return None
 
     result = fusion_editor.list_programs(
         Project(),
@@ -9365,6 +9956,257 @@ def test_edit_program_rename_save(
                 "before": True
             }
         ]
+
+
+def test_edit_program_category_user_bank(
+    monkeypatch,
+    capsys
+):
+
+    categories = []
+    saved = []
+
+    program = {
+        "name": "User Program",
+        "parts": {
+            "1": {
+                "midi_channel": 1
+            }
+        }
+    }
+
+    class Project:
+
+        def get_program(
+            self,
+            program_id
+        ):
+
+            assert program_id == "8:0"
+
+            return program
+
+        def validate_program(
+            self,
+            program_id
+        ):
+
+            return []
+
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            return program.get(
+                "category"
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {
+                "snapshot": True
+            }
+
+        def set_program_category(
+            self,
+            program_id,
+            category
+        ):
+
+            categories.append(
+                (
+                    program_id,
+                    category
+                )
+            )
+
+            program["category"] = category
+
+            return True
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            saved.append(
+                allowed_errors
+            )
+
+            return True
+
+        def resolve_part_instrument(
+            self,
+            part
+        ):
+
+            return None
+
+    project = Project()
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "A"
+    )
+
+    responses = iter([
+        "4",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_program(
+        project,
+        "8:0"
+    )
+
+    assert categories == [
+        (
+            "8:0",
+            "A"
+        )
+    ]
+
+    assert saved == [
+        []
+    ]
+
+    assert (
+        "Catégorie modifiée."
+        in capsys.readouterr().out
+    )
+
+
+def test_edit_program_category_remove(
+    monkeypatch
+):
+
+    categories = []
+
+    program = {
+        "name": "User Program",
+        "category": "D",
+        "parts": {
+            "1": {
+                "midi_channel": 1
+            }
+        }
+    }
+
+    class Project:
+
+        def get_program(
+            self,
+            program_id
+        ):
+
+            return program
+
+        def validate_program(
+            self,
+            program_id
+        ):
+
+            return []
+
+        def get_program_category(
+            self,
+            program_id
+        ):
+
+            return program.get(
+                "category"
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {}
+
+        def set_program_category(
+            self,
+            program_id,
+            category
+        ):
+
+            categories.append(
+                category
+            )
+
+            program.pop(
+                "category",
+                None
+            )
+
+            return True
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return True
+
+        def resolve_part_instrument(
+            self,
+            part
+        ):
+
+            return None
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "-"
+    )
+
+    responses = iter([
+        "4",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_program(
+        Project(),
+        "8:0"
+    )
+
+    assert categories == [
+        None
+    ]
 
 
 def test_list_songs_empty(
@@ -11688,10 +12530,10 @@ def test_main_mixes_lists_empty(
     responses = iter([
         "1",       # main → MIX
         "1",       # liste complète
-        "2",       # à configurer → vide
-        "3",       # erreur → vide
-        "q",       # retour
-        "q"        # quitter
+        "3",       # à configurer → vide
+        "4",       # erreur → vide
+        "q",
+        "q"
     ])
 
     monkeypatch.setattr(
@@ -11801,8 +12643,8 @@ def test_main_mixes_filtered_edit(
 
     responses = iter([
         "1",       # main
-        "2",       # unconfigured
-        "3",       # error
+        "3",       # unconfigured
+        "4",       # error
         "q",
         "q"
     ])
@@ -11874,8 +12716,8 @@ def test_main_mixes_direct_edit(
 
     responses = iter([
         "1",
-        "4",       # annulation
-        "4",       # édition
+        "5",       # annulation
+        "5",       # édition
         "q",
         "q"
     ])
@@ -11890,6 +12732,160 @@ def test_main_mixes_direct_edit(
 
     assert edits == [
         "0:1"
+    ]
+
+
+def test_main_mixes_category_filter(
+    monkeypatch
+):
+
+    calls = []
+
+    class Project:
+        pass
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        Project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda: "O"
+    )
+
+    def fake_list_mixes(
+        project,
+        status_filter=None,
+        category_filter=None
+    ):
+
+        calls.append(
+            (
+                status_filter,
+                category_filter
+            )
+        )
+
+        return []
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "list_mixes",
+        fake_list_mixes
+    )
+
+    responses = iter([
+        "1",
+        "2",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    assert calls == [
+        (
+            None,
+            "O"
+        )
+    ]
+
+
+def test_main_programs_category_filter(
+    monkeypatch
+):
+
+    calls = []
+
+    class Project:
+        pass
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        Project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda: "A"
+    )
+
+    def fake_list_programs(
+        project,
+        status_filter=None,
+        category_filter=None
+    ):
+
+        calls.append(
+            (
+                status_filter,
+                category_filter
+            )
+        )
+
+        return []
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "list_programs",
+        fake_list_programs
+    )
+
+    responses = iter([
+        "2",
+        "2",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    assert calls == [
+        (
+            None,
+            "A"
+        )
     ]
 
 
@@ -11936,8 +12932,8 @@ def test_main_delete_mix_cancel_and_unknown(
 
     responses = iter([
         "1",
-        "5",
-        "5",
+        "6",
+        "6",
         "q",
         "q"
     ])
@@ -11998,7 +12994,7 @@ def test_main_delete_mix_confirmation_cancel(
 
     responses = iter([
         "1",
-        "5",
+        "6",
         "n",
         "q",
         "q"
@@ -12060,7 +13056,7 @@ def test_main_delete_mix_confirmation_cancel(
 
     responses = iter([
         "1",
-        "5",
+        "6",
         "n",
         "q",
         "q"
@@ -12120,7 +13116,7 @@ def test_main_delete_empty_mixes_none(
 
     responses = iter([
         "1",
-        "6",
+        "7",
         "q",
         "q"
     ])
@@ -12181,7 +13177,7 @@ def test_main_delete_empty_mixes_cancel(
 
     responses = iter([
         "1",
-        "6",
+        "7",
         "n",
         "q",
         "q"
@@ -12285,7 +13281,7 @@ def test_main_delete_empty_mixes_result(
 
     responses = iter([
         "1",
-        "6",
+        "7",
         "o",
         "q",
         "q"
@@ -12362,8 +13358,8 @@ def test_main_programs_list_and_direct_edit(
     responses = iter([
         "2",
         "1",
-        "4",
-        "4",
+        "5",
+        "5",
         "q",
         "q"
     ])
@@ -12466,8 +13462,8 @@ def test_main_programs_filtered(
 
     responses = iter([
         "2",
-        "2",
         "3",
+        "4",
         "q",
         "q"
     ])
@@ -12542,9 +13538,9 @@ def test_main_rename_program_early_returns(
 
     responses = iter([
         "2",
-        "5",
-        "5",
-        "5",
+        "6",
+        "6",
+        "6",
         "",       # nouveau nom vide
         "q",
         "q"
@@ -12689,7 +13685,7 @@ def test_main_rename_program_result(
 
     responses = iter([
         "2",
-        "5",
+        "6",
         "New name",
         "q",
         "q"
@@ -12776,9 +13772,9 @@ def test_main_delete_program_early_returns(
 
     responses = iter([
         "2",
-        "6",
-        "6",
-        "6",
+        "7",
+        "7",
+        "7",
         "n",
         "q",
         "q"
@@ -12904,7 +13900,7 @@ def test_main_delete_program_result(
 
     responses = iter([
         "2",
-        "6",
+        "7",
         "o",
         "q",
         "q"
@@ -13582,7 +14578,7 @@ def test_main_delete_mix_success(
 
     responses = iter([
         "1",
-        "5",
+        "6",
         "o",
         "q",
         "q"
@@ -13755,14 +14751,14 @@ def test_main_remaining_mix_program_branches(
 
     responses = iter([
         "1",       # main → MIX
-        "2",       # unconfigured → None
-        "3",       # error → edit 0:2
+        "3",       # unconfigured → None
+        "4",       # error → edit 0:2
         "q",
 
         "2",       # main → PROGRAM
-        "2",       # unconfigured → edit,
+        "3",       # unconfigured → edit,
                    # puis liste vide
-        "3",       # error → None
+        "4",       # error → None
         "q",
 
         "q"
@@ -13963,7 +14959,7 @@ def test_main_delete_mix_failure(
 
     responses = iter([
         "1",
-        "5",
+        "6",
         "o",
         "q",
         "q"
@@ -13985,3 +14981,321 @@ def test_main_delete_mix_failure(
     assert errors_seen == [
         "delete error"
     ]
+
+
+def test_choose_fusion_category(
+    monkeypatch
+):
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda _: "a"
+    )
+
+    assert (
+        fusion_editor.choose_fusion_category()
+        == "A"
+    )
+
+
+def test_choose_fusion_category_cancel(
+    monkeypatch
+):
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda _: "q"
+    )
+
+    assert (
+        fusion_editor.choose_fusion_category()
+        is None
+    )
+
+
+def test_choose_fusion_category_remove(
+    monkeypatch
+):
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda _: "-"
+    )
+
+    assert (
+        fusion_editor.choose_fusion_category(
+            allow_none=True
+        )
+        == "-"
+    )
+
+
+def test_choose_fusion_category_invalid(
+    monkeypatch,
+    capsys
+):
+
+    answers = iter([
+        "X",
+        "o"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda _: next(answers)
+    )
+
+    assert (
+        fusion_editor.choose_fusion_category()
+        == "O"
+    )
+
+    assert (
+        "Catégorie invalide."
+        in capsys.readouterr().out
+    )
+
+
+def test_edit_fusion_category_cancel(
+    monkeypatch
+):
+
+    calls = []
+
+    class Project:
+
+        def get_program_category(
+            self,
+            object_id
+        ):
+
+            return "A"
+
+        def set_program_category(
+            self,
+            object_id,
+            category
+        ):
+
+            calls.append(
+                (
+                    object_id,
+                    category
+                )
+            )
+
+            return True
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: None
+    )
+
+    fusion_editor.edit_fusion_category(
+        Project(),
+        "8:0",
+        "program"
+    )
+
+    assert calls == []
+
+
+def test_edit_fusion_category_unchanged(
+    monkeypatch
+):
+
+    calls = []
+
+    class Project:
+
+        def get_program_category(
+            self,
+            object_id
+        ):
+
+            return "A"
+
+        def set_program_category(
+            self,
+            object_id,
+            category
+        ):
+
+            calls.append(
+                (
+                    object_id,
+                    category
+                )
+            )
+
+            return True
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "A"
+    )
+
+    fusion_editor.edit_fusion_category(
+        Project(),
+        "8:0",
+        "program"
+    )
+
+    assert calls == []
+
+
+def test_edit_fusion_category_change(
+    monkeypatch,
+    capsys
+):
+
+    calls = []
+
+    class Project:
+
+        def get_program_category(
+            self,
+            object_id
+        ):
+
+            return "A"
+
+        def set_program_category(
+            self,
+            object_id,
+            category
+        ):
+
+            calls.append(
+                (
+                    object_id,
+                    category
+                )
+            )
+
+            return True
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {
+                "before": True
+            }
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            assert allowed_errors == []
+
+            return True
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "D"
+    )
+
+    fusion_editor.edit_fusion_category(
+        Project(),
+        "8:0",
+        "program"
+    )
+
+    assert calls == [
+        (
+            "8:0",
+            "D"
+        )
+    ]
+
+    assert (
+        "Catégorie modifiée."
+        in capsys.readouterr().out
+    )
+
+
+def test_edit_fusion_category_setter_failure(
+    monkeypatch,
+    capsys
+):
+
+    saved = []
+
+    class Project:
+
+        def get_mix_category(
+            self,
+            object_id
+        ):
+
+            return "A"
+
+        def set_mix_category(
+            self,
+            object_id,
+            category
+        ):
+
+            assert object_id == "2:0"
+            assert category == "D"
+
+            return False
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {
+                "before": True
+            }
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            saved.append(True)
+
+            return True
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda allow_none=False: "D"
+    )
+
+    fusion_editor.edit_fusion_category(
+        Project(),
+        "2:0",
+        "mix"
+    )
+
+    assert saved == []
+
+    assert (
+        "Modification refusée."
+        in capsys.readouterr().out
+    )

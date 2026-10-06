@@ -27,6 +27,49 @@ FUSION_MIX_BANK_NAMES = {
     3: "HD:My Bank1",
 }
 
+FUSION_CATEGORIES = {
+    "A": "Piano",
+    "B": "Chromatic",
+    "C": "Organ",
+    "D": "Guitar",
+    "E": "Bass",
+    "F": "Strings",
+    "G": "Ensemble",
+    "H": "Brass",
+    "I": "Reed",
+    "J": "Pipe",
+    "K": "Lead",
+    "L": "Pad",
+    "M": "Synth FX",
+    "N": "Ethnic",
+    "O": "Drum/Perc",
+    "P": "Sound FX",
+    "Q": "OTHER",
+}
+
+def fusion_category_name(
+    category
+):
+
+    return FUSION_CATEGORIES.get(
+        category
+    )
+
+
+def fusion_category_id(
+    name
+):
+
+    for category, category_name in (
+        FUSION_CATEGORIES.items()
+    ):
+
+        if category_name == name:
+
+            return category
+
+    return None
+
 def fusion_program_bank_name(bank):
 
     return FUSION_PROGRAM_BANK_NAMES.get(

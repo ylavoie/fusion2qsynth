@@ -1616,3 +1616,215 @@ def test_validate_mix_channel_invalid_velocity_type(
         "plage de vélocité invalide" in error
         for error in errors
     )
+
+
+def test_validate_mix_category_valid(
+    project
+):
+
+    mix = {
+        "name": "Test",
+        "category": "A",
+        "channels": {}
+    }
+
+    errors = project._validate_mix_data(
+        "0:0",
+        mix
+    )
+
+    assert not errors
+
+
+def test_validate_mix_category_invalid(
+    project
+):
+
+    mix = {
+        "name": "Test",
+        "category": "X",
+        "channels": {}
+    }
+
+    errors = project._validate_mix_data(
+        "0:0",
+        mix
+    )
+
+    assert any(
+        "catégorie invalide"
+        in error
+        for error in errors
+    )
+
+
+def test_get_mix_category(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "channels": {}
+    }
+
+    assert (
+        project.get_mix_category(
+            "0:0"
+        )
+        == "A"
+    )
+
+
+def test_get_mix_category_missing(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "channels": {}
+    }
+
+    assert (
+        project.get_mix_category(
+            "0:0"
+        )
+        is None
+    )
+
+
+def test_get_mix_category_unknown(
+    project
+):
+
+    assert (
+        project.get_mix_category(
+            "99:99"
+        )
+        is None
+    )
+
+
+def test_set_mix_category(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "channels": {}
+    }
+
+    result = project.set_mix_category(
+        "0:0",
+        "A"
+    )
+
+    assert result is True
+
+    assert (
+        project.data["mixes"]["0:0"]["category"]
+        == "A"
+    )
+
+
+def test_set_mix_category_replace(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "channels": {}
+    }
+
+    result = project.set_mix_category(
+        "0:0",
+        "O"
+    )
+
+    assert result is True
+
+    assert (
+        project.data["mixes"]["0:0"]["category"]
+        == "O"
+    )
+
+
+def test_set_mix_category_remove(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "channels": {}
+    }
+
+    result = project.set_mix_category(
+        "0:0",
+        None
+    )
+
+    assert result is True
+
+    assert (
+        "category"
+        not in project.data["mixes"]["0:0"]
+    )
+
+
+def test_set_mix_category_invalid(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "category": "A",
+        "channels": {}
+    }
+
+    result = project.set_mix_category(
+        "0:0",
+        "X"
+    )
+
+    assert result is False
+
+    assert (
+        project.data["mixes"]["0:0"]["category"]
+        == "A"
+    )
+
+
+def test_set_mix_category_unknown(
+    project
+):
+
+    result = project.set_mix_category(
+        "99:99",
+        "A"
+    )
+
+    assert result is False
+
+
+def test_set_mix_category_remove_missing(
+    project
+):
+
+    project.data["mixes"]["0:0"] = {
+        "name": "Test",
+        "channels": {}
+    }
+
+    result = project.set_mix_category(
+        "0:0",
+        None
+    )
+
+    assert result is True
+
+    assert (
+        "category"
+        not in project.data["mixes"]["0:0"]
+    )
