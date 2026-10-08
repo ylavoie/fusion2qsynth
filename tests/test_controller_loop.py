@@ -1992,6 +1992,51 @@ def test_controller_start_loads_selected_song(
     ]
 
 
+def test_controller_stop_clears_active_notes(
+    project,
+    monkeypatch
+):
+
+    msg = mido.Message(
+        "stop"
+    )
+
+    inp = DummyInput([[msg]])
+    out = DummyOutput()
+
+    monkeypatch.setattr(
+        project,
+        "reload_if_changed",
+        lambda: False
+    )
+
+    fusion_controller_loop.state.active_notes = {
+        (
+            1,
+            60
+        ),
+        (
+            2,
+            64
+        )
+    }
+
+    with pytest.raises(StopControllerLoop):
+
+        fusion_controller_loop.run_controller_loop(
+            inp,
+            out,
+            project,
+            "song",
+            selected_song="Test Song"
+        )
+
+    assert (
+        fusion_controller_loop.state.active_notes
+        == set()
+    )
+
+
 def test_controller_ignores_current_performance(
     project,
     monkeypatch

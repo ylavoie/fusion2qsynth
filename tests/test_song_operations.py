@@ -250,7 +250,7 @@ def test_ensure_song_creates_song(
     )
 
     assert song == {
-        "name": "Fusion Song Song test",
+        "name": "Song test",
         "channels": {}
     }
 
@@ -297,7 +297,7 @@ def test_ensure_song_converts_id_to_string(
     ) is song
 
     assert song == {
-        "name": "Fusion Song 123",
+        "name": "123",
         "channels": {}
     }
 

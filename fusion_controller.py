@@ -462,19 +462,38 @@ def main():
                                 "Attente du START..."
                             )
 
-                            result = run_controller_loop(
-                                inp,
-                                out,
-                                project,
-                                "song",
-                                selected_song=selected_song
-                            )
+                            try:
+                                result = run_controller_loop(
+                                    inp,
+                                    out,
+                                    project,
+                                    "song",
+                                    selected_song=selected_song
+                                )
 
-                            if result == "song_change":
+                                if result == "song_change":
 
-                                #
-                                # Nettoyer l'état de la SONG précédente
-                                #
+                                    #
+                                    # Nettoyer l'état de la SONG précédente
+                                    #
+                                    panic(
+                                        out
+                                    )
+
+                                    state.active_notes.clear()
+                                    state.current_parts = {}
+                                    state.current_performance = None
+                                    state.current_song_programs = {}
+
+                                    print()
+                                    print(
+                                        "Sélectionne la nouvelle SONG."
+                                    )
+
+                                    continue
+
+                            except KeyboardInterrupt:
+
                                 panic(
                                     out
                                 )
@@ -486,7 +505,7 @@ def main():
 
                                 print()
                                 print(
-                                    "Sélectionne la nouvelle SONG."
+                                    "SONG interrompue."
                                 )
 
                                 continue

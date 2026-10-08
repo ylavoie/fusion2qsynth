@@ -392,7 +392,7 @@ def run_controller_loop(
                     "mix"
                 ):
                     #
-                    # Détection banque du MIX Fusion
+                    # Détection banque de la performance Fusion
                     #
                     if (
                         msg.channel == fusion_default_channel
@@ -590,6 +590,16 @@ def run_controller_loop(
             if (
                 selected_mode == "song"
                 and
+                msg.type == "stop"
+            ):
+
+                state.active_notes.clear()
+
+                continue
+
+            if (
+                selected_mode == "song"
+                and
                 msg.type == "start"
             ):
 
@@ -606,4 +616,3 @@ def run_controller_loop(
         time.sleep(
             0.01
     )
-

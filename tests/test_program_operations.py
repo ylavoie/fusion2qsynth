@@ -383,7 +383,7 @@ def test_update_program_part_creates_program(
     )
 
     assert program is not None
-
+    assert program["name"] == "0:0"
     assert program[
         "parts"
     ][
@@ -1296,6 +1296,7 @@ def test_set_program_category_unknown(
 
     assert result is False
 
+
 def test_set_program_category_remove_missing(
     project
 ):
@@ -1315,4 +1316,43 @@ def test_set_program_category_remove_missing(
     assert (
         "category"
         not in project.data["programs"]["0:0"]
+    )
+
+
+def test_program_has_part_missing(
+    project
+):
+
+    assert not project.program_has_part(
+        "99:99"
+    )
+
+
+def test_program_has_part_empty(
+    project
+):
+
+    project.data["programs"]["99:99"] = {
+        "name": "Test",
+        "parts": {}
+    }
+
+    assert not project.program_has_part(
+        "99:99"
+    )
+
+
+def test_program_has_part(
+    project
+):
+
+    project.data["programs"]["99:99"] = {
+        "name": "Test",
+        "parts": {
+            "1": {}
+        }
+    }
+
+    assert project.program_has_part(
+        "99:99"
     )

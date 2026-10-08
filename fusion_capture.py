@@ -99,6 +99,27 @@ def capture_program(
                             velocity_max
                         )
 
+                        if project.program_has_part(
+                            current_program
+                        ):
+
+                            print(
+                                "Program déjà existant."
+                            )
+
+                            rep = input(
+                                "Remplacer ? (o/n) : "
+                            )
+
+                            if rep.lower() != "o":
+
+                                print()
+                                print(
+                                    "Program non modifié."
+                                )
+
+                                continue
+
                         original_data = project.snapshot()
 
                         ok, errors = project.update_program_part(
@@ -824,7 +845,7 @@ def capture_song(
 
                     original_data = project.snapshot()
 
-                    song = project.ensure_song(
+                    song = project._ensure_song(
                         song_id
                     )
 

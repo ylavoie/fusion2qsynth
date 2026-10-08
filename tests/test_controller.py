@@ -1542,6 +1542,178 @@ def test_main_song_change_clears_previous_song_state(
     )
 
 
+def test_main_song_keyboard_interrupt_clears_song_state(
+    monkeypatch
+):
+
+    class DummyProject:
+
+        def validate(self):
+            return []
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "FusionProject",
+        DummyProject
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "find_fusion_input",
+        lambda: "Fusion MIDI"
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "find_fluidsynth_output",
+        lambda: "FluidSynth MIDI"
+    )
+
+    out = DummyPort()
+
+    monkeypatch.setattr(
+        fusion_controller.mido,
+        "open_input",
+        lambda port: DummyPort()
+    )
+
+    monkeypatch.setattr(
+        fusion_controller.mido,
+        "open_output",
+        lambda port: out
+    )
+
+    modes = iter(
+        [
+            "song",
+            None
+        ]
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "choose_controller_mode",
+        lambda: next(modes)
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "print_mode_diagnostic",
+        lambda project, mode: None
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "load_last_performance",
+        lambda mode: None
+    )
+
+    songs = iter(
+        [
+            "Song 1",
+            None
+        ]
+    )
+
+    selected_songs = []
+
+    def fake_choose_song(
+        project
+    ):
+
+        song = next(
+            songs
+        )
+
+        selected_songs.append(
+            song
+        )
+
+        return song
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "choose_song",
+        fake_choose_song
+    )
+
+    fusion_controller.state.active_notes = {
+        (
+            0,
+            60
+        )
+    }
+
+    fusion_controller.state.current_parts = {
+        1: {
+            "test": True
+        }
+    }
+
+    fusion_controller.state.current_performance = (
+        "Song 1"
+    )
+
+    fusion_controller.state.current_song_programs = {
+        1: {
+            "program_id": "0:1"
+        }
+    }
+
+    panic_calls = []
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "panic",
+        lambda output:
+            panic_calls.append(output)
+    )
+
+    def interrupt_song(
+        *args,
+        **kwargs
+    ):
+
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "run_controller_loop",
+        interrupt_song
+    )
+
+    fusion_controller.main()
+
+    assert panic_calls == [
+        out
+    ]
+
+    assert (
+        fusion_controller.state.active_notes
+        == set()
+    )
+
+    assert (
+        fusion_controller.state.current_parts
+        == {}
+    )
+
+    assert (
+        fusion_controller.state.current_performance
+        is None
+    )
+
+    assert (
+        fusion_controller.state.current_song_programs
+        == {}
+    )
+
+    assert selected_songs == [
+        "Song 1",
+        None
+    ]
+
+
 def test_main_keyboard_interrupt_returns_to_menu(
     monkeypatch,
     capsys

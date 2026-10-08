@@ -8,10 +8,14 @@ import copy
 import re
 import hashlib
 
+from datetime import (
+    date,
+    datetime
+)
+
 from fusion_constants import (
     PROJECT_FORMAT_VERSION,
-    ARCHIVE_DIR,
-    ARCHIVE_COUNT
+    ARCHIVE_DIR
 )
 
 from fusion_gm_map import (
@@ -395,10 +399,111 @@ class FusionProject:
 
         return backups
 
-    def archive(self):
+    def _parse_archive_filename(
+        self,
+        filename
+    ):
+
+        basename = os.path.splitext(
+            os.path.basename(
+                self.filename
+            )
+        )[0]
+
+        escaped_basename = re.escape(
+            basename
+        )
+
+        patterns = (
+            (
+                "auto",
+                rf"^{escaped_basename}-auto-"
+                r"(\d{4}-\d{2}-\d{2}_\d{6})"
+                r"(?:-(\d+))?\.json$"
+            ),
+            (
+                "manual",
+                rf"^{escaped_basename}-manual-"
+                r"(\d{4}-\d{2}-\d{2}_\d{6})"
+                r"(?:-(\d+))?\.json$"
+            ),
+            (
+                "legacy",
+                rf"^{escaped_basename}-"
+                r"(\d{4}-\d{2}-\d{2}_\d{6})"
+                r"\.json$"
+            )
+        )
+
+        for archive_type, pattern in patterns:
+
+            match = re.fullmatch(
+                pattern,
+                filename
+            )
+
+            if match is None:
+
+                continue
+
+            timestamp_text = match.group(
+                1
+            )
+
+            try:
+
+                timestamp = datetime.strptime(
+                    timestamp_text,
+                    "%Y-%m-%d_%H%M%S"
+                )
+
+            except ValueError:
+
+                return None
+
+            suffix = None
+
+            if archive_type in (
+                "auto",
+                "manual"
+            ):
+
+                suffix_text = match.group(
+                    2
+                )
+
+                if suffix_text is not None:
+
+                    suffix = int(
+                        suffix_text
+                    )
+
+                    if suffix < 1:
+
+                        return None
+
+            return {
+                "type": archive_type,
+                "timestamp": timestamp,
+                "suffix": suffix
+            }
+
+        return None
+
+    def archive(
+        self,
+        archive_type="manual"
+    ):
 
         if not os.path.exists(
             self.filename
+        ):
+
+            return False
+
+        if archive_type not in (
+            "auto",
+            "manual"
         ):
 
             return False
@@ -418,10 +523,29 @@ class FusionProject:
             )
         )[0]
 
+        archive_name = (
+            f"{basename}-"
+            f"{archive_type}-"
+            f"{timestamp}"
+        )
+
         archive_file = os.path.join(
             ARCHIVE_DIR,
-            f"{basename}-{timestamp}.json"
+            f"{archive_name}.json"
         )
+
+        suffix = 1
+
+        while os.path.exists(
+            archive_file
+        ):
+
+            archive_file = os.path.join(
+                ARCHIVE_DIR,
+                f"{archive_name}-{suffix}.json"
+            )
+
+            suffix += 1
 
         try:
 
@@ -442,11 +566,10 @@ class FusionProject:
 
             return False
 
-    def _rotate_archives(self):
-
-        if ARCHIVE_COUNT < 1:
-
-            return
+    def _rotate_archives(
+        self,
+        today=None
+    ):
 
         if not os.path.isdir(
             ARCHIVE_DIR
@@ -454,38 +577,182 @@ class FusionProject:
 
             return
 
-        prefix = (
-            os.path.splitext(
-                os.path.basename(
-                    self.filename
-                )
-            )[0]
-            + "-"
-        )
+        if today is None:
 
-        archives = []
+            today = date.today()
+
+        auto_archives = []
 
         for filename in os.listdir(
             ARCHIVE_DIR
         ):
 
+            info = self._parse_archive_filename(
+                filename
+            )
+
             if (
-                filename.startswith(prefix)
-                and
-                filename.endswith(".json")
+                info is None
+                or
+                info["type"] != "auto"
             ):
 
-                archives.append(
+                continue
+
+            archive_date = (
+                info["timestamp"].date()
+            )
+
+            age_days = (
+                today
+                - archive_date
+            ).days
+
+            #
+            # Une archive datée dans le futur
+            # n'est pas supprimable.
+            #
+            if age_days < 0:
+
+                continue
+
+            auto_archives.append(
+                {
+                    "filename": filename,
+                    "timestamp":
+                        info["timestamp"],
+                    "age_days": age_days
+                }
+            )
+
+        keep = set()
+
+        daily = {}
+        weekly = {}
+        monthly = {}
+
+        for archive in auto_archives:
+
+            filename = archive[
+                "filename"
+            ]
+            timestamp = archive[
+                "timestamp"
+            ]
+            age_days = archive[
+                "age_days"
+            ]
+
+            #
+            # 0 à 14 jours :
+            # toutes les archives.
+            #
+            if age_days <= 14:
+
+                keep.add(
                     filename
                 )
 
-        archives.sort(
-            reverse=True
-        )
+                continue
 
-        for filename in archives[
-            ARCHIVE_COUNT:
-        ]:
+            #
+            # 15 à 60 jours :
+            # dernière archive du jour.
+            #
+            if age_days <= 60:
+
+                key = timestamp.date()
+
+                current = daily.get(
+                    key
+                )
+
+                if (
+                    current is None
+                    or
+                    timestamp
+                    > current["timestamp"]
+                ):
+
+                    daily[key] = archive
+
+                continue
+
+            #
+            # 61 à 180 jours :
+            # dernière archive de la
+            # semaine ISO.
+            #
+            if age_days <= 180:
+
+                iso = (
+                    timestamp.date()
+                    .isocalendar()
+                )
+
+                key = (
+                    iso.year,
+                    iso.week
+                )
+
+                current = weekly.get(
+                    key
+                )
+
+                if (
+                    current is None
+                    or
+                    timestamp
+                    > current["timestamp"]
+                ):
+
+                    weekly[key] = archive
+
+                continue
+
+            #
+            # 181 jours et plus :
+            # dernière archive du mois.
+            #
+            key = (
+                timestamp.year,
+                timestamp.month
+            )
+
+            current = monthly.get(
+                key
+            )
+
+            if (
+                current is None
+                or
+                timestamp
+                > current["timestamp"]
+            ):
+
+                monthly[key] = archive
+
+        for groups in (
+            daily,
+            weekly,
+            monthly
+        ):
+
+            for archive in groups.values():
+
+                keep.add(
+                    archive["filename"]
+                )
+
+        for archive in auto_archives:
+
+            filename = archive[
+                "filename"
+            ]
+
+            if filename in keep:
+
+                continue
 
             try:
 
@@ -716,7 +983,9 @@ class FusionProject:
 
         return True
 
-    def archive_if_changed(self):
+    def archive_if_changed(
+        self
+    ):
 
         if not os.path.exists(
             self.filename
@@ -728,35 +997,34 @@ class FusionProject:
             ARCHIVE_DIR
         ):
 
-            return self.archive()
+            return self.archive(
+                archive_type="auto"
+            )
 
-        prefix = (
-            os.path.splitext(
-                os.path.basename(
-                    self.filename
+        archives = []
+
+        for filename in os.listdir(
+            ARCHIVE_DIR
+        ):
+
+            if (
+                self._parse_archive_filename(
+                    filename
                 )
-            )[0]
-            + "-"
-        )
+                is None
+            ):
 
-        archives = sorted(
-            (
+                continue
+
+            archives.append(
                 filename
-                for filename in os.listdir(
-                    ARCHIVE_DIR
-                )
-                if (
-                    filename.startswith(prefix)
-                    and
-                    filename.endswith(".json")
-                )
-            ),
-            reverse=True
-        )
+            )
 
         if not archives:
 
-            return self.archive()
+            return self.archive(
+                archive_type="auto"
+            )
 
         try:
 
@@ -791,7 +1059,9 @@ class FusionProject:
 
             pass
 
-        return self.archive()
+        return self.archive(
+            archive_type="auto"
+        )
 
     @classmethod
     def list_archives(cls):
@@ -3052,6 +3322,35 @@ class FusionProject:
             []
         )
 
+    def program_has_part(
+        self,
+        program_id
+    ):
+
+        program = self.get_program(
+            program_id
+        )
+
+        if not isinstance(
+            program,
+            dict
+        ):
+
+            return False
+
+        parts = program.get(
+            "parts"
+        )
+
+        if not isinstance(
+            parts,
+            dict
+        ):
+
+            return False
+
+        return "1" in parts
+
     def _ensure_program(
         self,
         program_id
@@ -3062,9 +3361,7 @@ class FusionProject:
         if program_id not in programs:
 
             programs[program_id] = {
-                "name":
-                    f"Fusion Program {program_id}",
-
+                "name": str(program_id),
                 "parts": {}
             }
 
@@ -3827,9 +4124,7 @@ class FusionProject:
         if song_id not in songs:
 
             songs[song_id] = {
-                "name":
-                    f"Fusion Song {song_id}",
-
+                "name": str(song_id),
                 "channels": {}
             }
 
@@ -3841,18 +4136,17 @@ class FusionProject:
         channels
     ):
 
+        before_errors = self.get_blocking_errors(
+            self.validate()
+        )
+
+        backup = copy.deepcopy(
+            self.data
+        )
+
         song = self.get_song(
             song_id
         )
-
-        if song is None:
-
-            return (
-                False,
-                [
-                    f"SONG inconnue : {song_id}"
-                ]
-            )
 
         if not isinstance(
             song,
@@ -3865,14 +4159,6 @@ class FusionProject:
                     f"SONG invalide : {song_id}"
                 ]
             )
-
-        before_errors = self.get_blocking_errors(
-            self.validate()
-        )
-
-        backup = copy.deepcopy(
-            self.data
-        )
 
         song["channels"] = channels
 
@@ -5522,9 +5808,7 @@ class FusionProject:
         if mix_id not in mixes:
 
             mixes[mix_id] = {
-                "name": (
-                    f"Fusion Mix {mix_id}"
-                ),
+                "name": str(mix_id),
                 "channels": {}
             }
 

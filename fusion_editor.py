@@ -1835,7 +1835,7 @@ def choose_fusion_category(
             "> "
         ).strip()
 
-        if choice.lower() == "q":
+        if choice == "q":
 
             return None
 
@@ -5270,7 +5270,11 @@ def edit_song(
 
         channel_id = input(
             "Canal à modifier (q pour quitter) : "
-        )
+        ).strip()
+
+        if not channel_id:
+
+            continue
 
         if channel_id.lower() == "q":
 

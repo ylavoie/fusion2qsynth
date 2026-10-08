@@ -1060,7 +1060,7 @@ def test_replace_mix_channels_creates_mix(
     )
 
     assert mix is not None
-    assert mix["name"] == "Fusion Mix 0:0"
+    assert mix["name"] == "0:0"
     assert mix["channels"] == channels
 
 

@@ -434,6 +434,26 @@ def test_successful_restore_archives_current():
     )
 
     #
+    # La protection automatique avant
+    # restauration doit produire une AUTO,
+    # jamais une MANUAL.
+    #
+    archive_info = (
+        result._parse_archive_filename(
+            archives[0]
+        )
+    )
+
+    assert archive_info is not None
+
+    assert archives[0].startswith(
+        "fusion-auto-"
+    ), (
+        "La protection pré-restauration "
+        "doit créer une archive AUTO."
+    )
+
+    #
     # Cette archive doit être exactement
     # l'ancien fusion.json.
     #

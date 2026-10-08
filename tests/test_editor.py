@@ -10739,6 +10739,60 @@ def test_edit_song_display_and_unknown_channel(
     assert "Canal inconnu." in output
 
 
+def test_edit_song_empty_channel_selection(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def get_song(
+            self,
+            song_id
+        ):
+
+            return {
+                "name": "My Song",
+                "channels": {
+                    "2": {
+                        "programs": {}
+                    }
+                }
+            }
+
+        def validate_song(
+            self,
+            song_id
+        ):
+
+            return []
+
+    responses = iter([
+        "",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_song(
+        Project(),
+        "song1"
+    )
+
+    output = (
+        capsys.readouterr().out
+    )
+
+    assert (
+        "Canal inconnu."
+        not in output
+    )
+
+
 def test_edit_song_multiple_program_selection_cancel(
     monkeypatch,
     capsys
@@ -15010,6 +15064,21 @@ def test_choose_fusion_category_cancel(
     assert (
         fusion_editor.choose_fusion_category()
         is None
+    )
+
+
+def test_choose_fusion_category_other(
+    monkeypatch
+):
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda _: "Q"
+    )
+
+    assert (
+        fusion_editor.choose_fusion_category()
+        == "Q"
     )
 
 

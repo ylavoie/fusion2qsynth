@@ -204,6 +204,13 @@ def test_capture_program_success(
                 "before": True
             }
 
+        def program_has_part(
+            self,
+            program_id
+        ):
+
+            return False
+
         def update_program_part(
             self,
             program_id,
@@ -366,6 +373,131 @@ def test_capture_program_success(
     )
 
 
+def test_capture_program_existing_refused(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def __init__(self):
+
+            self.updated = None
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            return f"Bank {bank}"
+
+        def program_has_part(
+            self,
+            program_id
+        ):
+
+            return True
+
+    project = Project()
+
+    batches = [
+        [
+            Message(
+                "control_change",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                control=0,
+                value=8
+            ),
+            Message(
+                "program_change",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                program=12
+            ),
+            Message(
+                "note_on",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                note=60,
+                velocity=80
+            ),
+        ],
+        [],
+    ]
+
+    monkeypatch.setattr(
+        fusion_capture.mido,
+        "open_input",
+        lambda port:
+            PendingInput(
+                batches
+            )
+    )
+
+    times = iter([
+        0,
+        0,
+        fusion_capture.CAPTURE_TIME + 1,
+    ])
+
+    monkeypatch.setattr(
+        fusion_capture.time,
+        "time",
+        lambda:
+            next(
+                times,
+                fusion_capture.CAPTURE_TIME + 1
+            )
+    )
+
+    monkeypatch.setattr(
+        fusion_capture.time,
+        "sleep",
+        lambda value:
+            None
+    )
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            "n"
+    )
+
+    fusion_capture.capture_program(
+        project,
+        "Fusion MIDI"
+    )
+
+    assert project.updated is None
+
+    output = (
+        capsys.readouterr().out
+    )
+
+    assert (
+        "Program déjà existant."
+        in output
+    )
+
+    assert (
+        "Program non modifié."
+        in output
+    )
+
+
+
 def test_capture_program_update_failure(
     monkeypatch,
     capsys
@@ -400,6 +532,13 @@ def test_capture_program_update_failure(
             return {
                 "original": True
             }
+
+        def program_has_part(
+            self,
+            program_id
+        ):
+
+            return False
 
         def update_program_part(
             self,
@@ -524,6 +663,13 @@ def test_capture_program_save_failure(
             return {
                 "original": True
             }
+
+        def program_has_part(
+            self,
+            program_id
+        ):
+
+            return False
 
         def update_program_part(
             self,
@@ -1268,7 +1414,7 @@ def test_capture_song_success(
                 "original": True
             }
 
-        def ensure_song(
+        def _ensure_song(
             self,
             song_id
         ):
@@ -1551,7 +1697,7 @@ def test_capture_song_merge_existing(
                 "original": True
             }
 
-        def ensure_song(
+        def _ensure_song(
             self,
             song_id
         ):
@@ -1967,7 +2113,7 @@ def test_capture_song_program_creation_failure(
                 "original": True
             }
 
-        def ensure_song(
+        def _ensure_song(
             self,
             song_id
         ):
@@ -2077,7 +2223,7 @@ def test_capture_song_replace_failure(
                 "original": True
             }
 
-        def ensure_song(
+        def _ensure_song(
             self,
             song_id
         ):
@@ -2186,7 +2332,7 @@ def test_capture_song_save_failure(
                 "original": True
             }
 
-        def ensure_song(
+        def _ensure_song(
             self,
             song_id
         ):
