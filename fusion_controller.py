@@ -2,6 +2,10 @@
 
 import mido
 
+from fusion_constants import (
+    DEBUG
+)
+
 from fusion_diagnostic import (
     print_validation_errors
 )
@@ -155,28 +159,31 @@ def print_mode_diagnostic(
     selected_mode
 ):
     if selected_mode == "program":
-        diagnostic = project.get_program_diagnostic()
 
-        for program in diagnostic:
+        if DEBUG:
 
-            print()
-            print(
-                "PROGRAM :",
-                program["program"],
-                "-",
-                program["name"]
-            )
+            diagnostic = project.get_program_diagnostic()
 
-            print(
-                " Fusion:",
-                "OK"
-                if program["fusion_valid"]
-                else "ERREUR",
-                "SoundFont:",
-                "OK"
-                if program["soundfont_configured"]
-                else "Non configuré"
-            )
+            for program in diagnostic:
+
+                print()
+                print(
+                    "PROGRAM :",
+                    program["program"],
+                    "-",
+                    program["name"]
+                )
+
+                print(
+                    " Fusion:",
+                    "OK"
+                    if program["fusion_valid"]
+                    else "ERREUR",
+                    "SoundFont:",
+                    "OK"
+                    if program["soundfont_configured"]
+                    else "Non configuré"
+                )
 
         print()
         print(
@@ -186,53 +193,55 @@ def print_mode_diagnostic(
 
     if selected_mode == "song":
 
-        diagnostic = project.get_song_diagnostic()
+        if DEBUG:
 
-        for song in diagnostic:
+            diagnostic = project.get_song_diagnostic()
 
-            print()
-            song_id = song["song"]
-            song_name = song["name"]
+            for song in diagnostic:
 
-            if (
-                song_name
-                and
-                song_name != song_id
-            ):
+                print()
+                song_id = song["song"]
+                song_name = song["name"]
 
-                print(
-                    "SONG :",
-                    song_id,
-                    "-",
+                if (
                     song_name
-                )
+                    and
+                    song_name != song_id
+                ):
 
-            else:
+                    print(
+                        "SONG :",
+                        song_id,
+                        "-",
+                        song_name
+                    )
 
-                print(
-                    "SONG :",
-                    song_id
-                )
+                else:
 
-            for channel in sorted(
-                song["channels"],
-                key=lambda item: int(
-                    item["channel"]
-                )
-            ):
+                    print(
+                        "SONG :",
+                        song_id
+                    )
 
-                print(
-                    " CH",
-                    channel["channel"],
-                    "Fusion:",
-                    "OK"
-                    if channel["fusion_valid"]
-                    else "ERREUR",
-                    "SoundFont:",
-                    "OK"
-                    if channel["soundfont_configured"]
-                    else "Non configuré"
-                )
+                for channel in sorted(
+                    song["channels"],
+                    key=lambda item: int(
+                        item["channel"]
+                    )
+                ):
+
+                    print(
+                        " CH",
+                        channel["channel"],
+                        "Fusion:",
+                        "OK"
+                        if channel["fusion_valid"]
+                        else "ERREUR",
+                        "SoundFont:",
+                        "OK"
+                        if channel["soundfont_configured"]
+                        else "Non configuré"
+                    )
 
         print()
         print(
@@ -242,45 +251,47 @@ def print_mode_diagnostic(
 
     if selected_mode == "mix":
 
-        diagnostic = (
-            project.get_mix_diagnostic()
-        )
+        if DEBUG:
 
-        for mix in diagnostic:
-
-            print()
-
-            print(
-                "Mix :",
-                mix["mix"],
-                "-",
-                mix["name"]
+            diagnostic = (
+                project.get_mix_diagnostic()
             )
 
-            for channel in mix[
-                "channels"
-            ]:
+            for mix in diagnostic:
+
+                print()
 
                 print(
-                    " CH",
-                    channel["channel"],
-                    "Fusion:",
-                    (
-                        "OK"
-                        if channel[
-                            "fusion_valid"
-                        ]
-                        else "ERREUR"
-                    ),
-                    "SoundFont:",
-                    (
-                        "OK"
-                        if channel[
-                            "soundfont_configured"
-                        ]
-                        else "Non configuré"
-                    )
+                    "Mix :",
+                    mix["mix"],
+                    "-",
+                    mix["name"]
                 )
+
+                for channel in mix[
+                    "channels"
+                ]:
+
+                    print(
+                        " CH",
+                        channel["channel"],
+                        "Fusion:",
+                        (
+                            "OK"
+                            if channel[
+                                "fusion_valid"
+                            ]
+                            else "ERREUR"
+                        ),
+                        "SoundFont:",
+                        (
+                            "OK"
+                            if channel[
+                                "soundfont_configured"
+                            ]
+                            else "Non configuré"
+                        )
+                    )
 
         print()
 

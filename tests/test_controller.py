@@ -265,6 +265,49 @@ def test_choose_song_invalid_text_then_valid(
     )
 
 
+def test_print_mode_diagnostic_without_debug(
+    project,
+    monkeypatch,
+    capsys
+):
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "DEBUG",
+        False
+    )
+
+    def unexpected_diagnostic():
+
+        raise AssertionError(
+            "Diagnostic détaillé appelé"
+        )
+
+    monkeypatch.setattr(
+        project,
+        "get_program_diagnostic",
+        unexpected_diagnostic
+    )
+
+    monkeypatch.setattr(
+        project,
+        "count_programs",
+        lambda: 1178
+    )
+
+    fusion_controller.print_mode_diagnostic(
+        project,
+        "program"
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "1178 PROGRAM enregistrés"
+        in output
+    )
+
+
 def test_print_mode_diagnostic_program(
     project,
     monkeypatch,
@@ -296,6 +339,12 @@ def test_print_mode_diagnostic_program(
         project,
         "count_programs",
         lambda: 2
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "DEBUG",
+        True
     )
 
     fusion_controller.print_mode_diagnostic(
@@ -342,6 +391,12 @@ def test_print_mode_diagnostic_mix(
                 ]
             }
         ]
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "DEBUG",
+        True
     )
 
     monkeypatch.setattr(
@@ -398,6 +453,12 @@ def test_print_mode_diagnostic_song_with_name(
     )
 
     monkeypatch.setattr(
+        fusion_controller,
+        "DEBUG",
+        True
+    )
+
+    monkeypatch.setattr(
         project,
         "count_songs",
         lambda: 1
@@ -441,6 +502,12 @@ def test_print_mode_diagnostic_song_without_distinct_name(
                 "channels": []
             }
         ]
+    )
+
+    monkeypatch.setattr(
+        fusion_controller,
+        "DEBUG",
+        True
     )
 
     monkeypatch.setattr(
