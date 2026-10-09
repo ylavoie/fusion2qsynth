@@ -1,5 +1,109 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.24
+
+### Validation en utilisation réelle
+
+* Validation complète des principaux workflows avec le Fusion 8HD réel.
+* Validation de la capture, de l’édition et de l’utilisation Live des PROGRAM.
+* Validation de la capture, de l’édition et de l’utilisation Live des MIX.
+* Validation de la capture, de l’édition et de l’utilisation Live des SONG.
+* Validation des banques PROGRAM et MIX et de leurs noms personnalisés.
+* Validation de la création, de la rotation et de la restauration des archives.
+* Validation de la propagation dynamique des Instruments vers les PROGRAM, les MIX et les SONG.
+* Validation du transport MIDI des SONG, notamment `START`, `STOP` et l’interruption par `Ctrl+C`.
+
+### Archives
+
+* Remplacement de l’ancienne limite fixe de 30 archives par une politique de rétention graduelle.
+* Distinction explicite entre les archives `LEGACY`, `MANUAL` et `AUTO`.
+* Protection permanente des archives historiques `LEGACY`.
+* Protection permanente des archives créées manuellement.
+* Conservation de toutes les archives automatiques des 14 derniers jours.
+* Conservation de la dernière archive automatique de chaque jour entre 15 et 60 jours.
+* Conservation de la dernière archive automatique de chaque semaine ISO entre 61 et 180 jours.
+* Conservation permanente de la dernière archive automatique de chaque mois au-delà de 180 jours.
+* Protection des archives automatiques datées dans le futur.
+* Ajout des préfixes `fusion-auto-` et `fusion-manual-` aux nouvelles archives.
+* Conservation sans renommage des archives historiques existantes.
+* Prise en charge des suffixes de collision lors de la création d’une archive.
+* Rotation limitée strictement aux archives automatiques reconnues et valides.
+* Les archives manuelles, historiques, inconnues ou mal formées ne peuvent pas être supprimées par la rotation.
+* Déduplication des archives automatiques à partir de l’ensemble des archives reconnues.
+* Une archive manuelle est toujours créée explicitement, même si son contenu existe déjà.
+* Création d’une archive automatique avant restauration seulement après validation de l’archive candidate.
+* Conservation inchangée du mécanisme de récupération `fusion.json.bak`, `fusion.json.bak1` et `fusion.json.bak2`.
+
+### Capture des PROGRAM
+
+* Ajout d’une confirmation avant de remplacer les données d’un PROGRAM déjà capturé.
+* Harmonisation du comportement de recapture des PROGRAM avec celui déjà utilisé pour les MIX.
+* Une annulation de la recapture conserve intégralement les données existantes.
+* Ajout de la détection explicite de la présence de la PART unique d’un PROGRAM.
+
+### Capture des SONG
+
+* Correction de la création d’une nouvelle SONG pendant la capture.
+* Suppression de l’appel obsolète à `ensure_song()`.
+* La capture assure explicitement l’existence de la SONG avant d’enregistrer ses canaux.
+* Conservation du contrat de `replace_song_channels()` : le remplacement des canaux ne crée pas implicitement une SONG inconnue.
+
+### Contrôleur Live
+
+* Le message MIDI `STOP` d’une SONG efface les notes actives sans quitter la SONG ni perdre sa configuration.
+* `STOP` n’est pas transmis à FluidSynth après son traitement par le contrôleur.
+* Une interruption par `Ctrl+C` pendant une SONG exécute un `panic`, nettoie l’état Live de la SONG et retourne au sélecteur de SONG.
+* Correction du risque de notes maintenues après une interruption manuelle d’une SONG.
+* Conservation du traitement de `START` pour charger la configuration de la SONG.
+* Conservation du filtrage des contrôleurs MIDI `CC0` et `CC32` afin de protéger le mapping SoundFont.
+* Les autres contrôleurs MIDI musicaux continuent d’être transmis normalement.
+* Le diagnostic détaillé de tous les PROGRAM, MIX et SONG n’est plus affiché ni calculé en utilisation normale.
+* Le diagnostic détaillé demeure disponible lorsque `DEBUG` est activé.
+* Le nombre de PROGRAM, MIX ou SONG enregistrés demeure affiché en mode normal.
+
+### Éditeur
+
+* Correction de la sélection de la catégorie `Q - OTHER` : `Q` sélectionne maintenant la catégorie tandis que `q` conserve sa fonction d’annulation.
+* Une saisie vide lors de la sélection d’un canal de SONG annule proprement la sélection sans afficher `Canal inconnu.`.
+* Conservation du message `Canal inconnu.` pour une véritable sélection de canal invalide.
+
+### Modèle
+
+* Simplification des noms attribués automatiquement aux nouveaux objets.
+* Un nouveau PROGRAM reçoit désormais son ID comme nom initial, par exemple `0:15`.
+* Un nouveau MIX reçoit désormais son ID comme nom initial, par exemple `2:11`.
+* Une nouvelle SONG reçoit désormais son ID comme nom initial.
+* Suppression des préfixes automatiques redondants `Fusion Program`, `Fusion Mix` et `Fusion Song`.
+* Les noms des objets existants ne sont pas migrés automatiquement afin de ne jamais modifier un nom potentiellement personnalisé par l’utilisateur.
+
+### Tests automatisés
+
+* Ajout de tests de la nouvelle politique de rétention des archives et de ses limites temporelles.
+* Ajout de tests de protection des archives historiques, manuelles, inconnues et mal formées.
+* Ajout de tests de création, de déduplication, de collision et de restauration des archives.
+* Ajout de tests de la création et du remplacement des SONG pendant la capture.
+* Ajout de tests de confirmation avant la recapture d’un PROGRAM existant.
+* Ajout de tests du traitement de `STOP` et de `Ctrl+C` dans le contrôleur Live.
+* Ajout de tests des nouveaux noms automatiques des PROGRAM, MIX et SONG.
+* Ajout de tests de la sélection de la catégorie `Q - OTHER`.
+* Ajout de tests de l’annulation de la sélection d’un canal de SONG.
+* Ajout de tests des diagnostics Live avec et sans `DEBUG`.
+
+### Validation
+
+* Validation sur un Fusion 8HD réel des workflows PROGRAM, MIX et SONG.
+* Validation réelle des archives et des banques PROGRAM et MIX.
+* Validation de l’héritage dynamique des Instruments dans les PROGRAM, MIX et SONG.
+* Validation du démarrage, de l’arrêt et de l’interruption des SONG avec le matériel réel.
+* Validation complète de la suite `pytest`.
+* **1027 tests automatisés réussis**.
+* Couverture applicative globale de **99 %**.
+* Couverture de **100 %** de `fusion_controller.py`.
+* Validation complète avec `integration-globale.py`.
+* Tous les contrôles de l’intégration globale sont réussis.
+
+---
+
 ## Fusion2QSynth v2.23
 
 ### Catégories Fusion
