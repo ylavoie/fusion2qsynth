@@ -2181,48 +2181,6 @@ def test_edit_mix_channel_display_and_quit(
     assert "Instrument effectif : Effective Piano" in output
 
 
-def test_edit_mix_channel_program_cancel(
-    monkeypatch,
-    capsys
-):
-
-    channel = {}
-
-    class Project:
-
-        def resolve_mix_channel_instrument(
-            self,
-            channel
-        ):
-
-            return None
-
-    responses = iter([
-        "1",
-        "bad",
-        "q",
-        "q"
-    ])
-
-    monkeypatch.setattr(
-        "builtins.input",
-        lambda prompt:
-            next(responses)
-    )
-
-    fusion_editor.edit_mix_channel(
-        Project(),
-        "0:1",
-        "1",
-        channel
-    )
-
-    assert (
-        "Choix invalide."
-        in capsys.readouterr().out
-    )
-
-
 def test_edit_mix_channel_ranges_success(
     monkeypatch,
     capsys
@@ -2308,7 +2266,7 @@ def test_edit_mix_channel_ranges_success(
     project = Project()
 
     responses = iter([
-        "4",
+        "5",
         "48",
         "72",
         "20",
@@ -2398,7 +2356,7 @@ def test_edit_mix_channel_ranges_no_change(
             )
 
     responses = iter([
-        "4",
+        "5",
         "",
         "",
         "",
@@ -2486,7 +2444,7 @@ def test_edit_mix_channel_ranges_update_failure(
     )
 
     responses = iter([
-        "4",
+        "5",
         "48",
         "72",
         "20",
@@ -2626,7 +2584,7 @@ def test_edit_mix_channel_ranges_save_failure(
     project = Project()
 
     responses = iter([
-        "4",
+        "5",
         "48",
         "72",
         "20",
@@ -2855,7 +2813,6 @@ def test_edit_mix_channel_program_remove(
     project = Project()
 
     responses = iter([
-        "1",
         "2",
         "q"
     ])
@@ -3145,7 +3102,7 @@ def test_edit_mix_channel_instrument_cancel(
     )
 
     responses = iter([
-        "2",
+        "3",
         "q"
     ])
 
@@ -3269,7 +3226,7 @@ def test_edit_mix_channel_instrument_success(
     )
 
     responses = iter([
-        "2",
+        "3",
         "q"
     ])
 
@@ -3365,7 +3322,7 @@ def test_edit_mix_channel_instrument_update_failure(
     )
 
     responses = iter([
-        "2",
+        "3",
         "q"
     ])
 
@@ -3467,7 +3424,7 @@ def test_edit_mix_channel_instrument_save_failure(
     )
 
     responses = iter([
-        "2",
+        "3",
         "q"
     ])
 
@@ -3749,7 +3706,7 @@ def test_remove_mix_channel_instrument_none(
             return None
 
     responses = iter([
-        "3",
+        "4",
         "q"
     ])
 
@@ -3840,7 +3797,7 @@ def test_remove_mix_channel_instrument_success(
             return True
 
     responses = iter([
-        "3",
+        "4",
         "q"
     ])
 
@@ -3931,7 +3888,7 @@ def test_remove_mix_channel_instrument_failure(
     )
 
     responses = iter([
-        "3",
+        "4",
         "q"
     ])
 
@@ -4034,7 +3991,7 @@ def test_remove_mix_channel_instrument_save_failure(
     project = Project()
 
     responses = iter([
-        "3",
+        "4",
         "q"
     ])
 

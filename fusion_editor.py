@@ -1119,7 +1119,8 @@ def edit_mix_channel(
         project,
         mix_id,
         channel_id,
-        channel
+        channel,
+        remove=False
     ):
 
         print()
@@ -1131,58 +1132,29 @@ def edit_mix_channel(
             )
         )
 
-        print()
-        print(
-            "1 - Sélectionner un PROGRAM"
-        )
-        print(
-            "2 - Aucun PROGRAM"
-        )
-        print(
-            "Q - Annuler"
-        )
+        if remove:
 
-        while True:
+            updates = None
 
-            choice = input(
-                "> "
-            ).strip()
+            remove_fields = [
+                "program"
+            ]
 
-            if choice == "1":
+        else:
 
-                program_id = choose_program_id(
-                    project
-                )
+            program_id = choose_program_id(
+                project
+            )
 
-                if program_id is None:
-
-                    return
-
-                updates = {
-                    "program": program_id
-                }
-
-                remove_fields = None
-
-                break
-
-            elif choice == "2":
-
-                updates = None
-
-                remove_fields = [
-                    "program"
-                ]
-
-                break
-
-            elif choice.lower() == "q":
+            if program_id is None:
 
                 return
 
-            print(
-                "Choix invalide."
-            )
+            updates = {
+                "program": program_id
+            }
+
+            remove_fields = None
 
         allowed_errors = (
             project.get_blocking_errors(
@@ -1640,15 +1612,19 @@ def edit_mix_channel(
         )
 
         print(
-            "2 - Modifier l'instrument local"
+            "2 - Retirer le PROGRAM"
         )
 
         print(
-            "3 - Supprimer l'instrument local"
+            "3 - Modifier l'instrument local"
         )
 
         print(
-            "4 - Modifier les plages"
+            "4 - Supprimer l'instrument local"
+        )
+
+        print(
+            "5 - Modifier les plages"
         )
 
         print(
@@ -1670,6 +1646,16 @@ def edit_mix_channel(
 
         elif choice == "2":
 
+            edit_mix_channel_program(
+                project,
+                mix_id,
+                channel_id,
+                channel,
+                remove=True
+            )
+
+        elif choice == "3":
+
             edit_mix_channel_instrument(
                 project,
                 mix_id,
@@ -1677,7 +1663,7 @@ def edit_mix_channel(
                 channel
             )
 
-        elif choice == "3":
+        elif choice == "4":
 
             remove_mix_channel_instrument(
                 project,
@@ -1686,7 +1672,7 @@ def edit_mix_channel(
                 channel
             )
 
-        elif choice == "4":
+        elif choice == "5":
 
             edit_mix_channel_ranges(
                 project,
