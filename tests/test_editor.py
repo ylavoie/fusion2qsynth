@@ -1944,6 +1944,15 @@ def test_edit_mix_channels_selection(
 
             return None
 
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            assert bank == 0
+
+            return "ROM: PRESET"
+
         def resolve_mix_channel_instrument(
             self,
             channel
@@ -2011,6 +2020,7 @@ def test_edit_mix_channels_selection(
         "PROGRAM 0:10"
         in output
     )
+    assert "ROM: PRESET" in output
 
     assert "Piano" in output
     assert "Grand Piano" in output
@@ -2031,6 +2041,58 @@ def test_edit_mix_channels_selection(
         <
         tenth
     )
+
+
+def test_edit_mix_channels_invalid_program_id(
+    monkeypatch,
+    capsys
+):
+
+    channel = {
+        "program": "invalid"
+    }
+
+    mix = {
+        "channels": {
+            "1": channel
+        }
+    }
+
+    class Project:
+
+        def get_program(
+            self,
+            program_id
+        ):
+
+            assert program_id == "invalid"
+
+            return None
+
+        def resolve_mix_channel_instrument(
+            self,
+            selected
+        ):
+
+            assert selected is channel
+
+            return None
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt: "q"
+    )
+
+    fusion_editor.edit_mix_channels(
+        Project(),
+        "0:1",
+        mix
+    )
+
+    output = capsys.readouterr().out
+
+    assert "PROGRAM invalid" in output
+    assert "Non configuré" in output
 
 
 def test_edit_mix_channel_display_and_quit(
@@ -2055,6 +2117,15 @@ def test_edit_mix_channel_display_and_quit(
             return {
                 "name": "Fusion Piano"
             }
+
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            assert bank == 2
+
+            return "ROM: GM2"
 
         def get_instrument(
             self,
@@ -2092,8 +2163,20 @@ def test_edit_mix_channel_display_and_quit(
 
     output = capsys.readouterr().out
 
-    assert "PROGRAM Fusion : 2:10" in output
-    assert "Nom Fusion     : Fusion Piano" in output
+    assert (
+        "Fusion Bank    : ROM: GM2 (2)"
+        in output
+    )
+
+    assert (
+        "Fusion Program : 10"
+        in output
+    )
+
+    assert (
+        "Nom Fusion     : Fusion Piano"
+        in output
+    )
     assert "Instrument local : Local Piano" in output
     assert "Instrument effectif : Effective Piano" in output
 
@@ -2713,6 +2796,15 @@ def test_edit_mix_channel_program_remove(
 
             return None
 
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            assert bank == 3
+
+            return "Test Bank 3"
+
         def resolve_mix_channel_instrument(
             self,
             channel
@@ -3002,6 +3094,15 @@ def test_edit_mix_channel_instrument_cancel(
             return {
                 "name": "Fusion Piano"
             }
+
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            assert bank == 2
+
+            return "Test Bank 2"
 
         def resolve_mix_channel_instrument(
             self,

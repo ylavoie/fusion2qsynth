@@ -905,6 +905,7 @@ def edit_mix_channels(
             )
 
             program_name = None
+            bank_name = None
 
             if program_id:
 
@@ -917,6 +918,32 @@ def edit_mix_channels(
                     program_name = program.get(
                         "name"
                     )
+
+                try:
+
+                    bank_str, _ = (
+                        program_id.split(
+                            ":",
+                            1
+                        )
+                    )
+
+                    bank = int(
+                        bank_str
+                    )
+
+                    bank_name = (
+                        project.get_program_bank_name(
+                            bank
+                        )
+                    )
+
+                except (
+                    ValueError,
+                    AttributeError
+                ):
+
+                    bank_name = None
 
             instrument = (
                 project.resolve_mix_channel_instrument(
@@ -936,6 +963,7 @@ def edit_mix_channels(
             print(
                 f"CH {channel_id:>2} | "
                 f"PROGRAM {program_id or '?':<7} | "
+                f"{bank_name or '?':<20} | "
                 f"{program_name or '?':<25} | "
                 f"SoundFont : {instrument_name}"
             )
@@ -1442,6 +1470,36 @@ def edit_mix_channel(
             "program"
         )
 
+        fusion_bank = None
+        fusion_program = None
+
+        if program_id:
+
+            try:
+
+                bank_str, program_str = (
+                    program_id.split(
+                        ":",
+                        1
+                    )
+                )
+
+                fusion_bank = int(
+                    bank_str
+                )
+
+                fusion_program = int(
+                    program_str
+                )
+
+            except (
+                ValueError,
+                AttributeError
+            ):
+
+                fusion_bank = None
+                fusion_program = None
+
         global_program = None
 
         if program_id:
@@ -1485,8 +1543,22 @@ def edit_mix_channel(
         print("====================")
 
         print(
-            "PROGRAM Fusion :",
-            program_id or "?"
+            "Fusion Bank    :",
+            (
+                f"{project.get_program_bank_name(fusion_bank)} "
+                f"({fusion_bank})"
+                if fusion_bank is not None
+                else "?"
+            )
+        )
+
+        print(
+            "Fusion Program :",
+            (
+                fusion_program
+                if fusion_program is not None
+                else "?"
+            )
         )
 
         print(
