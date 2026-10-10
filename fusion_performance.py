@@ -4,8 +4,7 @@ import mido
 from fusion_constants import DEBUG
 
 from fusion_controller_state import (
-    state,
-    save_last_performance
+    state
 )
 
 from fusion_lib import (
@@ -343,10 +342,6 @@ def load_mix(
 
         print()
 
-        save_last_performance(
-            "mix",
-            mix_id
-        )
         return
 
     for (
@@ -390,12 +385,6 @@ def load_mix(
         "Canaux actifs :"
     )
 
-    if loaded_channels > 0:
-
-        save_last_performance(
-            "mix",
-            mix_id
-        )
 
     for channel_id, channel in sorted(
         state.current_parts.items()
@@ -522,11 +511,6 @@ def load_program(
         part["midi_channel"]
     ] = part
 
-    save_last_performance(
-        "program",
-        program_id
-    )
-
     print()
     print(
         "Canal actif :"
@@ -650,11 +634,6 @@ def load_song(
     print(
         prepared_channels,
         "canaux SONG préparés"
-    )
-
-    save_last_performance(
-        "song",
-        song_id
     )
 
     print()

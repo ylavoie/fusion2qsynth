@@ -19,8 +19,7 @@ from fusion_lib import (
 )
 
 from fusion_controller_state import (
-    state,
-    load_last_performance
+    state
 )
 
 from fusion_performance import (
@@ -367,27 +366,9 @@ def main():
                         selected_mode
                     )
 
-                    last_id = load_last_performance(
-                        selected_mode
-                    )
-
                     selected_song = None
 
                     if selected_mode == "mix":
-
-                        if last_id:
-
-                            print()
-                            print(
-                                "Reprise MIX :",
-                                last_id
-                            )
-
-                            load_mix(
-                                last_id,
-                                out,
-                                project
-                            )
 
                         print()
                         print(
@@ -413,20 +394,6 @@ def main():
                             continue
 
                     elif selected_mode == "program":
-
-                        if last_id:
-
-                            print()
-                            print(
-                                "Reprise PROGRAM :",
-                                last_id
-                            )
-
-                            load_program(
-                                last_id,
-                                out,
-                                project
-                            )
 
                         print()
                         print(

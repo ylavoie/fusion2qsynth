@@ -754,7 +754,7 @@ def test_main_opens_midi_ports_and_can_exit(
     assert "Synth : Synth Port" in output
 
 
-def test_main_program_without_last_performance(
+def test_main_program_waits_for_performance_change(
     monkeypatch
 ):
 
@@ -815,12 +815,6 @@ def test_main_program_without_last_performance(
             diagnostics.append(mode)
     )
 
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
-    )
-
     loops = []
 
     monkeypatch.setattr(
@@ -838,92 +832,6 @@ def test_main_program_without_last_performance(
 
     assert loops == [
         "program"
-    ]
-
-
-def test_main_program_resumes_last_performance(
-    monkeypatch
-):
-
-    class DummyProject:
-
-        def validate(self):
-            return []
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "FusionProject",
-        DummyProject
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "find_fusion_input",
-        lambda: "Fusion MIDI"
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "find_fluidsynth_output",
-        lambda: "FluidSynth MIDI"
-    )
-
-    monkeypatch.setattr(
-        fusion_controller.mido,
-        "open_input",
-        lambda port: DummyPort()
-    )
-
-    monkeypatch.setattr(
-        fusion_controller.mido,
-        "open_output",
-        lambda port: DummyPort()
-    )
-
-    choices = iter(
-        [
-            "program",
-            None
-        ]
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "choose_controller_mode",
-        lambda: next(choices)
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "print_mode_diagnostic",
-        lambda project, mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: "0:12"
-    )
-
-    loaded = []
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_program",
-        lambda program_id, out, project:
-            loaded.append(program_id)
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "run_controller_loop",
-        lambda inp, out, project, mode: None
-    )
-
-    fusion_controller.main()
-
-    assert loaded == [
-        "0:12"
     ]
 
 
@@ -986,12 +894,6 @@ def test_main_program_keyboard_interrupt_returns_to_controller(
         lambda project, mode: None
     )
 
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
-    )
-
     def interrupt(
         inp,
         out,
@@ -1017,7 +919,7 @@ def test_main_program_keyboard_interrupt_returns_to_controller(
     )
 
 
-def test_main_mix_without_last_performance(
+def test_main_mix_waits_for_performance_change(
     monkeypatch
 ):
 
@@ -1078,12 +980,6 @@ def test_main_mix_without_last_performance(
             diagnostics.append(mode)
     )
 
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
-    )
-
     loops = []
 
     monkeypatch.setattr(
@@ -1101,92 +997,6 @@ def test_main_mix_without_last_performance(
 
     assert loops == [
         "mix"
-    ]
-
-
-def test_main_mix_resumes_last_performance(
-    monkeypatch
-):
-
-    class DummyProject:
-
-        def validate(self):
-            return []
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "FusionProject",
-        DummyProject
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "find_fusion_input",
-        lambda: "Fusion MIDI"
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "find_fluidsynth_output",
-        lambda: "FluidSynth MIDI"
-    )
-
-    monkeypatch.setattr(
-        fusion_controller.mido,
-        "open_input",
-        lambda port: DummyPort()
-    )
-
-    monkeypatch.setattr(
-        fusion_controller.mido,
-        "open_output",
-        lambda port: DummyPort()
-    )
-
-    choices = iter(
-        [
-            "mix",
-            None
-        ]
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "choose_controller_mode",
-        lambda: next(choices)
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "print_mode_diagnostic",
-        lambda project, mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: "2:4"
-    )
-
-    loaded = []
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_mix",
-        lambda mix_id, out, project:
-            loaded.append(mix_id)
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "run_controller_loop",
-        lambda inp, out, project, mode: None
-    )
-
-    fusion_controller.main()
-
-    assert loaded == [
-        "2:4"
     ]
 
 
@@ -1247,12 +1057,6 @@ def test_main_mix_keyboard_interrupt_returns_to_controller(
         fusion_controller,
         "print_mode_diagnostic",
         lambda project, mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
     )
 
     def interrupt(
@@ -1340,12 +1144,6 @@ def test_main_song_can_return_without_selection(
 
     monkeypatch.setattr(
         fusion_controller,
-        "load_last_performance",
-        lambda mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
         "choose_song",
         lambda project: None
     )
@@ -1409,12 +1207,6 @@ def test_main_song_runs_selected_song(
         fusion_controller,
         "print_mode_diagnostic",
         lambda project, mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
     )
 
     songs = iter(
@@ -1523,12 +1315,6 @@ def test_main_song_change_clears_previous_song_state(
         fusion_controller,
         "print_mode_diagnostic",
         lambda project, mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
     )
 
     songs = iter(
@@ -1667,12 +1453,6 @@ def test_main_song_keyboard_interrupt_clears_song_state(
         fusion_controller,
         "print_mode_diagnostic",
         lambda project, mode: None
-    )
-
-    monkeypatch.setattr(
-        fusion_controller,
-        "load_last_performance",
-        lambda mode: None
     )
 
     songs = iter(

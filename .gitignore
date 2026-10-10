@@ -15,9 +15,6 @@ venv/
 *.tmp
 *.log
 
-# Suivi des performances
-last_performance.json
-
 # Projet utilisateur local
 fusion.json
 

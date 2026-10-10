@@ -777,9 +777,13 @@ Lorsqu'un chargement réussit, `current_performance` identifie la performance
 effectivement active et `current_parts` contient les canaux MIDI autorisés
 pour cette performance.
 
-L'identifiant de la dernière performance utilisable est également enregistré
-par `save_last_performance()`. Cette information permet au Contrôleur Live
-de reprendre la dernière performance connue lors de l'entrée dans un mode.
+Le Contrôleur Live ne présume pas de la performance active sur le Fusion
+lors de l'entrée dans un mode.
+
+En mode PROGRAM ou MIX, le Fusion ne transmet pas automatiquement sa
+sélection courante à l'ouverture du port MIDI. Le contrôleur attend donc
+un changement de performance effectivement transmis par le Fusion avant
+de charger un PROGRAM ou un MIX.
 
 En mode PROGRAM ou MIX, une nouvelle performance est chargée lorsque la
 boucle du contrôleur détecte un nouvel identifiant `bank:program`.
@@ -2671,17 +2675,6 @@ projet.
 ```text
 fusion.log
 ```
-
-`LAST_PERFORMANCE_FILE` définit le fichier utilisé pour conserver
-l'identifiant de la dernière performance connue du Contrôleur Live :
-
-```text
-last_performance.json
-```
-
-Cette constante permet notamment à `fusion_controller_state.py` de
-persister l'état nécessaire à la reprise d'une performance entre deux
-exécutions.
 
 ##### Configuration MIDI
 
@@ -4745,34 +4738,43 @@ Cette information reste entièrement dynamique et appartient à `fusion_controll
 
 ---
 
-### Persistance de la dernière performance
+### Synchronisation de la performance active
 
-Le Contrôleur Live peut conserver l'identité de la dernière performance utilisée afin de la retrouver lors d'une session suivante.
+Le Contrôleur Live ne conserve pas la dernière performance utilisée entre
+deux exécutions.
 
-Le flux conceptuel est :
+À l'ouverture du port MIDI, le Fusion 8HD ne transmet pas spontanément le
+PROGRAM ou le MIX actuellement sélectionné. Une sélection déjà active ne
+peut donc pas être considérée comme connue par le contrôleur.
+
+Le flux conceptuel en mode PROGRAM ou MIX est :
 
 ```text
-performance chargée
-      |
-      v
-save_last_performance()
-      |
-      v
-état persistant de dernière performance
+démarrage du Contrôleur Live
+        |
+        v
+aucune performance présumée
+        |
+        v
+attente d'un changement sur le Fusion
+        |
+        v
+CC0 + PROGRAM_CHANGE
+        |
+        v
+chargement de la performance détectée
+        |
+        v
+current_performance
 
+Cette approche évite de charger une ancienne performance qui pourrait ne
+plus correspondre à la sélection physique du Fusion.
 
-démarrage
-      |
-      v
-load_last_performance()
-      |
-      v
-restauration de la sélection
-```
+`current_performance` représente uniquement l'état courant de l'exécution
+du contrôleur. Il n'est pas persisté entre deux exécutions.
 
-Cette fonction ne transforme pas `fusion.json` en stockage de l'état d'exécution du contrôleur.
-
-La configuration des performances et l'état courant demeurent deux responsabilités distinctes.
+La configuration des performances dans fusion.json et l'état courant du
+Contrôleur Live demeurent ainsi deux responsabilités distinctes.
 
 ---
 

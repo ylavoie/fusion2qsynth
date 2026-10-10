@@ -14,8 +14,6 @@ PROJECT_FORMAT_VERSION = 2
 
 LOG_FILE = "fusion.log"
 
-LAST_PERFORMANCE_FILE = "last_performance.json"
-
 # Archives
 
 ARCHIVE_DIR = "backups"

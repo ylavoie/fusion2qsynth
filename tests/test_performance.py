@@ -358,8 +358,6 @@ def test_load_mix_without_ready_channel(
 
     out = DummyOutput()
 
-    saved = []
-
     monkeypatch.setattr(
         fusion_performance.time,
         "sleep",
@@ -370,18 +368,6 @@ def test_load_mix_without_ready_channel(
         fusion_performance,
         "panic",
         lambda output: None
-    )
-
-    monkeypatch.setattr(
-        fusion_performance,
-        "save_last_performance",
-        lambda mode, performance_id:
-            saved.append(
-                (
-                    mode,
-                    performance_id
-                )
-            )
     )
 
     fusion_performance.state.active_notes.add(
@@ -425,13 +411,6 @@ def test_load_mix_without_ready_channel(
         fusion_performance.state.active_notes
     )
 
-    assert saved == [
-        (
-            "mix",
-            "0:0"
-        )
-    ]
-
 
 def test_load_mix_ready_channel(
     project,
@@ -457,7 +436,6 @@ def test_load_mix_ready_channel(
     out = DummyOutput()
 
     sent = []
-    saved = []
 
     monkeypatch.setattr(
         fusion_performance.time,
@@ -479,18 +457,6 @@ def test_load_mix_ready_channel(
                 (
                     channel,
                     instrument
-                )
-            )
-    )
-
-    monkeypatch.setattr(
-        fusion_performance,
-        "save_last_performance",
-        lambda mode, performance_id:
-            saved.append(
-                (
-                    mode,
-                    performance_id
                 )
             )
     )
@@ -526,13 +492,6 @@ def test_load_mix_ready_channel(
     )
 
     assert "CH 2 → Piano" in output
-
-    assert saved == [
-        (
-            "mix",
-            "0:0"
-        )
-    ]
 
 
 def test_load_mix_ignores_unconfigured_channel(
@@ -577,12 +536,6 @@ def test_load_mix_ignores_unconfigured_channel(
         "send_program",
         lambda output, channel, instrument:
             sent.append(channel)
-    )
-
-    monkeypatch.setattr(
-        fusion_performance,
-        "save_last_performance",
-        lambda *args: None
     )
 
     fusion_performance.load_mix(
@@ -647,12 +600,6 @@ def test_load_mix_with_validation_errors(
         fusion_performance.time,
         "sleep",
         lambda delay: None
-    )
-
-    monkeypatch.setattr(
-        fusion_performance,
-        "save_last_performance",
-        lambda *args: None
     )
 
     out = DummyOutput()
@@ -847,7 +794,6 @@ def test_load_program(
     )
 
     sent = []
-    saved = []
 
     monkeypatch.setattr(
         fusion_performance,
@@ -857,18 +803,6 @@ def test_load_program(
                 (
                     channel,
                     instrument
-                )
-            )
-    )
-
-    monkeypatch.setattr(
-        fusion_performance,
-        "save_last_performance",
-        lambda mode, performance_id:
-            saved.append(
-                (
-                    mode,
-                    performance_id
                 )
             )
     )
@@ -919,13 +853,6 @@ def test_load_program(
         (
             2,
             instrument
-        )
-    ]
-
-    assert saved == [
-        (
-            "program",
-            "0:0"
         )
     ]
 
@@ -1004,8 +931,6 @@ def test_load_song(
 
     out = DummyOutput()
 
-    saved = []
-
     monkeypatch.setattr(
         fusion_performance,
         "panic",
@@ -1016,18 +941,6 @@ def test_load_song(
         fusion_performance.time,
         "sleep",
         lambda delay: None
-    )
-
-    monkeypatch.setattr(
-        fusion_performance,
-        "save_last_performance",
-        lambda mode, performance_id:
-            saved.append(
-                (
-                    mode,
-                    performance_id
-                )
-            )
     )
 
     fusion_performance.state.active_notes.add(
@@ -1084,13 +997,6 @@ def test_load_song(
     assert not (
         fusion_performance.state.active_notes
     )
-
-    assert saved == [
-        (
-            "song",
-            "Test"
-        )
-    ]
 
     assert len(
         out.messages
