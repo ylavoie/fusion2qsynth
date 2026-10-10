@@ -85,7 +85,7 @@ def choose_song(
 
         print()
         print(
-            "  Q - Retour"
+            "  q - Retour"
         )
 
         print()
@@ -127,7 +127,7 @@ def choose_controller_mode():
         print("1 - PROGRAM")
         print("2 - MIX")
         print("3 - SONG")
-        print("Q - Retour")
+        print("q - Retour")
         print()
 
         choice = input(

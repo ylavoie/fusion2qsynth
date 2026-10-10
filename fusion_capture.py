@@ -1344,7 +1344,7 @@ def main():
         print("1 - MIX")
         print("2 - PROGRAM")
         print("3 - SONG")
-        print("Q - Retour")
+        print("q - Retour")
         print()
 
         choice = input(

@@ -94,7 +94,7 @@ def choose_backup_restore():
         print()
 
     print(
-        "Q - Annuler"
+        "q - Annuler"
     )
 
     choix = input("> ")
@@ -148,7 +148,7 @@ def choose_archive_restore():
 
     print()
     print(
-        "Q - Annuler"
+        "q - Annuler"
     )
 
     choix = input("> ")
@@ -242,7 +242,7 @@ def main():
         print("4 - Monitor MIDI")
         print("5 - Sauvegarder une archive")
         print("6 - Restaurer une archive")
-        print("Q - Quitter")
+        print("q - Quitter")
 
         choix = input("> ")
 
