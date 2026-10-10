@@ -17,6 +17,10 @@ from fusion_diagnostic import (
     print_validation_errors
 )
 
+from fusion_gm_map import (
+    fusion_category_name
+)
+
 def send_program(out, channel, instrument):
 
     bank = instrument.get(
@@ -121,6 +125,18 @@ def print_mix(
         mix.get(
             "name",
             mix_id
+        )
+    )
+    category = project.get_mix_category(
+        mix_id
+    )
+
+    print(
+        "Catégorie :",
+        (
+            f"{category} - {fusion_category_name(category)}"
+            if category
+            else "Non définie"
         )
     )
 

@@ -177,6 +177,92 @@ def test_print_performance_header(
     assert f"Fusion {label}: 2:4" in output
 
 
+def test_print_mix_with_category(
+    capsys
+):
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return {
+                "name": "Push 'n' Pull Bass",
+                "channels": {}
+            }
+
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            assert mix_id == "1:32"
+
+            return "E"
+
+    fusion_performance.print_mix(
+        Project(),
+        "1:32"
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Mix : 1:32 - Push 'n' Pull Bass"
+        in output
+    )
+
+    assert (
+        "Catégorie : E - Bass"
+        in output
+    )
+
+
+def test_print_mix_without_category(
+    capsys
+):
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return {
+                "name": "Mon Mix",
+                "channels": {}
+            }
+
+        def get_mix_category(
+            self,
+            mix_id
+        ):
+
+            assert mix_id == "0:15"
+
+            return None
+
+    fusion_performance.print_mix(
+        Project(),
+        "0:15"
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Mix : 0:15 - Mon Mix"
+        in output
+    )
+
+    assert (
+        "Catégorie : Non définie"
+        in output
+    )
+
+
 def test_print_mix_unknown(
     project,
     capsys
