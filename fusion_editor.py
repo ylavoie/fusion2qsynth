@@ -2608,6 +2608,20 @@ def choose_song_id(
 
                 return value
 
+            prefix = "Song "
+
+            if value.startswith(
+                prefix
+            ):
+
+                normalized = value[
+                    len(prefix):
+                ]
+
+                if normalized in song_ids:
+
+                    return normalized
+
             print(
                 "SONG inconnue ou non disponible :",
                 value

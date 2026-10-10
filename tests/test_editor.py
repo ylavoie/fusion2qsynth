@@ -4940,6 +4940,44 @@ def test_choose_song_id_direct(
     )
 
 
+def test_choose_song_id_direct_with_song_prefix(
+    monkeypatch
+):
+
+    class Project:
+
+        def iter_songs(self):
+
+            return iter([
+                (
+                    "Yesterday",
+                    {}
+                ),
+                (
+                    "Song A",
+                    {}
+                )
+            ])
+
+    responses = iter([
+        "Song Yesterday"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    result = (
+        fusion_editor.choose_song_id(
+            Project()
+        )
+    )
+
+    assert result == "Yesterday"
+
+
 def test_choose_song_id_cancel_allowed(
     monkeypatch
 ):
