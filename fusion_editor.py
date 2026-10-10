@@ -2395,6 +2395,28 @@ def choose_program_id(
             banks[bank]
         )
 
+        program_groups = {}
+
+        for program, program_id in programs:
+
+            group = (
+                program // 16
+            )
+
+            program_groups.setdefault(
+                group,
+                []
+            ).append(
+                (
+                    program,
+                    program_id
+                )
+            )
+
+        groups = sorted(
+            program_groups
+        )
+
         while True:
 
             print()
@@ -2405,24 +2427,27 @@ def choose_program_id(
             print(
                 "----------------------------"
             )
+            print(
+                "Plages PROGRAM disponibles"
+            )
+            print()
 
-            for program, program_id in programs:
+            for index, group in enumerate(
+                groups,
+                start=1
+            ):
 
-                program_data = project.get_program(
-                    program_id
+                start = (
+                    group * 16
                 )
 
-                name = "?"
-
-                if program_data:
-
-                    name = program_data.get(
-                        "name",
-                        "?"
-                    )
+                end = (
+                    start + 15
+                )
 
                 print(
-                    f"{program:3} - {name}"
+                    f"{index} - "
+                    f"PROGRAM {start:3} - {end:3}"
                 )
 
             print()
@@ -2430,30 +2455,103 @@ def choose_program_id(
                 "Entrée - Retour"
             )
 
-            program = read_int(
+            group_choice = read_int(
                 "> ",
-                0,
-                127
+                1,
+                len(groups)
             )
 
-            if program is None:
+            if group_choice is None:
 
                 break
 
-            program_id = (
-                f"{bank}:{program}"
+            group = groups[
+                group_choice - 1
+            ]
+
+            start = (
+                group * 16
             )
 
-            if program_id not in program_ids:
+            end = (
+                start + 15
+            )
 
+            while True:
+
+                print()
                 print(
-                    "PROGRAM inconnu ou non disponible :",
-                    program_id
+                    project.get_program_bank_name(
+                        bank
+                    ),
+                    f"({bank})"
+                )
+                print(
+                    f"PROGRAM {start} - {end}"
+                )
+                print(
+                    "----------------------------"
                 )
 
-                continue
+                for (
+                    program,
+                    program_id
+                ) in program_groups[group]:
 
-            return program_id
+                    program_data = (
+                        project.get_program(
+                            program_id
+                        )
+                    )
+
+                    name = "?"
+
+                    if program_data:
+
+                        name = (
+                            program_data.get(
+                                "name",
+                                "?"
+                            )
+                        )
+
+                    print(
+                        f"{program:3} - {name}"
+                    )
+
+                print()
+                print(
+                    "Entrée - Retour"
+                )
+
+                program = read_int(
+                    "> ",
+                    start,
+                    end
+                )
+
+                if program is None:
+
+                    break
+
+                program_id = (
+                    f"{bank}:{program}"
+                )
+
+                if (
+                    program_id
+                    not in program_ids
+                ):
+
+                    print(
+                        "PROGRAM inconnu "
+                        "ou non disponible :",
+                        program_id
+                    )
+
+                    continue
+
+                return program_id
 
 def choose_song_id(
     project,

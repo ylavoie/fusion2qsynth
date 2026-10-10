@@ -4594,7 +4594,8 @@ def test_choose_program_id_assisted(
     values = iter([
         9,
         2,
-        99,
+        1,
+        15,
         10
     ])
 
@@ -4647,13 +4648,131 @@ def test_choose_program_id_assisted(
         in output
     )
 
-    assert " 10 - Piano" in output
-    assert " 20 - ?" in output
-
     assert (
-        "PROGRAM inconnu ou non disponible : 2:99"
+        "Plages PROGRAM disponibles"
         in output
     )
+
+    assert (
+        "1 - PROGRAM   0 -  15"
+        in output
+    )
+
+    assert (
+        "2 - PROGRAM  16 -  31"
+        in output
+    )
+
+    assert (
+        "PROGRAM 0 - 15"
+        in output
+    )
+
+    assert " 10 - Piano" in output
+    assert " 20 - ?" not in output
+
+    assert (
+        "PROGRAM inconnu ou non disponible : 2:15"
+        in output
+    )
+
+
+def test_choose_program_id_assisted_limits_display_to_group(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            assert bank == 0
+
+            return "ROM"
+
+        def get_program(
+            self,
+            program_id
+        ):
+
+            program = (
+                program_id.split(
+                    ":",
+                    1
+                )[1]
+            )
+
+            return {
+                "name": f"Program {program}"
+            }
+
+    allowed_ids = [
+        f"0:{program}"
+        for program in range(
+            128
+        )
+    ]
+
+    values = iter([
+        0,
+        1,
+        10
+    ])
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "read_int",
+        lambda prompt,
+               minimum,
+               maximum:
+            next(values)
+    )
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt: "?"
+    )
+
+    result = (
+        fusion_editor.choose_program_id(
+            Project(),
+            allowed_ids=allowed_ids
+        )
+    )
+
+    assert result == "0:10"
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Plages PROGRAM disponibles"
+        in output
+    )
+
+    assert (
+        "1 - PROGRAM   0 -  15"
+        in output
+    )
+
+    assert (
+        "8 - PROGRAM 112 - 127"
+        in output
+    )
+
+    assert (
+        "PROGRAM 0 - 15"
+        in output
+    )
+
+    assert "  0 - Program 0" in output
+    assert " 10 - Program 10" in output
+    assert " 15 - Program 15" in output
+
+    assert " 16 - Program 16" not in output
+    assert "127 - Program 127" not in output
 
 
 def test_choose_program_id_assisted_back(
@@ -4681,6 +4800,8 @@ def test_choose_program_id_assisted_back(
     values = iter([
         None,
         0,
+        1,
+        None,
         None
     ])
 
