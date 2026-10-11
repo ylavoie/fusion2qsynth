@@ -861,6 +861,32 @@ def test_capture_mix_success(
 
             self.replaced = None
             self.saved_errors = None
+            self.renamed = None
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            assert mix_id == "8:12"
+
+            return None
+
+        def rename_mix(
+            self,
+            mix_id,
+            name
+        ):
+
+            self.renamed = (
+                mix_id,
+                name
+            )
+
+            return (
+                True,
+                []
+            )
 
         def get_mix_bank_name(
             self,
@@ -929,6 +955,12 @@ def test_capture_mix_success(
             return True
 
     project = Project()
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            "Mon Mix"
+    )
 
     batches = [
         [
@@ -1038,6 +1070,11 @@ def test_capture_mix_success(
         "Fusion MIDI"
     )
 
+    assert project.renamed == (
+        "8:12",
+        "Mon Mix"
+    )
+
     assert project.replaced == (
         "8:12",
         {
@@ -1068,6 +1105,8 @@ def test_capture_mix_success(
     assert "PART 1" in output
     assert "PART 2" in output
     assert "PARTS détectées : 2" in output
+    assert "Mix sauvegardé." in output
+    assert "Nom actuel : 8:12" in output
     assert "Mix sauvegardé." in output
 
 
@@ -1161,10 +1200,17 @@ def test_capture_mix_existing_declined(
 
     project = Project()
 
+    prompts = []
+
+    def fake_input(prompt):
+
+        prompts.append(prompt)
+
+        return "n"
+
     monkeypatch.setattr(
         "builtins.input",
-        lambda prompt:
-            "n"
+        fake_input
     )
 
     run_capture_mix(
@@ -1172,6 +1218,10 @@ def test_capture_mix_existing_declined(
         project,
         mix_messages()
     )
+
+    assert prompts == [
+        "Remplacer ? (o/n) : "
+    ]
 
     assert (
         "Mix déjà existant."
@@ -1185,6 +1235,13 @@ def test_capture_mix_replace_failure(
 ):
 
     class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return None
 
         def get_mix_bank_name(
             self,
@@ -1232,6 +1289,12 @@ def test_capture_mix_replace_failure(
 
     project = Project()
 
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            ""
+    )
+
     run_capture_mix(
         monkeypatch,
         project,
@@ -1258,6 +1321,13 @@ def test_capture_mix_save_failure(
         def __init__(self):
 
             self.restored = None
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return None
 
         def get_mix_bank_name(
             self,
@@ -1317,6 +1387,12 @@ def test_capture_mix_save_failure(
 
     project = Project()
 
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            ""
+    )
+
     run_capture_mix(
         monkeypatch,
         project,
@@ -1338,6 +1414,131 @@ def test_capture_mix_save_failure(
         "État du projet restauré en mémoire."
         in output
     )
+
+
+def test_capture_mix_name_unchanged(
+    monkeypatch
+):
+
+    class Project:
+
+        def __init__(self):
+
+            self.saved = False
+
+        def get_mix_bank_name(self, bank):
+            return f"Bank {bank}"
+
+        def mix_has_channels(self, mix_id):
+            return False
+
+        def get_mix(self, mix_id):
+            return {"name": "Nom existant"}
+
+        def validate(self):
+            return []
+
+        def get_blocking_errors(self, errors):
+            return []
+
+        def snapshot(self):
+            return {"original": True}
+
+        def replace_mix_channels(self, mix_id, channels):
+            return True, []
+
+        def rename_mix(self, mix_id, name):
+            pytest.fail("rename_mix ne doit pas être appelé")
+
+        def save_safe(self, allowed_errors=None):
+            self.saved = True
+            return True
+
+    project = Project()
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt: ""
+    )
+
+    run_capture_mix(
+        monkeypatch,
+        project,
+        mix_messages()
+    )
+
+    assert project.saved is True
+
+
+def test_capture_mix_rename_failure(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def __init__(self):
+
+            self.restored = None
+            self.renamed = None
+
+        def get_mix_bank_name(self, bank):
+            return f"Bank {bank}"
+
+        def mix_has_channels(self, mix_id):
+            return False
+
+        def get_mix(self, mix_id):
+            return None
+
+        def validate(self):
+            return []
+
+        def get_blocking_errors(self, errors):
+            return []
+
+        def snapshot(self):
+            return {"original": True}
+
+        def replace_mix_channels(self, mix_id, channels):
+            return True, []
+
+        def rename_mix(self, mix_id, name):
+
+            self.renamed = (mix_id, name)
+
+            return False, ["Nom invalide"]
+
+        def restore_snapshot(self, snapshot):
+            self.restored = snapshot
+
+        def save_safe(self, allowed_errors=None):
+            pytest.fail("save_safe ne doit pas être appelé")
+
+    project = Project()
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt: "Nouveau nom"
+    )
+
+    run_capture_mix(
+        monkeypatch,
+        project,
+        mix_messages()
+    )
+
+    assert project.renamed is not None
+    assert project.renamed[1] == "Nouveau nom"
+
+    assert project.restored == {
+        "original": True
+    }
+
+    output = capsys.readouterr().out
+
+    assert "Renommage du Mix refusé :" in output
+    assert "Nom invalide" in output
 
 
 class SongInput:

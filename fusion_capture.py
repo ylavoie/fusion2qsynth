@@ -467,6 +467,26 @@ def capture_mix(
 
                                     continue
 
+                            mix = project.get_mix(
+                                current_mix
+                            )
+
+                            current_name = (
+                                mix.get("name", current_mix)
+                                if mix
+                                else current_mix
+                            )
+
+                            print()
+                            print(
+                                "Nom actuel :",
+                                current_name
+                            )
+
+                            new_name = input(
+                                "Nouveau nom (Entrée = conserver) : "
+                            ).strip()
+
                             allowed_errors = (
                                 project.get_blocking_errors(
                                     project.validate()
@@ -527,6 +547,32 @@ def capture_mix(
                                 )
 
                                 continue
+
+                            if new_name:
+
+                                success, errors = (
+                                    project.rename_mix(
+                                        current_mix,
+                                        new_name
+                                    )
+                                )
+
+                                if not success:
+
+                                    project.restore_snapshot(
+                                        original_data
+                                    )
+
+                                    print()
+                                    print(
+                                        "Renommage du Mix refusé :"
+                                    )
+
+                                    print_error_messages(
+                                        errors
+                                    )
+
+                                    continue
 
                             if project.save_safe(
                                 allowed_errors=allowed_errors
