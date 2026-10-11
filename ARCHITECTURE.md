@@ -1,6 +1,6 @@
 # Fusion2QSynth – Architecture
 
-Version : 2.24
+Version : 2.25
 
 ---
 
@@ -398,8 +398,7 @@ Ses principales responsabilités sont :
 * ouvrir les ports MIDI du Fusion et de FluidSynth ;
 * permettre la sélection du mode PROGRAM, MIX ou SONG ;
 * afficher le diagnostic correspondant au mode sélectionné ;
-* retrouver la dernière performance utilisée dans ce mode ;
-* charger cette performance lorsqu'une reprise est possible ;
+* attendre la détection d'une performance transmise par le Fusion en mode PROGRAM ou MIX ;
 * sélectionner la SONG à utiliser en mode SONG ;
 * lancer `fusion_controller_loop` avec le contexte approprié ;
 * gérer le retour de la boucle temps réel vers les menus du contrôleur.
@@ -412,11 +411,12 @@ MIX
 SONG
 ```
 
-En mode PROGRAM ou MIX, si une dernière performance utilisable est connue,
-elle est chargée avant l'entrée dans la boucle temps réel.
+En mode PROGRAM ou MIX, aucune performance n'est présumée active
+au démarrage.
 
-Le contrôleur attend ensuite les changements de performance transmis par
-le Fusion.
+Le contrôleur entre dans la boucle temps réel et attend un changement
+de performance transmis par le Fusion avant de charger sa configuration
+dans FluidSynth.
 
 En mode SONG, la SONG est déterminée avant l'entrée dans la boucle temps
 réel. La boucle attend ensuite le message MIDI `START` provenant du Fusion
@@ -687,7 +687,6 @@ Ses principales responsabilités sont :
 * programmer les banques et presets SoundFont dans FluidSynth ;
 * appliquer les paramètres statiques d'une SONG ;
 * maintenir l'état de la performance courante ;
-* sauvegarder l'identifiant de la dernière performance chargée ;
 * recharger la performance courante lorsque nécessaire.
 
 ##### Sélection d'un instrument SoundFont
@@ -4414,7 +4413,12 @@ MIX
 SONG
 ```
 
-Lorsque cela est applicable, la dernière performance utilisée peut être rechargée afin de rétablir l'état musical précédent.
+En mode PROGRAM ou MIX, aucune performance n'est chargée automatiquement
+au démarrage. Le contrôleur attend un changement de performance transmis
+par le Fusion.
+
+En mode SONG, la sélection de la SONG précède l'entrée dans la boucle MIDI.
+Son chargement intervient à la réception du message MIDI `START`.
 
 Le contrôleur entre ensuite dans la boucle MIDI gérée par :
 

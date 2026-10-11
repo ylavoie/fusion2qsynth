@@ -1,5 +1,40 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.25
+
+### Éditeur
+
+* Affichage du nom de la banque PROGRAM lors de l'édition des canaux d'un MIX.
+* Simplification de l'affectation d'un PROGRAM à un canal MIX par sélection directe.
+* Sélection assistée des PROGRAM avec pagination par groupes de 16.
+* Harmonisation de l'option de retour aux menus avec la touche `q` minuscule.
+* Sélection directe des SONG acceptant également le préfixe facultatif `Song `.
+* Affichage de la catégorie effective du MIX dans son écran d'édition.
+
+### Capture des MIX
+
+* Ajout d'une saisie facultative du nom du MIX après la capture automatique.
+* Conservation du nom existant lorsque l'utilisateur appuie sur Entrée.
+* Saisie du nom uniquement après confirmation du remplacement d'un MIX existant.
+* Réutilisation de `rename_mix()` pour valider le nom.
+* Restauration de l'état initial du projet si le renommage ou la sauvegarde échoue.
+* Enregistrement du nom et des canaux par un seul appel à `save_safe()`.
+
+### Contrôleur Live
+
+* Suppression de la persistance obsolète de la dernière performance utilisée.
+* Suppression de la reprise automatique de la dernière performance au démarrage du contrôleur.
+* Le contrôleur attend désormais un changement de performance MIDI effectivement transmis par le Fusion 8HD.
+
+### Validation
+
+* Validation en utilisation réelle de la saisie facultative du nom d'un MIX.
+* Ajout de tests de non-régression pour l'affichage des catégories MIX et le renommage lors de la capture.
+* Validation complète : 1025 tests réussis.
+* Aucun changement du format des données du projet.
+
+---
+
 ## Fusion2QSynth v2.24
 
 ### Validation en utilisation réelle
