@@ -916,10 +916,6 @@ class FusionProject:
                 self.filename
             )
 
-            self.file_time = os.path.getmtime(
-                self.filename
-            )
-
         except Exception as e:
 
             print(
@@ -943,6 +939,25 @@ class FusionProject:
                 )
 
             return False
+
+        #
+        # Le fichier est maintenant installé.
+        # Une erreur de lecture des métadonnées
+        # ne doit pas invalider la sauvegarde.
+        #
+        try:
+
+            self.file_time = os.path.getmtime(
+                self.filename
+            )
+
+        except OSError as e:
+
+            print(
+                "⚠ Sauvegarde effectuée, "
+                "mais lecture de la date impossible :",
+                e
+            )
 
         #
         # À partir d'ici, fusion.json est sauvegardé.

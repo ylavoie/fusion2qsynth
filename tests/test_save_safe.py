@@ -263,6 +263,69 @@ def test_save_safe_replace_failure_preserves_original(
     )
 
 
+def test_save_safe_getmtime_failure_after_replace(
+    project,
+    monkeypatch
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    project.data[
+        "banks"
+    ][
+        "program"
+    ][
+        "1"
+    ] = "Changed"
+
+    def failing_getmtime(
+        path
+    ):
+
+        if path == project.filename:
+
+            raise OSError(
+                "simulated getmtime failure"
+            )
+
+        return real_getmtime(
+            path
+        )
+
+    real_getmtime = os.path.getmtime
+
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        failing_getmtime
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        saved = json.load(
+            f
+        )
+
+    assert saved == project.data
+
+    assert not os.path.exists(
+        project.filename + ".tmp"
+    )
+
+    assert not os.path.exists(
+        project.filename + ".old"
+    )
+
+
 def test_save_safe_backup_rotation_failure_is_nonfatal(
     project,
     monkeypatch
