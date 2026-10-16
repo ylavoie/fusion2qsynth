@@ -1,5 +1,52 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.26
+
+### Sauvegarde du projet — PROJET-01A
+
+* Correction de la gestion des erreurs de `save_safe()` après l'installation du fichier par `os.replace()`.
+* Une erreur de lecture des métadonnées après une installation réussie ne provoque plus un faux échec de sauvegarde.
+* Préservation de la cohérence entre le résultat retourné par `save_safe()` et l'état réel du fichier enregistré.
+* Ajout de tests de non-régression simulant une erreur de `getmtime()` après `os.replace()`.
+
+### Éditeur — PROJET-01B
+
+* Renforcement de la gestion transactionnelle des modifications du projet.
+* Restauration du snapshot lorsque `save_safe()` échoue après une modification en mémoire.
+* Correction des huit opérations concernées :
+  * Renommage d'un MIX.
+  * Duplication d'un MIX.
+  * Suppression d'un MIX.
+  * Renommage d'une SONG.
+  * Suppression d'une SONG.
+  * Modification ou suppression du nom personnalisé d'une banque PROGRAM ou MIX.
+  * Suppression des MIX vides.
+  * Suppression d'un PROGRAM.
+* Conservation des données originales lorsqu'une modification ne peut pas être sauvegardée.
+* Ajout de tests de non-régression vérifiant la restauration effective des données, notamment lors de suppressions multiples.
+
+### Rechargement du projet — PROJET-02
+
+* Renforcement de `reload_if_changed()` contre les erreurs temporaires de lecture des métadonnées du fichier.
+* Interception des exceptions `OSError` produites par `os.path.getmtime()`.
+* Journalisation d'un avertissement lorsqu'une lecture des métadonnées échoue.
+* Conservation de `file_time` et des données du projet en cas d'erreur.
+* Une erreur temporaire ne provoque plus l'interruption de la boucle MIDI du contrôleur Live.
+* Nouvelle tentative de détection des modifications lors de l'itération suivante.
+* Ajout d'un test de non-régression simulant une erreur temporaire suivie d'un rechargement réussi.
+
+### Validation
+
+* Validation des trois tickets PROJET-01A, PROJET-01B et PROJET-02.
+* Validation des scénarios de sauvegarde, de restauration transactionnelle et de rechargement.
+* Validation complète de la suite `pytest`, sans régression détectée.
+* Aucun changement du format des données du projet.
+* **1038 tests automatisés réussis**.
+* Validation complète avec `integration-globale.py`.
+* Tous les contrôles de l'intégration globale sont réussis.
+
+---
+
 ## Fusion2QSynth v2.25
 
 ### Éditeur

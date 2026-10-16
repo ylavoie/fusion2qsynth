@@ -1,6 +1,6 @@
 # Fusion2QSynth – Architecture
 
-Version : 2.25
+Version : 2.26
 
 ---
 
