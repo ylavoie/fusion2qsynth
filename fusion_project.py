@@ -18,6 +18,8 @@ from fusion_constants import (
     ARCHIVE_DIR
 )
 
+from fusion_lib import log_warning
+
 from fusion_gm_map import (
     FUSION_CATEGORIES,
     FUSION_PROGRAM_BANK_NAMES,
@@ -1309,9 +1311,20 @@ class FusionProject:
 
             return False
 
-        new_time = os.path.getmtime(
-            self.filename
-        )
+        try:
+
+            new_time = os.path.getmtime(
+                self.filename
+            )
+
+        except OSError as exc:
+
+            log_warning(
+                f"Impossible de lire la date de modification "
+                f"de {self.filename} : {exc}"
+            )
+
+            return False
 
         if new_time == self.file_time:
 
