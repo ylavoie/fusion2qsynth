@@ -687,6 +687,8 @@ def edit_mix(project,mix_id):
             project.validate()
         )
 
+        snapshot = project.snapshot()
+
         ok, errors = project.rename_mix(
             mix_id,
             name
@@ -697,8 +699,15 @@ def edit_mix(project,mix_id):
             if project.save_safe(
                 allowed_errors=allowed_errors
             ):
+
                 print(
                     "Mix renommé."
+                )
+
+            else:
+
+                project.restore_snapshot(
+                    snapshot
                 )
 
         else:
@@ -734,6 +743,10 @@ def edit_mix(project,mix_id):
             project.validate()
         )
 
+        snapshot = project.snapshot()
+
+        snapshot = project.snapshot()
+
         ok, errors = project.duplicate_mix(
             mix_id,
             new_mix_id
@@ -744,12 +757,17 @@ def edit_mix(project,mix_id):
             if project.save_safe(
                 allowed_errors=allowed_errors
             ):
+
                 print(
                     "Mix dupliqué :",
                     new_mix_id
                 )
 
             else:
+
+                project.restore_snapshot(
+                    snapshot
+                )
 
                 print(
                     "⚠ Sauvegarde non effectuée."
@@ -6113,6 +6131,8 @@ def manage_banks(
                 project.validate()
             )
 
+            snapshot = project.snapshot()
+
             success, messages = project.set_bank_name(
                 performance_type,
                 bank,
@@ -6127,6 +6147,16 @@ def manage_banks(
 
                     print(
                         "Nom de banque enregistré."
+                    )
+
+                else:
+
+                    project.restore_snapshot(
+                        snapshot
+                    )
+
+                    print(
+                        "⚠ Sauvegarde non effectuée."
                     )
 
             else:
@@ -6267,6 +6297,8 @@ def main():
                 project.validate()
             )
 
+            snapshot = project.snapshot()
+
             ok, removed = project.delete_empty_mixes()
 
             if ok:
@@ -6284,6 +6316,7 @@ def main():
                 if project.save_safe(
                     allowed_errors=allowed_errors
                 ):
+
                     print()
 
                     print(
@@ -6306,6 +6339,16 @@ def main():
 
                     print(
                         "Sauvegarde effectuée."
+                    )
+
+                else:
+
+                    project.restore_snapshot(
+                        snapshot
+                    )
+
+                    print(
+                        "⚠ Sauvegarde non effectuée."
                     )
 
             else:
@@ -6377,6 +6420,8 @@ def main():
                 project.validate()
             )
 
+            snapshot = project.snapshot()
+
             ok, errors = project.delete_mix(
                 mix_id
             )
@@ -6399,6 +6444,16 @@ def main():
 
                 print(
                     "MIX supprimé."
+                )
+
+            else:
+
+                project.restore_snapshot(
+                    snapshot
+                )
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
                 )
 
         while True:
@@ -6670,6 +6725,8 @@ def main():
                 project.validate()
             )
 
+            snapshot = project.snapshot()
+
             ok, errors = project.delete_program(
                 program_id
             )
@@ -6694,6 +6751,10 @@ def main():
                 )
 
             else:
+
+                project.restore_snapshot(
+                    snapshot
+                )
 
                 print(
                     "⚠ Sauvegarde non effectuée."
@@ -6870,6 +6931,8 @@ def main():
                 project.validate()
             )
 
+            snapshot = project.snapshot()
+
             ok, errors = project.rename_song(
                 song_id,
                 new_name
@@ -6890,8 +6953,19 @@ def main():
             if project.save_safe(
                 allowed_errors=allowed_errors
             ):
+
                 print(
                     "SONG renommée."
+                )
+
+            else:
+
+                project.restore_snapshot(
+                    snapshot
+                )
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
                 )
 
         def delete_song_menu():
@@ -6956,6 +7030,8 @@ def main():
                 project.validate()
             )
 
+            snapshot = project.snapshot()
+
             ok, errors = project.delete_song(
                 song_id
             )
@@ -6975,8 +7051,19 @@ def main():
             if project.save_safe(
                 allowed_errors=allowed_errors
             ):
+
                 print(
                     "SONG supprimée."
+                )
+
+            else:
+
+                project.restore_snapshot(
+                    snapshot
+                )
+
+                print(
+                    "⚠ Sauvegarde non effectuée."
                 )
 
         while True:

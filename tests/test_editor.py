@@ -1497,6 +1497,10 @@ def test_edit_mix_rename_success(
 
             return mix
 
+        def snapshot(self):
+
+            return mix.copy()
+
         def validate_mix(
             self,
             mix_id
@@ -1591,6 +1595,110 @@ def test_edit_mix_rename_success(
     )
 
 
+def test_edit_mix_rename_save_failure_restores_snapshot(
+    monkeypatch,
+    capsys
+):
+
+    mix = {
+        "name": "Original"
+    }
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return mix
+
+        def validate_mix(
+            self,
+            mix_id
+        ):
+
+            return []
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return mix.copy()
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            mix.clear()
+            mix.update(
+                snapshot
+            )
+
+        def rename_mix(
+            self,
+            mix_id,
+            name
+        ):
+
+            mix["name"] = name
+
+            return (
+                True,
+                []
+            )
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return False
+
+    project = Project()
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_mix",
+        lambda *args:
+            None
+    )
+
+    responses = iter([
+        "1",
+        "Nouveau Mix",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix(
+        project,
+        "0:1"
+    )
+
+    assert mix["name"] == "Original"
+
+    assert (
+        "Mix renommé."
+        not in capsys.readouterr().out
+    )
+
+
 def test_edit_mix_rename_failure(
     monkeypatch,
     capsys
@@ -1603,6 +1711,10 @@ def test_edit_mix_rename_failure(
         def get_mix(self, mix_id):
 
             return mix
+
+        def snapshot(self):
+
+            return mix.copy()
 
         def validate_mix(self, mix_id):
 
@@ -1689,6 +1801,19 @@ def test_edit_mix_duplicate_paths(
         def get_mix(self, mix_id):
 
             return mix
+
+        def snapshot(self):
+
+            return list(
+                self.duplicates
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            pass
 
         def validate_mix(self, mix_id):
 
@@ -1810,6 +1935,131 @@ def test_edit_mix_duplicate_paths(
 
     assert "Duplication refusée :" in output
     assert "Erreur duplicate" in output
+
+
+def test_edit_mix_duplicate_save_failure_restores_snapshot(
+    monkeypatch,
+    capsys
+):
+
+    import copy
+
+    mixes = {
+        "0:1": {
+            "name": "Original"
+        }
+    }
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return mixes.get(
+                mix_id
+            )
+
+        def validate_mix(
+            self,
+            mix_id
+        ):
+
+            return []
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return copy.deepcopy(
+                mixes
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            mixes.clear()
+            mixes.update(
+                snapshot
+            )
+
+        def duplicate_mix(
+            self,
+            mix_id,
+            new_mix_id
+        ):
+
+            mixes[new_mix_id] = copy.deepcopy(
+                mixes[mix_id]
+            )
+
+            return (
+                True,
+                []
+            )
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return False
+
+    project = Project()
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_mix",
+        lambda *args:
+            None
+    )
+
+    responses = iter([
+        "2",
+        "0:2",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.edit_mix(
+        project,
+        "0:1"
+    )
+
+    assert mixes == {
+        "0:1": {
+            "name": "Original"
+        }
+    }
+
+    output = capsys.readouterr().out
+
+    assert (
+        "⚠ Sauvegarde non effectuée."
+        in output
+    )
+
+    assert (
+        "Mix dupliqué : 0:2"
+        not in output
+    )
 
 
 def test_edit_mix_test_menu(
@@ -12408,6 +12658,10 @@ def test_manage_banks_set_and_remove_name(
 
             return None
 
+        def snapshot(self):
+
+            return None
+
         def validate(self):
 
             return [
@@ -12532,6 +12786,10 @@ def test_manage_banks_set_name_failure(
 
             return None
 
+        def snapshot(self):
+
+            return None
+
         def validate(self):
 
             return []
@@ -12590,6 +12848,171 @@ def test_manage_banks_set_name_failure(
         "Modification refusée :"
         in capsys.readouterr().out
     )
+
+
+@pytest.mark.parametrize(
+    "name, initial_name",
+    [
+        (
+            "Custom",
+            None
+        ),
+        (
+            "-",
+            "Old name"
+        )
+    ]
+)
+
+
+def test_manage_banks_save_failure(
+    monkeypatch,
+    capsys,
+    name,
+    initial_name
+):
+
+    import copy
+
+    class Project:
+
+        def __init__(self):
+
+            self.data = {
+                "banks": {
+                    "mix": {}
+                }
+            }
+
+            if initial_name is not None:
+
+                self.data["banks"]["mix"]["8"] = (
+                    initial_name
+                )
+
+        def get_banks(
+            self,
+            performance_type
+        ):
+
+            return [8]
+
+        def get_bank_name(
+            self,
+            performance_type,
+            bank
+        ):
+
+            return "USER"
+
+        def get_custom_bank_name(
+            self,
+            performance_type,
+            bank
+        ):
+
+            return self.data["banks"][
+                performance_type
+            ].get(str(bank))
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return copy.deepcopy(
+                self.data
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            self.data = snapshot
+
+        def set_bank_name(
+            self,
+            performance_type,
+            bank,
+            new_name
+        ):
+
+            banks = self.data["banks"][
+                performance_type
+            ]
+
+            if new_name is None:
+
+                banks.pop(
+                    str(bank),
+                    None
+                )
+
+            else:
+
+                banks[str(bank)] = new_name
+
+            return True, []
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            assert allowed_errors == []
+
+            current_name = (
+                self.data["banks"]["mix"].get("8")
+            )
+
+            expected_name = (
+                None
+                if name == "-"
+                else name
+            )
+
+            assert current_name == expected_name
+
+            return False
+
+    project = Project()
+
+    original_data = copy.deepcopy(
+        project.data
+    )
+
+    responses = iter([
+        "2",
+        "8",
+        name,
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.manage_banks(
+        project
+    )
+
+    output = capsys.readouterr().out
+
+    assert "Sauvegarde non effectuée." in output
+
+    assert project.data == original_data
 
 
 def test_print_project_summary(
@@ -13510,6 +13933,10 @@ def test_main_delete_empty_mixes_result(
                 )
             ])
 
+        def snapshot(self):
+
+            return None
+
         def validate(self):
 
             return []
@@ -13573,6 +14000,142 @@ def test_main_delete_empty_mixes_result(
     if delete_result[1]:
 
         assert "Sauvegarde effectuée." in output
+
+
+def test_main_delete_empty_mixes_save_failure(
+    monkeypatch,
+    capsys
+):
+
+    import copy
+
+    class Project:
+
+        def __init__(self):
+
+            self.data = {
+                "mixes": {
+                    "0:1": {
+                        "name": "Vide 1",
+                        "channels": {}
+                    },
+                    "0:2": {
+                        "name": "Vide 2",
+                        "channels": {}
+                    },
+                    "0:3": {
+                        "name": "Non vide",
+                        "channels": {
+                            "1": {}
+                        }
+                    }
+                }
+            }
+
+        def iter_mixes(self):
+
+            return iter(
+                self.data["mixes"].items()
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return copy.deepcopy(
+                self.data
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            self.data = snapshot
+
+        def delete_empty_mixes(self):
+
+            removed = [
+                "0:1",
+                "0:2"
+            ]
+
+            for mix_id in removed:
+
+                del self.data["mixes"][mix_id]
+
+            return True, removed
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            assert allowed_errors == []
+
+            assert set(
+                self.data["mixes"]
+            ) == {"0:3"}
+
+            return False
+
+    project = Project()
+
+    original_data = copy.deepcopy(
+        project.data
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        lambda: project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    responses = iter([
+        "1",
+        "7",
+        "o",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Sauvegarde non effectuée."
+        in output
+    )
+
+    assert project.data == original_data
 
 
 def test_main_programs_list_and_direct_edit(
@@ -13986,6 +14549,174 @@ def test_main_rename_program_result(
         ]
 
 
+@pytest.mark.parametrize(
+    "rename_ok, save_ok, expected",
+    [
+        (
+            False,
+            True,
+            "Renommage refusé."
+        ),
+        (
+            True,
+            True,
+            "SONG renommée."
+        ),
+        (
+            True,
+            False,
+            "Sauvegarde non effectuée."
+        )
+    ]
+)
+def test_main_rename_song_transaction(
+    monkeypatch,
+    capsys,
+    rename_ok,
+    save_ok,
+    expected
+):
+
+    restored = []
+    errors_seen = []
+
+    class Project:
+
+        def get_song(
+            self,
+            song_id
+        ):
+
+            return {
+                "name": "Old"
+            }
+
+        def validate(self):
+
+            return ["existing"]
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return ["allowed"]
+
+        def snapshot(self):
+
+            return {
+                "snapshot": True
+            }
+
+        def rename_song(
+            self,
+            song_id,
+            name
+        ):
+
+            assert song_id == "Song test"
+            assert name == "New name"
+
+            if rename_ok:
+
+                return True, []
+
+            return False, [
+                "rename error"
+            ]
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            assert allowed_errors == [
+                "allowed"
+            ]
+
+            return save_ok
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            restored.append(
+                snapshot
+            )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        Project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_song_id",
+        lambda project: "Song test"
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_error_messages",
+        lambda errors:
+            errors_seen.extend(errors)
+    )
+
+    responses = iter([
+        "3",
+        "5",
+        "New name",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    output = capsys.readouterr().out
+
+    assert expected in output
+
+    if not rename_ok:
+
+        assert errors_seen == [
+            "rename error"
+        ]
+
+        assert restored == []
+
+    elif not save_ok:
+
+        assert restored == [
+            {
+                "snapshot": True
+            }
+        ]
+
+    else:
+
+        assert restored == []
+
+
 def test_main_delete_program_early_returns(
     monkeypatch,
     capsys
@@ -14107,6 +14838,17 @@ def test_main_delete_program_result(
                 "parts": {}
             }
 
+        def snapshot(self):
+
+            return None
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            pass
+
         def validate(self):
 
             return []
@@ -14191,6 +14933,159 @@ def test_main_delete_program_result(
         assert errors_seen == [
             "delete error"
         ]
+
+
+def test_main_delete_program_save_failure(
+    monkeypatch,
+    capsys
+):
+
+    import copy
+
+    class Project:
+
+        def __init__(self):
+
+            self.data = {
+                "programs": {
+                    "2:42": {
+                        "name": "My Program",
+                        "parts": {
+                            "1": {
+                                "instrument": "Piano"
+                            },
+                            "2": {
+                                "instrument": "Strings"
+                            }
+                        }
+                    },
+                    "2:43": {
+                        "name": "Other Program",
+                        "parts": {}
+                    }
+                }
+            }
+
+        def get_program(
+            self,
+            program_id
+        ):
+
+            return self.data[
+                "programs"
+            ].get(program_id)
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return copy.deepcopy(
+                self.data
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            self.data = snapshot
+
+        def delete_program(
+            self,
+            program_id
+        ):
+
+            del self.data[
+                "programs"
+            ][program_id]
+
+            return True, []
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            assert allowed_errors == []
+
+            assert "2:42" not in self.data[
+                "programs"
+            ]
+
+            assert "2:43" in self.data[
+                "programs"
+            ]
+
+            return False
+
+    project = Project()
+
+    original_data = copy.deepcopy(
+        project.data
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        lambda: project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_program_id",
+        lambda project: "2:42"
+    )
+
+    responses = iter([
+        "2",
+        "7",
+        "o",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    output = capsys.readouterr().out
+
+    assert (
+        "Sauvegarde non effectuée."
+        in output
+    )
+
+    assert (
+        "PROGRAM supprimé."
+        not in output
+    )
+
+    assert project.data == original_data
 
 
 def test_main_songs_list_and_direct_edit(
@@ -14484,6 +15379,10 @@ def test_main_rename_song_result(
                 "name": "Old Song"
             }
 
+        def snapshot(self):
+
+            return None
+
         def validate(self):
 
             return ["existing"]
@@ -14690,6 +15589,10 @@ def test_main_delete_song_result(
                 "channels": {}
             }
 
+        def snapshot(self):
+
+            return None
+
         def validate(self):
 
             return []
@@ -14777,6 +15680,135 @@ def test_main_delete_song_result(
         ]
 
 
+def test_main_delete_song_save_failure(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def __init__(self):
+
+            self.data = {
+                "songs": {
+                    "song1": {
+                        "name": "My Song",
+                        "channels": {
+                            "1": {}
+                        }
+                    }
+                }
+            }
+
+        def get_song(
+            self,
+            song_id
+        ):
+
+            return self.data["songs"].get(
+                song_id
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            import copy
+
+            return copy.deepcopy(
+                self.data
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            self.data = snapshot
+
+        def delete_song(
+            self,
+            song_id
+        ):
+
+            del self.data["songs"][song_id]
+
+            return True, []
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            assert allowed_errors == []
+
+            assert "song1" not in self.data["songs"]
+
+            return False
+
+    project = Project()
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        lambda: project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_song_id",
+        lambda project: "song1"
+    )
+
+    responses = iter([
+        "3",
+        "6",
+        "o",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    output = capsys.readouterr().out
+
+    assert "Sauvegarde non effectuée." in output
+
+    assert project.data["songs"]["song1"] == {
+        "name": "My Song",
+        "channels": {
+            "1": {}
+        }
+    }
+
+
 def test_main_delete_mix_success(
     monkeypatch,
     capsys
@@ -14793,6 +15825,10 @@ def test_main_delete_mix_success(
                 "name": "My Mix",
                 "channels": {}
             }
+
+        def snapshot(self):
+
+            return None
 
         def validate(self):
 
@@ -15174,6 +16210,10 @@ def test_main_delete_mix_failure(
                 "channels": {}
             }
 
+        def snapshot(self):
+
+            return None
+
         def validate(self):
 
             return []
@@ -15252,6 +16292,134 @@ def test_main_delete_mix_failure(
     assert errors_seen == [
         "delete error"
     ]
+
+
+def test_main_delete_mix_save_failure_restores_snapshot(
+    monkeypatch,
+    capsys
+):
+
+    import copy
+
+    mixes = {
+        "0:1": {
+            "name": "My Mix",
+            "channels": {}
+        }
+    }
+
+    class Project:
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return mixes.get(
+                mix_id
+            )
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return copy.deepcopy(
+                mixes
+            )
+
+        def restore_snapshot(
+            self,
+            snapshot
+        ):
+
+            mixes.clear()
+            mixes.update(
+                snapshot
+            )
+
+        def delete_mix(
+            self,
+            mix_id
+        ):
+
+            del mixes[mix_id]
+
+            return True, []
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            return False
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        Project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_mix_id",
+        lambda project: "0:1"
+    )
+
+    responses = iter([
+        "1",
+        "6",
+        "o",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.main()
+
+    assert mixes == {
+        "0:1": {
+            "name": "My Mix",
+            "channels": {}
+        }
+    }
+
+    output = capsys.readouterr().out
+
+    assert (
+        "⚠ Sauvegarde non effectuée."
+        in output
+    )
+
+    assert (
+        "MIX supprimé."
+        not in output
+    )
 
 
 def test_choose_fusion_category(
