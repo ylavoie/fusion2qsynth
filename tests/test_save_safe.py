@@ -375,3 +375,237 @@ def test_save_safe_backup_rotation_failure_is_nonfatal(
     assert not os.path.exists(
         project.filename + ".old"
     )
+
+
+def test_save_safe_old_cleanup_failure_after_replace(
+    project,
+    monkeypatch
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    project.data[
+        "banks"
+    ][
+        "program"
+    ][
+        "1"
+    ] = "Changed"
+
+    old_file = (
+        project.filename
+        + ".old"
+    )
+
+    real_remove = os.remove
+
+    def failing_remove(
+        path
+    ):
+
+        if path == old_file:
+
+            raise OSError(
+                "simulated cleanup failure"
+            )
+
+        return real_remove(
+            path
+        )
+
+    def failing_rotate(
+        path
+    ):
+
+        raise OSError(
+            "simulated rotation failure"
+        )
+
+    monkeypatch.setattr(
+        os,
+        "remove",
+        failing_remove
+    )
+
+    monkeypatch.setattr(
+        project,
+        "_rotate_backups",
+        failing_rotate
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        assert json.load(f) == project.data
+
+    assert os.path.exists(
+        old_file
+    )
+
+
+def test_save_safe_temp_cleanup_failure(
+    project,
+    monkeypatch
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        original = json.load(f)
+
+    project.data[
+        "banks"
+    ][
+        "program"
+    ][
+        "1"
+    ] = "Changed"
+
+    temp_file = project.filename + ".tmp"
+
+    real_remove = os.remove
+
+    def failing_replace(src, dst):
+
+        if src == temp_file:
+
+            raise OSError(
+                "simulated replace failure"
+            )
+
+        return real_replace(src, dst)
+
+    def failing_remove(path):
+
+        if path == temp_file:
+
+            raise OSError(
+                "simulated cleanup failure"
+            )
+
+        return real_remove(path)
+
+    real_replace = os.replace
+
+    monkeypatch.setattr(
+        os,
+        "replace",
+        failing_replace
+    )
+
+    monkeypatch.setattr(
+        os,
+        "remove",
+        failing_remove
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        assert json.load(f) == original
+
+    assert os.path.exists(
+        temp_file
+    )
+
+
+def test_save_safe_old_cleanup_failure_before_replace(
+    project,
+    monkeypatch
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        original = json.load(f)
+
+    project.data[
+        "banks"
+    ][
+        "program"
+    ][
+        "1"
+    ] = "Changed"
+
+    temp_file = project.filename + ".tmp"
+    old_file = project.filename + ".old"
+
+    real_replace = os.replace
+    real_remove = os.remove
+
+    def failing_replace(src, dst):
+
+        if src == temp_file:
+
+            raise OSError(
+                "simulated replace failure"
+            )
+
+        return real_replace(src, dst)
+
+    def failing_remove(path):
+
+        if path == old_file:
+
+            raise OSError(
+                "simulated old cleanup failure"
+            )
+
+        return real_remove(path)
+
+    monkeypatch.setattr(
+        os,
+        "replace",
+        failing_replace
+    )
+
+    monkeypatch.setattr(
+        os,
+        "remove",
+        failing_remove
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        assert json.load(f) == original
+
+    assert not os.path.exists(
+        temp_file
+    )
+
+    assert os.path.exists(
+        old_file
+    )

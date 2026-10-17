@@ -924,21 +924,29 @@ class FusionProject:
                 f"Sauvegarde impossible : {e}"
             )
 
-            if os.path.exists(
-                temp_file
-            ):
-
-                os.remove(
-                    temp_file
-                )
-
-            if os.path.exists(
+            for cleanup_file in (
+                temp_file,
                 old_file
             ):
 
-                os.remove(
-                    old_file
-                )
+                try:
+
+                    if os.path.exists(
+                        cleanup_file
+                    ):
+
+                        os.remove(
+                            cleanup_file
+                        )
+
+                except OSError as cleanup_error:
+
+                    print(
+                        "⚠ Nettoyage impossible :",
+                        cleanup_file,
+                        "-",
+                        cleanup_error
+                    )
 
             return False
 
@@ -990,12 +998,22 @@ class FusionProject:
             # old_file peut encore exister si
             # la rotation a échoué.
             #
-            if os.path.exists(
-                old_file
-            ):
+            try:
 
-                os.remove(
+                if os.path.exists(
                     old_file
+                ):
+
+                    os.remove(
+                        old_file
+                    )
+
+            except OSError as e:
+
+                print(
+                    "⚠ Sauvegarde effectuée, "
+                    "mais nettoyage du fichier .old impossible :",
+                    e
                 )
 
         return True
