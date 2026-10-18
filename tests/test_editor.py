@@ -13708,68 +13708,6 @@ def test_main_delete_mix_confirmation_cancel(
     assert "Canaux : 1" in output
 
 
-def test_main_delete_mix_confirmation_cancel(
-    monkeypatch,
-    capsys
-):
-
-    class Project:
-
-        def get_mix(self, mix_id):
-
-            return {
-                "name": "My Mix",
-                "channels": {
-                    "1": {}
-                }
-            }
-
-    monkeypatch.setattr(
-        fusion_editor,
-        "FusionProject",
-        Project
-    )
-
-    monkeypatch.setattr(
-        fusion_editor,
-        "validate_and_repair",
-        lambda project: None
-    )
-
-    monkeypatch.setattr(
-        fusion_editor,
-        "print_project_summary",
-        lambda project: None
-    )
-
-    monkeypatch.setattr(
-        fusion_editor,
-        "choose_mix_id",
-        lambda project: "0:1"
-    )
-
-    responses = iter([
-        "1",
-        "6",
-        "n",
-        "q",
-        "q"
-    ])
-
-    monkeypatch.setattr(
-        "builtins.input",
-        lambda prompt:
-            next(responses)
-    )
-
-    fusion_editor.main()
-
-    output = capsys.readouterr().out
-
-    assert "My Mix" in output
-    assert "Canaux : 1" in output
-
-
 def test_main_delete_empty_mixes_none(
     monkeypatch,
     capsys

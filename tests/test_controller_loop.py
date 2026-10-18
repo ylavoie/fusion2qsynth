@@ -1891,65 +1891,6 @@ def test_controller_loads_detected_mix(
     ]
 
 
-def test_controller_loads_detected_mix(
-    project,
-    monkeypatch
-):
-
-    messages = [
-        mido.Message(
-            "control_change",
-            channel=fusion_controller_loop.fusion_default_channel,
-            control=0,
-            value=2
-        ),
-        mido.Message(
-            "program_change",
-            channel=fusion_controller_loop.fusion_default_channel,
-            program=4
-        ),
-    ]
-
-    inp = DummyInput([messages])
-    out = DummyOutput()
-
-    fusion_controller_loop.state.current_performance = None
-
-    monkeypatch.setattr(
-        project,
-        "reload_if_changed",
-        lambda: False
-    )
-
-    monkeypatch.setattr(
-        project,
-        "get_mix_bank_name",
-        lambda bank: "Test MIX Bank"
-    )
-
-    loaded = []
-
-    monkeypatch.setattr(
-        fusion_controller_loop,
-        "load_mix",
-        lambda performance_id, output, proj:
-            loaded.append(performance_id)
-    )
-
-    with pytest.raises(StopControllerLoop):
-
-        fusion_controller_loop.run_controller_loop(
-            inp,
-            out,
-            project,
-            "mix"
-        )
-
-    assert loaded == [
-        "2:4"
-    ]
-
-
 def test_controller_start_loads_selected_song(
     project,
     monkeypatch
