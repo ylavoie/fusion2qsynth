@@ -332,11 +332,21 @@ class FusionProject:
                 FUSION_FILE
             )
 
-            candidate.file_time = (
-                os.path.getmtime(
-                    FUSION_FILE
+            try:
+
+                candidate.file_time = (
+                    os.path.getmtime(
+                        FUSION_FILE
+                    )
                 )
-            )
+
+            except OSError as e:
+
+                print(
+                    "⚠ Restauration effectuée, "
+                    "mais lecture de la date impossible :",
+                    e
+                )
 
             candidate._log_recovery(
                 "RESTORE_VALIDATED "
@@ -356,12 +366,22 @@ class FusionProject:
 
         finally:
 
-            if os.path.exists(
-                temp_file
-            ):
+            try:
 
-                os.remove(
+                if os.path.exists(
                     temp_file
+                ):
+
+                    os.remove(
+                        temp_file
+                    )
+
+            except OSError as e:
+
+                print(
+                    "⚠ Restauration : nettoyage du "
+                    "fichier temporaire impossible :",
+                    e
                 )
 
     @classmethod
