@@ -276,3 +276,84 @@ def test_reload_getmtime_failure_then_retry(
             project.filename
         )
     )
+
+
+def test_reload_load_getmtime_failure_preserves_state(
+    project,
+    monkeypatch
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    before = project.snapshot()
+    old_file_time = project.file_time
+
+    data = copy.deepcopy(
+        project.data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Reloaded"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f
+        )
+
+    os.utime(
+        project.filename,
+        (
+            old_file_time + 10,
+            old_file_time + 10
+        )
+    )
+
+    real_getmtime = os.path.getmtime
+    attempts = 0
+
+    def temporary_getmtime(
+        filename
+    ):
+
+        nonlocal attempts
+
+        attempts += 1
+
+        if attempts == 2:
+
+            raise OSError(
+                "Erreur getmtime pendant load"
+            )
+
+        return real_getmtime(
+            filename
+        )
+
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        temporary_getmtime
+    )
+
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert attempts == 2
+
+    assert project.data == before
+
+    assert (
+        project.file_time
+        == old_file_time
+    )

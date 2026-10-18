@@ -1377,7 +1377,8 @@ class FusionProject:
 
         except (
             ProjectRecoveryError,
-            RuntimeError
+            RuntimeError,
+            OSError
         ):
 
             self.restore_snapshot(
