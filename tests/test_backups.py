@@ -208,3 +208,70 @@ def test_list_backups_skips_file_disappearing_before_stat(
     ] == [
         "fusion.json.bak1"
     ]
+
+
+def test_list_backups_skips_inaccessible_file(
+    monkeypatch
+):
+
+    real_stat = os.stat
+
+    filename = "fusion.json.bak"
+
+    with open(
+        filename,
+        "wb"
+    ) as f:
+
+        f.write(
+            b"x"
+        )
+
+    with open(
+        "fusion.json.bak1",
+        "wb"
+    ) as f:
+
+        f.write(
+            b"y"
+        )
+
+    stat_calls = 0
+
+    def failing_stat(
+        path,
+        *args,
+        **kwargs
+    ):
+
+        nonlocal stat_calls
+
+        if os.fspath(path) == filename:
+
+            stat_calls += 1
+
+            if stat_calls == 2:
+
+                raise PermissionError(
+                    filename
+                )
+
+        return real_stat(
+            path,
+            *args,
+            **kwargs
+        )
+
+    monkeypatch.setattr(
+        "fusion_project.os.stat",
+        failing_stat
+    )
+
+    backups = FusionProject.list_backups()
+
+    assert [
+        backup["filename"]
+        for backup in backups
+    ] == [
+        "fusion.json.bak1"
+    ]

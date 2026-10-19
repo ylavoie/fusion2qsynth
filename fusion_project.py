@@ -411,7 +411,10 @@ class FusionProject:
                     filename
                 )
 
-            except FileNotFoundError:
+            except (
+                FileNotFoundError,
+                PermissionError
+            ):
 
                 continue
 
