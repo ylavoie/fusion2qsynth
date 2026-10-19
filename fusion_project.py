@@ -405,9 +405,15 @@ class FusionProject:
 
                 continue
 
-            stat = os.stat(
-                filename
-            )
+            try:
+
+                stat = os.stat(
+                    filename
+                )
+
+            except FileNotFoundError:
+
+                continue
 
             backups.append(
                 {
