@@ -8,6 +8,8 @@ import copy
 import re
 import hashlib
 
+from collections import Counter
+
 from datetime import (
     date,
     datetime
@@ -859,11 +861,25 @@ class FusionProject:
             self.validate()
         )
 
-        return [
-            error
-            for error in after_errors
-            if error not in before_errors
-        ]
+        remaining_errors = Counter(
+            before_errors
+        )
+
+        new_errors = []
+
+        for error in after_errors:
+
+            if remaining_errors[error] > 0:
+
+                remaining_errors[error] -= 1
+
+            else:
+
+                new_errors.append(
+                    error
+                )
+
+        return new_errors
 
     def save_safe(
         self,
@@ -876,11 +892,25 @@ class FusionProject:
             errors
         )
 
-        blocking_errors = [
-            error
-            for error in blocking_errors
-            if error not in allowed_errors
-        ]
+        remaining_errors = Counter(
+            allowed_errors
+        )
+
+        new_errors = []
+
+        for error in blocking_errors:
+
+            if remaining_errors[error] > 0:
+
+                remaining_errors[error] -= 1
+
+            else:
+
+                new_errors.append(
+                    error
+                )
+
+        blocking_errors = new_errors
 
         if blocking_errors:
 
