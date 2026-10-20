@@ -84,12 +84,118 @@ def assert_no_restore_temp():
             ARCHIVE_DIR
         )
 
-    assert not os.path.exists(
-        "fusion.json.restore.tmp"
-    ), (
-        "Le fichier temporaire de "
-        "restauration existe encore."
+    temp_files = [
+        filename
+        for filename in os.listdir(
+            "."
+        )
+        if (
+            filename.startswith(
+                "fusion-restore-"
+            )
+            and
+            filename.endswith(
+                ".tmp"
+            )
+        )
+    ]
+
+    assert not temp_files, (
+        "Fichiers temporaires de "
+        "restauration encore présents : "
+        f"{temp_files}"
     )
+
+
+def test_restore_preserves_existing_temp(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(
+        tmp_path
+    )
+
+    original = make_valid_project()
+    restored = make_valid_project()
+
+    restored["mixes"]["0:0"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "valid.archive",
+        restored
+    )
+
+    #
+    # Ancien fichier temporaire :
+    # il ne doit pas être modifié.
+    #
+    old_temp = (
+        "fusion.json.restore.tmp"
+    )
+
+    old_content = (
+        "Fichier temporaire préexistant"
+    )
+
+    with open(
+        old_temp,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(
+            old_content
+        )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    result = (
+        FusionProject.restore_from_archive(
+            "valid.archive"
+        )
+    )
+
+    #
+    # La restauration doit réussir.
+    #
+    assert result is not None
+
+    assert result.filename == (
+        "fusion.json"
+    )
+
+    assert read_json(
+        "fusion.json"
+    ) == restored
+
+    #
+    # L'ancien fichier temporaire
+    # doit être conservé intact.
+    #
+    with open(
+        old_temp,
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        assert f.read() == (
+            old_content
+        )
 
 
 def test_missing_archive():
@@ -714,18 +820,47 @@ def test_restore_temp_cleanup_failure(
     real_remove = os.remove
     real_replace = os.replace
 
+    def is_restore_temp(
+        path
+    ):
+
+        filename = os.path.basename(
+            os.fspath(
+                path
+            )
+        )
+
+        return (
+            filename.startswith(
+                "fusion-restore-"
+            )
+            and
+            filename.endswith(
+                ".tmp"
+            )
+        )
+
+    replace_simulated = False
+    remove_simulated = False
+
     def failing_replace(
         src,
         dst
     ):
 
+        nonlocal replace_simulated
+
         if (
-            os.fspath(src)
-            == "fusion.json.restore.tmp"
+            is_restore_temp(
+                src
+            )
             and
-            os.fspath(dst)
-            == "fusion.json"
+            os.fspath(
+                dst
+            ) == "fusion.json"
         ):
+
+            replace_simulated = True
 
             real_replace(
                 src,
@@ -757,10 +892,13 @@ def test_restore_temp_cleanup_failure(
         path
     ):
 
-        if (
-            os.fspath(path)
-            == "fusion.json.restore.tmp"
+        nonlocal remove_simulated
+
+        if is_restore_temp(
+            path
         ):
+
+            remove_simulated = True
 
             raise OSError(
                 "Erreur simulée nettoyage"
@@ -795,6 +933,9 @@ def test_restore_temp_cleanup_failure(
     assert read_json(
         "fusion.json"
     ) == restored
+
+    assert replace_simulated
+    assert remove_simulated
 
 
 def test_restore_aborts_when_prearchive_fails(
