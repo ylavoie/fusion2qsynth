@@ -248,11 +248,11 @@ def main():
 
         if choix == "1":
 
-            fusion_capture.main()
+            fusion_capture.run()
 
         elif choix == "2":
 
-            fusion_editor.main()
+            fusion_editor.run()
 
         elif choix == "3":
 

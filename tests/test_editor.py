@@ -13153,7 +13153,7 @@ def test_main_menu_routes(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert validation_calls == [
         project
@@ -13236,7 +13236,7 @@ def test_main_mixes_lists_empty(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert calls == [
         None,
@@ -13349,7 +13349,7 @@ def test_main_mixes_filtered_edit(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert edits == [
         "0:1"
@@ -13422,7 +13422,7 @@ def test_main_mixes_direct_edit(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert edits == [
         "0:1"
@@ -13496,7 +13496,7 @@ def test_main_mixes_category_filter(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert calls == [
         (
@@ -13573,7 +13573,7 @@ def test_main_programs_category_filter(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert calls == [
         (
@@ -13638,7 +13638,7 @@ def test_main_delete_mix_cancel_and_unknown(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert (
         "Mix inconnu."
@@ -13700,7 +13700,7 @@ def test_main_delete_mix_confirmation_cancel(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -13759,7 +13759,7 @@ def test_main_delete_empty_mixes_none(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert (
         "Aucun MIX vide."
@@ -13821,7 +13821,7 @@ def test_main_delete_empty_mixes_cancel(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -13929,7 +13929,7 @@ def test_main_delete_empty_mixes_result(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -14064,7 +14064,7 @@ def test_main_delete_empty_mixes_save_failure(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -14141,7 +14141,7 @@ def test_main_programs_list_and_direct_edit(
         lambda prompt: next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert edits == [
         "2:42"
@@ -14245,7 +14245,7 @@ def test_main_programs_filtered(
         lambda prompt: next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert calls == [
         ["2:10"],
@@ -14323,7 +14323,7 @@ def test_main_rename_program_early_returns(
         lambda prompt: next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -14468,7 +14468,7 @@ def test_main_rename_program_result(
         lambda prompt: next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert expected in capsys.readouterr().out
 
@@ -14628,7 +14628,7 @@ def test_main_rename_song_transaction(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -14725,7 +14725,7 @@ def test_main_delete_program_early_returns(
         lambda prompt: next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -14862,7 +14862,7 @@ def test_main_delete_program_result(
         lambda prompt: next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert expected in capsys.readouterr().out
 
@@ -15009,7 +15009,7 @@ def test_main_delete_program_save_failure(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -15092,7 +15092,7 @@ def test_main_songs_list_and_direct_edit(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert edits == [
         "song1"
@@ -15197,7 +15197,7 @@ def test_main_songs_filtered(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert choose_calls == [
         ["song1"],
@@ -15276,7 +15276,7 @@ def test_main_rename_song_early_returns(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -15402,7 +15402,7 @@ def test_main_rename_song_result(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert expected in capsys.readouterr().out
 
@@ -15484,7 +15484,7 @@ def test_main_delete_song_early_returns(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -15607,7 +15607,7 @@ def test_main_delete_song_result(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert expected in capsys.readouterr().out
 
@@ -15733,7 +15733,7 @@ def test_main_delete_song_save_failure(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     output = capsys.readouterr().out
 
@@ -15835,7 +15835,7 @@ def test_main_delete_mix_success(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert (
         "MIX supprimé."
@@ -16015,7 +16015,7 @@ def test_main_remaining_mix_program_branches(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert mix_edits == [
         "0:2"
@@ -16122,7 +16122,7 @@ def test_main_remaining_song_branches(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert edits == [
         "song1"
@@ -16220,7 +16220,7 @@ def test_main_delete_mix_failure(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert (
         "Suppression refusée."
@@ -16338,7 +16338,7 @@ def test_main_delete_mix_save_failure_restores_snapshot(
             next(responses)
     )
 
-    fusion_editor.main()
+    fusion_editor.run()
 
     assert mixes == {
         "0:1": {

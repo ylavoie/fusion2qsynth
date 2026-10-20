@@ -20,7 +20,7 @@ def test_main_missing_fusion(
         match="Fusion MIDI introuvable"
     ):
 
-        fusion_capture.main()
+        fusion_capture.run()
 
 
 @pytest.mark.parametrize(
@@ -92,7 +92,7 @@ def test_main_dispatch(
             next(choices)
     )
 
-    fusion_capture.main()
+    fusion_capture.run()
 
     assert calls == [
         (

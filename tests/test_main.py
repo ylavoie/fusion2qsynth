@@ -494,9 +494,20 @@ def test_main_dispatches_modules(
         lambda project: None
     )
 
+    #
+    # Capture et éditeur sont des modules
+    # internes. Le contrôleur et le moniteur
+    # conservent leur point d'entrée main().
+    #
+    entry_point = (
+        "run"
+        if choice in ("1", "2")
+        else "main"
+    )
+
     monkeypatch.setattr(
         module,
-        "main",
+        entry_point,
         lambda: calls.append(
             choice
         )

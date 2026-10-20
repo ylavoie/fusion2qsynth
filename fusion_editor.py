@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import mido
 import time
 
@@ -6242,7 +6240,7 @@ def print_project_summary(
             line
         )
 
-def main():
+def run():
 
     def mixes_menu(
         project

@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import mido
 import time
 
@@ -1368,7 +1366,7 @@ def capture_song(
 
         return
 
-def main():
+def run():
 
     port_name = find_fusion_input()
 
