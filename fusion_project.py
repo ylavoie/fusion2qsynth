@@ -1023,16 +1023,37 @@ class FusionProject:
 
             return False
 
-        temp_file = self.filename + ".tmp"
-        old_file = self.filename + ".old"
+        temp_file = None
+        old_file = None
 
         try:
 
             #
-            # Préparer complètement le nouveau fichier
+            # Créer un fichier temporaire
+            # unique dans le même répertoire
+            # que le projet.
             #
-            with open(
-                temp_file,
+            fd, temp_file = tempfile.mkstemp(
+                prefix=(
+                    os.path.basename(
+                        self.filename
+                    )
+                    + ".save-"
+                ),
+                suffix=".tmp",
+                dir=os.path.dirname(
+                    os.path.abspath(
+                        self.filename
+                    )
+                )
+            )
+
+            #
+            # Écrire les données dans
+            # le fichier temporaire.
+            #
+            with os.fdopen(
+                fd,
                 "w",
                 encoding="utf-8"
             ) as f:
@@ -1050,6 +1071,30 @@ class FusionProject:
             if os.path.exists(
                 self.filename
             ):
+
+                #
+                # Créer un fichier temporaire
+                # unique pour conserver
+                # l'ancienne version.
+                #
+                fd, old_file = tempfile.mkstemp(
+                    prefix=(
+                        os.path.basename(
+                            self.filename
+                        )
+                        + ".old-"
+                    ),
+                    suffix=".tmp",
+                    dir=os.path.dirname(
+                        os.path.abspath(
+                            self.filename
+                        )
+                    )
+                )
+
+                os.close(
+                    fd
+                )
 
                 shutil.copy2(
                     self.filename,
@@ -1074,6 +1119,10 @@ class FusionProject:
                 temp_file,
                 old_file
             ):
+
+                if cleanup_file is None:
+
+                    continue
 
                 try:
 
@@ -1122,8 +1171,12 @@ class FusionProject:
         #
         try:
 
-            if os.path.exists(
-                old_file
+            if (
+                old_file is not None
+                and
+                os.path.exists(
+                    old_file
+                )
             ):
 
                 self._rotate_backups(
@@ -1146,8 +1199,12 @@ class FusionProject:
             #
             try:
 
-                if os.path.exists(
-                    old_file
+                if (
+                    old_file is not None
+                    and
+                    os.path.exists(
+                        old_file
+                    )
                 ):
 
                     os.remove(
