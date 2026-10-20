@@ -100,7 +100,10 @@ class FusionProject:
                     self.filename
                 )
 
-        except json.JSONDecodeError:
+        except (
+            json.JSONDecodeError,
+            UnicodeDecodeError
+        ):
 
             backup = self.filename + ".bak"
 

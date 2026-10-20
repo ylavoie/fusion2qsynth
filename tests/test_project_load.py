@@ -593,3 +593,84 @@ def test_log_recovery_ignores_write_error(
     project._log_recovery(
         "Test recovery"
     )
+
+
+def test_load_invalid_utf8_with_backup(
+    tmp_path
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    backup = (
+        tmp_path
+        / "fusion.json.bak"
+    )
+
+    #
+    # Créer un fichier JSON
+    # contenant un octet
+    # invalide en UTF-8.
+    #
+    filename.write_bytes(
+        b"\xff"
+    )
+
+    #
+    # Une sauvegarde est
+    # disponible pour récupération.
+    #
+    backup.write_text(
+        "{}",
+        encoding="utf-8"
+    )
+
+    #
+    # Une erreur d'encodage
+    # doit déclencher le même
+    # mécanisme de récupération
+    # qu'un JSON invalide.
+    #
+    with pytest.raises(
+        ProjectRecoveryError,
+        match=r"Une sauvegarde .*fusion\.json\.bak est disponible"
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
+
+
+def test_load_invalid_utf8_without_backup(
+    tmp_path
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    #
+    # Fichier contenant un octet
+    # invalide en UTF-8.
+    #
+    filename.write_bytes(
+        b"\xff"
+    )
+
+    #
+    # Aucun backup disponible.
+    #
+    # Le chargement doit signaler
+    # un fichier invalide.
+    #
+    with pytest.raises(
+        RuntimeError,
+        match=r"Fichier .*fusion\.json invalide\."
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
