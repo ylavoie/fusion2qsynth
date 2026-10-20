@@ -500,6 +500,78 @@ def test_archive_copy_failure(
     assert project.archive() is False
 
 
+def test_archive_directory_creation_failure(
+    project,
+    tmp_path,
+    monkeypatch,
+    capsys
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    #
+    # Simuler l'impossibilité de créer
+    # le répertoire d'archives.
+    #
+    def failing_makedirs(
+        path,
+        exist_ok=False
+    ):
+
+        raise PermissionError(
+            "Erreur simulée création répertoire"
+        )
+
+    monkeypatch.setattr(
+        fusion_project.os,
+        "makedirs",
+        failing_makedirs
+    )
+
+    #
+    # L'archivage doit échouer
+    # proprement, sans exception.
+    #
+    assert project.archive() is False
+
+    #
+    # Le projet original doit
+    # demeurer intact.
+    #
+    assert os.path.exists(
+        project.filename
+    )
+
+    #
+    # Aucun répertoire d'archives
+    # n'a été créé.
+    #
+    assert not archive_dir.exists()
+
+    #
+    # L'erreur doit être signalée.
+    #
+    output = capsys.readouterr().out
+
+    assert (
+        "Erreur simulée création répertoire"
+        in output
+    )
+
+
 def test_archive_rotation_failure_after_copy(
     project,
     tmp_path,

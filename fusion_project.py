@@ -541,10 +541,20 @@ class FusionProject:
 
             return False
 
-        os.makedirs(
-            ARCHIVE_DIR,
-            exist_ok=True
-        )
+        try:
+
+            os.makedirs(
+                ARCHIVE_DIR,
+                exist_ok=True
+            )
+
+        except OSError as e:
+
+            print(
+                f"Archivage impossible : {e}"
+            )
+
+            return False
 
         timestamp = time.strftime(
             "%Y-%m-%d_%H%M%S"
