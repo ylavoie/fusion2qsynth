@@ -795,3 +795,230 @@ def test_restore_temp_cleanup_failure(
     assert read_json(
         "fusion.json"
     ) == restored
+
+
+def test_restore_aborts_when_prearchive_fails(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(
+        tmp_path
+    )
+
+    original = make_valid_project()
+
+    original["mixes"]["0:0"] = {
+        "name": "Projet original",
+        "channels": {}
+    }
+
+    restored = make_valid_project()
+
+    restored["mixes"]["1:1"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "restore.json",
+        restored
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    #
+    # Simuler l'échec de création
+    # de l'archive automatique.
+    #
+    real_copy = fusion_project.shutil.copy
+
+    def failing_copy(
+        src,
+        dst,
+        *args,
+        **kwargs
+    ):
+
+        if os.fspath(src) == "fusion.json":
+
+            raise OSError(
+                "Erreur simulée archivage"
+            )
+
+        return real_copy(
+            src,
+            dst,
+            *args,
+            **kwargs
+        )
+
+    monkeypatch.setattr(
+        fusion_project.shutil,
+        "copy",
+        failing_copy
+    )
+
+    result = FusionProject.restore_from_archive(
+        "restore.json"
+    )
+
+    #
+    # La restauration doit être refusée.
+    #
+    assert result is None
+
+    #
+    # Le projet actif doit être préservé.
+    #
+    assert_fusion_unchanged(
+        original
+    )
+
+    #
+    # La source de restauration
+    # doit rester intacte.
+    #
+    assert read_json(
+        "restore.json"
+    ) == restored
+
+    #
+    # Aucun temporaire résiduel.
+    #
+    assert_no_restore_temp()
+
+
+def test_restore_with_identical_prearchive(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(
+        tmp_path
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    original = make_valid_project()
+
+    original["mixes"]["0:0"] = {
+        "name": "Projet original",
+        "channels": {}
+    }
+
+    restored = make_valid_project()
+
+    restored["mixes"]["1:1"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "restore.json",
+        restored
+    )
+
+    #
+    # Créer une archive du projet actif.
+    #
+    project = FusionProject(
+        filename="fusion.json"
+    )
+
+    assert (
+        project.archive_if_changed()
+        is True
+    )
+
+    #
+    # Confirmer que le projet est
+    # déjà archivé.
+    #
+    assert (
+        project.archive_if_changed()
+        is False
+    )
+
+    archives_before = sorted(
+        os.listdir(
+            ARCHIVE_DIR
+        )
+    )
+
+    assert len(
+        archives_before
+    ) == 1
+
+    #
+    # Restaurer un projet différent.
+    #
+    result = (
+        FusionProject.restore_from_archive(
+            "restore.json"
+        )
+    )
+
+    #
+    # La restauration doit réussir,
+    # puisque le projet actif est protégé.
+    #
+    assert result is not None
+
+    assert read_json(
+        "fusion.json"
+    ) == restored
+
+    assert result.data == restored
+
+    #
+    # Aucune archive supplémentaire
+    # ne doit être créée.
+    #
+    archives_after = sorted(
+        os.listdir(
+            ARCHIVE_DIR
+        )
+    )
+
+    assert (
+        archives_after
+        == archives_before
+    )
+
+    #
+    # L'archive existante doit
+    # toujours contenir l'ancien projet.
+    #
+    archived = read_json(
+        os.path.join(
+            ARCHIVE_DIR,
+            archives_before[0]
+        )
+    )
+
+    assert archived == original
+
+    assert_no_restore_temp()

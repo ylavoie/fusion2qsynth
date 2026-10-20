@@ -1091,8 +1091,12 @@ class FusionProject:
             ARCHIVE_DIR
         ):
 
-            return self.archive(
-                archive_type="auto"
+            return (
+                True
+                if self.archive(
+                    archive_type="auto"
+                )
+                else None
             )
 
         archives = []
@@ -1116,8 +1120,12 @@ class FusionProject:
 
         if not archives:
 
-            return self.archive(
-                archive_type="auto"
+            return (
+                True
+                if self.archive(
+                    archive_type="auto"
+                )
+                else None
             )
 
         try:
@@ -1153,8 +1161,12 @@ class FusionProject:
 
             pass
 
-        return self.archive(
-            archive_type="auto"
+        return (
+            True
+            if self.archive(
+                archive_type="auto"
+            )
+            else None
         )
 
     @classmethod
@@ -1295,17 +1307,20 @@ class FusionProject:
                 return None
 
             #
-            # Le candidat est maintenant chargé,
-            # migré et valide.
-            #
-            # Protéger le projet actif avant
-            # de le remplacer.
+            # Protéger le projet actif
+            # avant son remplacement.
             #
             if os.path.exists(
                 FUSION_FILE
             ):
 
-                project.archive_if_changed()
+                archive_result = (
+                    project.archive_if_changed()
+                )
+
+                if archive_result is None:
+
+                    return None
 
             #
             # Installation atomique.
