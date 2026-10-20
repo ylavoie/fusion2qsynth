@@ -1259,9 +1259,22 @@ class FusionProject:
 
         archives = []
 
-        for filename in os.listdir(
-            ARCHIVE_DIR
-        ):
+        try:
+
+            filenames = os.listdir(
+                ARCHIVE_DIR
+            )
+
+        except OSError as e:
+
+            print(
+                "Lecture des archives impossible :",
+                e
+            )
+
+            return []
+
+        for filename in filenames:
 
             if (
                 filename.startswith("fusion-")

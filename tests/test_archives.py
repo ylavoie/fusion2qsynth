@@ -497,6 +497,58 @@ def test_list_archives_filters_and_sorts(
     ]
 
 
+def test_list_archives_listdir_failure(
+    tmp_path,
+    monkeypatch
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    archive_dir.mkdir()
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    original_listdir = (
+        fusion_project.os.listdir
+    )
+
+    def failing_listdir(
+        directory
+    ):
+
+        if os.fspath(
+            directory
+        ) == str(
+            archive_dir
+        ):
+
+            raise PermissionError(
+                "Accès au répertoire refusé"
+            )
+
+        return original_listdir(
+            directory
+        )
+
+    monkeypatch.setattr(
+        fusion_project.os,
+        "listdir",
+        failing_listdir
+    )
+
+    assert (
+        FusionProject.list_archives()
+        == []
+    )
+
+
 def test_archive_missing_project(
     project
 ):
