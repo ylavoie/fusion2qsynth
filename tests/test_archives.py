@@ -632,6 +632,58 @@ def test_list_archives_skips_file_disappearing_before_getmtime(
     ]
 
 
+def test_archive_is_valid_read_failure(
+    tmp_path,
+    monkeypatch
+):
+
+    filename = (
+        tmp_path
+        / "archive.json"
+    )
+
+    filename.write_text(
+        '{"test": true}',
+        encoding="utf-8"
+    )
+
+    original_open = open
+
+    def failing_open(
+        file,
+        mode="r",
+        *args,
+        **kwargs
+    ):
+
+        if (
+            os.fspath(file)
+            == os.fspath(filename)
+            and
+            mode == "r"
+        ):
+
+            raise PermissionError(
+                "Lecture de l'archive refusée"
+            )
+
+        return original_open(
+            file,
+            mode,
+            *args,
+            **kwargs
+        )
+
+    monkeypatch.setattr(
+        "builtins.open",
+        failing_open
+    )
+
+    assert FusionProject._archive_is_valid(
+        filename
+    ) is False
+
+
 def test_archive_missing_project(
     project
 ):
