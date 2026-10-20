@@ -257,6 +257,89 @@ def test_archive_if_changed_without_matching_archive(
     ]
 
 
+def test_archive_if_changed_listdir_failure(
+    project,
+    monkeypatch,
+    tmp_path
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    archive_dir.mkdir()
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    archive_called = []
+
+    def fake_archive(
+        archive_type="manual"
+    ):
+
+        archive_called.append(
+            archive_type
+        )
+
+        return True
+
+    def failing_listdir(
+        directory
+    ):
+
+        if os.fspath(
+            directory
+        ) == str(
+            archive_dir
+        ):
+
+            raise PermissionError(
+                "Accès au répertoire refusé"
+            )
+
+        return original_listdir(
+            directory
+        )
+
+    original_listdir = (
+        fusion_project.os.listdir
+    )
+
+    monkeypatch.setattr(
+        project,
+        "archive",
+        fake_archive
+    )
+
+    monkeypatch.setattr(
+        fusion_project.os,
+        "listdir",
+        failing_listdir
+    )
+
+    #
+    # L'impossibilité d'énumérer
+    # les archives doit être signalée
+    # par None, sans exception.
+    #
+    assert project.archive_if_changed() is None
+
+    #
+    # Ne pas créer d'archive lorsque
+    # l'état du répertoire est inconnu.
+    #
+    assert archive_called == []
+
+
 def test_archive_is_valid_missing_file(
     tmp_path
 ):
