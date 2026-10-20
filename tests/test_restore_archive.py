@@ -676,3 +676,122 @@ def test_restore_getmtime_failure_after_replace(
     ) == restored
 
     assert_no_restore_temp()
+
+
+def test_restore_temp_cleanup_failure(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(tmp_path)
+
+    original = make_valid_project()
+    restored = make_valid_project()
+
+    restored["mixes"]["0:0"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "valid.archive",
+        restored
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    real_remove = os.remove
+    real_replace = os.replace
+
+    def failing_replace(
+        src,
+        dst
+    ):
+
+        if (
+            os.fspath(src)
+            == "fusion.json.restore.tmp"
+            and
+            os.fspath(dst)
+            == "fusion.json"
+        ):
+
+            real_replace(
+                src,
+                dst
+            )
+
+            #
+            # Simuler un fichier temporaire
+            # résiduel après installation.
+            #
+            with open(
+                src,
+                "w",
+                encoding="utf-8"
+            ) as f:
+
+                f.write(
+                    "temporaire"
+                )
+
+            return
+
+        return real_replace(
+            src,
+            dst
+        )
+
+    def failing_remove(
+        path
+    ):
+
+        if (
+            os.fspath(path)
+            == "fusion.json.restore.tmp"
+        ):
+
+            raise OSError(
+                "Erreur simulée nettoyage"
+            )
+
+        return real_remove(
+            path
+        )
+
+    monkeypatch.setattr(
+        os,
+        "replace",
+        failing_replace
+    )
+
+    monkeypatch.setattr(
+        os,
+        "remove",
+        failing_remove
+    )
+
+    result = FusionProject.restore_from_archive(
+        "valid.archive"
+    )
+
+    assert result is not None
+
+    assert result.filename == (
+        "fusion.json"
+    )
+
+    assert read_json(
+        "fusion.json"
+    ) == restored

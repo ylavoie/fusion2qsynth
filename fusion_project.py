@@ -1343,12 +1343,22 @@ class FusionProject:
 
         finally:
 
-            if os.path.exists(
-                temp_file
-            ):
+            try:
 
-                os.remove(
+                if os.path.exists(
                     temp_file
+                ):
+
+                    os.remove(
+                        temp_file
+                    )
+
+            except OSError as e:
+
+                print(
+                    "⚠ Restauration : nettoyage du "
+                    "fichier temporaire impossible :",
+                    e
                 )
 
     def _rotate_backups(
