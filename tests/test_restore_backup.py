@@ -518,3 +518,74 @@ def test_restore_temp_cleanup_failure(
     assert result is not None
     assert result.filename == "fusion.json"
     assert read_json("fusion.json") == restored
+
+
+def test_restore_copy_failure(
+    tmp_path,
+    monkeypatch
+):
+
+    monkeypatch.chdir(
+        tmp_path
+    )
+
+    original = make_valid_project()
+
+    original["mixes"]["0:0"] = {
+        "name": "Projet original",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    backup = make_valid_project()
+
+    backup["mixes"]["0:0"] = {
+        "name": "Projet sauvegardé",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json.bak",
+        backup
+    )
+
+    def failing_copy2(
+        src,
+        dst,
+        *args,
+        **kwargs
+    ):
+
+        with open(
+            dst,
+            "wb"
+        ) as f:
+
+            f.write(
+                b"copie partielle"
+            )
+
+        raise OSError(
+            "Erreur simulée pendant la copie"
+        )
+
+    monkeypatch.setattr(
+        "fusion_project.shutil.copy2",
+        failing_copy2
+    )
+
+    result = FusionProject.restore_from_backup(
+        "fusion.json.bak"
+    )
+
+    assert result is None
+
+    assert_fusion_unchanged(
+        original
+    )
+
+    assert_no_restore_temp()
