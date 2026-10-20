@@ -291,12 +291,28 @@ class FusionProject:
         project.data = {}
         project.file_time = 0
 
-        temp_file = (
-            FUSION_FILE
-            + ".restore.tmp"
-        )
+        temp_file = None
 
         try:
+
+            #
+            # Créer un fichier temporaire
+            # unique dans le même répertoire
+            # que fusion.json.
+            #
+            fd, temp_file = tempfile.mkstemp(
+                prefix="fusion-restore-",
+                suffix=".tmp",
+                dir=os.path.dirname(
+                    os.path.abspath(
+                        FUSION_FILE
+                    )
+                )
+            )
+
+            os.close(
+                fd
+            )
 
             #
             # Travailler sur une copie :
@@ -371,8 +387,12 @@ class FusionProject:
 
             try:
 
-                if os.path.exists(
-                    temp_file
+                if (
+                    temp_file is not None
+                    and
+                    os.path.exists(
+                        temp_file
+                    )
                 ):
 
                     os.remove(

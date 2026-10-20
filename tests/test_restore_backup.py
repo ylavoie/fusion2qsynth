@@ -71,12 +71,118 @@ def assert_fusion_unchanged(
 
 def assert_no_restore_temp():
 
-    assert not os.path.exists(
-        "fusion.json.restore.tmp"
-    ), (
-        "Le fichier temporaire de "
-        "restauration existe encore."
+    temp_files = [
+        filename
+        for filename in os.listdir(
+            "."
+        )
+        if (
+            filename.startswith(
+                "fusion-restore-"
+            )
+            and
+            filename.endswith(
+                ".tmp"
+            )
+        )
+    ]
+
+    assert not temp_files, (
+        "Fichiers temporaires de "
+        "restauration encore présents : "
+        f"{temp_files}"
     )
+
+
+def test_restore_backup_preserves_existing_temp(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(
+        tmp_path
+    )
+
+    original = make_valid_project()
+    restored = make_valid_project()
+
+    restored["mixes"]["0:0"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "valid.bak",
+        restored
+    )
+
+    #
+    # Ancien fichier temporaire :
+    # il ne doit pas être modifié.
+    #
+    old_temp = (
+        "fusion.json.restore.tmp"
+    )
+
+    old_content = (
+        "Fichier temporaire préexistant"
+    )
+
+    with open(
+        old_temp,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(
+            old_content
+        )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    result = (
+        FusionProject.restore_from_backup(
+            "valid.bak"
+        )
+    )
+
+    #
+    # La restauration doit réussir.
+    #
+    assert result is not None
+
+    assert result.filename == (
+        "fusion.json"
+    )
+
+    assert read_json(
+        "fusion.json"
+    ) == restored
+
+    #
+    # L'ancien fichier temporaire
+    # doit être conservé intact.
+    #
+    with open(
+        old_temp,
+        "r",
+        encoding="utf-8"
+    ) as f:
+
+        assert f.read() == (
+            old_content
+        )
 
 
 def test_missing_backup():
@@ -478,26 +584,93 @@ def test_restore_temp_cleanup_failure(
     real_remove = os.remove
     real_replace = os.replace
 
-    def failing_replace(src, dst):
+    replace_simulated = False
+    remove_simulated = False
 
-        if os.fspath(src) == "fusion.json.restore.tmp":
-            real_replace(src, dst)
+    def is_restore_temp(
+        path
+    ):
 
-            # Simuler un fichier temporaire résiduel
-            # après l'installation réussie.
-            with open(src, "w", encoding="utf-8") as f:
-                f.write("temporaire")
+        filename = os.path.basename(
+            os.fspath(
+                path
+            )
+        )
+
+        return (
+            filename.startswith(
+                "fusion-restore-"
+            )
+            and
+            filename.endswith(
+                ".tmp"
+            )
+        )
+
+    def failing_replace(
+        src,
+        dst
+    ):
+
+        nonlocal replace_simulated
+
+        if (
+            is_restore_temp(
+                src
+            )
+            and
+            os.fspath(
+                dst
+            ) == "fusion.json"
+        ):
+
+            replace_simulated = True
+
+            real_replace(
+                src,
+                dst
+            )
+
+            #
+            # Simuler un fichier temporaire
+            # résiduel après installation.
+            #
+            with open(
+                src,
+                "w",
+                encoding="utf-8"
+            ) as f:
+
+                f.write(
+                    "temporaire"
+                )
 
             return
 
-        return real_replace(src, dst)
+        return real_replace(
+            src,
+            dst
+        )
 
-    def failing_remove(path):
+    def failing_remove(
+        path
+    ):
 
-        if os.fspath(path) == "fusion.json.restore.tmp":
-            raise OSError("Erreur simulée nettoyage")
+        nonlocal remove_simulated
 
-        return real_remove(path)
+        if is_restore_temp(
+            path
+        ):
+
+            remove_simulated = True
+
+            raise OSError(
+                "Erreur simulée nettoyage"
+            )
+
+        return real_remove(
+            path
+        )
 
     monkeypatch.setattr(
         os,
@@ -518,6 +691,8 @@ def test_restore_temp_cleanup_failure(
     assert result is not None
     assert result.filename == "fusion.json"
     assert read_json("fusion.json") == restored
+    assert replace_simulated
+    assert remove_simulated
 
 
 def test_restore_copy_failure(
@@ -637,11 +812,23 @@ def test_restore_replace_failure(
     ):
 
         if (
-            os.fspath(src)
-            == "fusion.json.restore.tmp"
+            os.path.basename(
+                os.fspath(
+                    src
+                )
+            ).startswith(
+                "fusion-restore-"
+            )
             and
-            os.fspath(dst)
-            == "fusion.json"
+            os.fspath(
+                src
+            ).endswith(
+                ".tmp"
+            )
+            and
+            os.fspath(
+                dst
+            ) == "fusion.json"
         ):
 
             raise OSError(
