@@ -1319,11 +1319,21 @@ class FusionProject:
                 FUSION_FILE
             )
 
-            candidate.file_time = (
-                os.path.getmtime(
-                    FUSION_FILE
+            try:
+
+                candidate.file_time = (
+                    os.path.getmtime(
+                        FUSION_FILE
+                    )
                 )
-            )
+
+            except OSError as e:
+
+                print(
+                    "⚠ Restauration effectuée, "
+                    "mais lecture de la date impossible :",
+                    e
+                )
 
             return candidate
 

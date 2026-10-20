@@ -611,3 +611,68 @@ def test_failed_restore_creates_no_archive():
     print(
         "OK"
     )
+
+
+def test_restore_getmtime_failure_after_replace(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(tmp_path)
+
+    original = make_valid_project()
+    restored = make_valid_project()
+
+    restored["mixes"]["0:0"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "valid.archive",
+        restored
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    real_getmtime = os.path.getmtime
+
+    def failing_getmtime(path):
+
+        if os.fspath(path) == "fusion.json":
+
+            raise OSError(
+                "Erreur simulée getmtime"
+            )
+
+        return real_getmtime(path)
+
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        failing_getmtime
+    )
+
+    result = FusionProject.restore_from_archive(
+        "valid.archive"
+    )
+
+    assert result is not None
+    assert result.filename == "fusion.json"
+
+    assert read_json(
+        "fusion.json"
+    ) == restored
+
+    assert_no_restore_temp()
