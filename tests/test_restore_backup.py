@@ -589,3 +589,84 @@ def test_restore_copy_failure(
     )
 
     assert_no_restore_temp()
+
+
+def test_restore_replace_failure(
+    tmp_path,
+    monkeypatch
+):
+
+    import fusion_project
+
+    monkeypatch.chdir(tmp_path)
+
+    original = make_valid_project()
+    restored = make_valid_project()
+
+    original["mixes"]["0:0"] = {
+        "name": "Projet original",
+        "channels": {}
+    }
+
+    restored["mixes"]["0:0"] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "fusion.json",
+        original
+    )
+
+    write_json(
+        "valid.bak",
+        restored
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "FUSION_FILE",
+        "fusion.json"
+    )
+
+    real_replace = os.replace
+
+    def failing_replace(
+        src,
+        dst
+    ):
+
+        if (
+            os.fspath(src)
+            == "fusion.json.restore.tmp"
+            and
+            os.fspath(dst)
+            == "fusion.json"
+        ):
+
+            raise OSError(
+                "Erreur simulée os.replace"
+            )
+
+        return real_replace(
+            src,
+            dst
+        )
+
+    monkeypatch.setattr(
+        os,
+        "replace",
+        failing_replace
+    )
+
+    result = FusionProject.restore_from_backup(
+        "valid.bak"
+    )
+
+    assert result is None
+
+    assert_fusion_unchanged(
+        original
+    )
+
+    assert_no_restore_temp()
