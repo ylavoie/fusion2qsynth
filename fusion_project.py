@@ -580,16 +580,15 @@ class FusionProject:
 
             suffix += 1
 
+        #
+        # Création de l'archive.
+        #
         try:
 
             shutil.copy(
                 self.filename,
                 archive_file
             )
-
-            self._rotate_archives()
-
-            return True
 
         except Exception as e:
 
@@ -598,6 +597,25 @@ class FusionProject:
             )
 
             return False
+
+        #
+        # Rotation des archives.
+        # Son échec ne doit pas annuler
+        # une copie réussie.
+        #
+        try:
+
+            self._rotate_archives()
+
+        except Exception as e:
+
+            print(
+                "⚠ Rotation des archives impossible :",
+                e
+            )
+
+        return True
+
 
     def _rotate_archives(
         self,

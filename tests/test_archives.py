@@ -500,6 +500,86 @@ def test_archive_copy_failure(
     assert project.archive() is False
 
 
+def test_archive_rotation_failure_after_copy(
+    project,
+    tmp_path,
+    monkeypatch,
+    capsys
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    #
+    # Simuler une erreur de rotation
+    # après la copie de l'archive.
+    #
+    def failing_rotation():
+
+        raise OSError(
+            "Erreur simulée rotation"
+        )
+
+    monkeypatch.setattr(
+        project,
+        "_rotate_archives",
+        failing_rotation
+    )
+
+    #
+    # La copie doit être considérée
+    # comme réussie malgré l'échec
+    # de la rotation.
+    #
+    assert project.archive() is True
+
+    #
+    # Une archive doit exister.
+    #
+    archives = list(
+        archive_dir.glob(
+            "fusion-*.json"
+        )
+    )
+
+    assert len(archives) == 1
+
+    #
+    # Le contenu archivé doit être
+    # identique au fichier source.
+    #
+    assert archives[
+        0
+    ].read_bytes() == (
+        Path(
+            project.filename
+        ).read_bytes()
+    )
+
+    #
+    # L'erreur de rotation doit
+    # être signalée.
+    #
+    output = capsys.readouterr().out
+
+    assert (
+        "Erreur simulée rotation"
+        in output
+    )
+
+
 def test_archive_if_changed_missing_project(
     project
 ):
