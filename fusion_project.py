@@ -1600,33 +1600,167 @@ class FusionProject:
 
         backup = self.filename + ".bak"
 
+        #
+        # Construire la liste des
+        # générations de backups.
+        #
+        backups = [
+            backup
+        ]
+
         for index in range(
-            _BACKUP_COUNT - 1,
-            0,
-            -1
+            1,
+            _BACKUP_COUNT
         ):
 
-            src = (
-                backup
-                if index == 1
-                else backup + str(index - 1)
-            )
-
-            dst = (
+            backups.append(
                 backup + str(index)
             )
 
-            if os.path.exists(src):
+        #
+        # Conserver les fichiers
+        # présents avant la rotation.
+        #
+        directory = tempfile.mkdtemp(
+            prefix=(
+                os.path.basename(
+                    self.filename
+                )
+                + ".rotation-"
+            ),
+            dir=os.path.dirname(
+                os.path.abspath(
+                    self.filename
+                )
+            )
+        )
 
-                os.replace(
-                    src,
-                    dst
+        preserve_directory = False
+
+        try:
+
+            originals = {}
+
+            for index, filename in enumerate(
+                backups
+            ):
+
+                if not os.path.exists(
+                    filename
+                ):
+
+                    continue
+
+                copy = os.path.join(
+                    directory,
+                    str(index)
                 )
 
-        os.replace(
-            old_file,
-            backup
-        )
+                shutil.copy2(
+                    filename,
+                    copy
+                )
+
+                originals[
+                    filename
+                ] = copy
+
+            #
+            # Effectuer la rotation.
+            #
+            try:
+
+                for index in range(
+                    _BACKUP_COUNT - 1,
+                    0,
+                    -1
+                ):
+
+                    src = (
+                        backup
+                        if index == 1
+                        else backup + str(
+                            index - 1
+                        )
+                    )
+
+                    dst = (
+                        backup + str(
+                            index
+                        )
+                    )
+
+                    if os.path.exists(
+                        src
+                    ):
+
+                        os.replace(
+                            src,
+                            dst
+                        )
+
+                os.replace(
+                    old_file,
+                    backup
+                )
+
+            except OSError:
+
+                #
+                # Restaurer les fichiers
+                # présents avant la rotation.
+                #
+                try:
+
+                    for filename in backups:
+
+                        if filename in originals:
+
+                            shutil.copy2(
+                                originals[
+                                    filename
+                                ],
+                                filename
+                            )
+
+                        elif os.path.exists(
+                            filename
+                        ):
+
+                            os.remove(
+                                filename
+                            )
+
+                except OSError as restore_error:
+
+                    #
+                    # La restauration a échoué.
+                    # Conserver les copies de
+                    # secours pour récupération.
+                    #
+                    preserve_directory = True
+
+                    raise OSError(
+                        "Rotation et restauration "
+                        "des backups impossibles. "
+                        "Copies de secours : "
+                        f"{directory}"
+                    ) from restore_error
+
+                raise
+
+        finally:
+
+            #
+            # Nettoyer les copies seulement
+            # si leur conservation n'est
+            # pas nécessaire.
+            #
+            if not preserve_directory:
+
+                shutil.rmtree(
+                    directory
+                )
 
     def reload_if_changed(self):
 
