@@ -500,6 +500,81 @@ def test_archive_copy_failure(
     assert project.archive() is False
 
 
+def test_archive_partial_copy_cleanup(
+    project,
+    tmp_path,
+    monkeypatch
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    #
+    # Simuler une copie qui crée
+    # un fichier partiel avant
+    # de provoquer une exception.
+    #
+    def failing_copy(
+        src,
+        dst
+    ):
+
+        with open(
+            dst,
+            "wb"
+        ) as f:
+
+            f.write(
+                b'{"partial":'
+            )
+
+        raise OSError(
+            "Erreur simulée copie partielle"
+        )
+
+    monkeypatch.setattr(
+        fusion_project.shutil,
+        "copy",
+        failing_copy
+    )
+
+    #
+    # L'archivage doit échouer.
+    #
+    assert project.archive() is False
+
+    #
+    # Aucun fichier d'archive
+    # partiel ne doit subsister.
+    #
+    assert list(
+        archive_dir.iterdir()
+    ) == []
+
+    #
+    # Le projet source doit
+    # rester intact.
+    #
+    assert (
+        Path(
+            project.filename
+        ).read_bytes()
+        != b'{"partial":'
+    )
+
+
 def test_archive_directory_creation_failure(
     project,
     tmp_path,

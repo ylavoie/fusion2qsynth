@@ -606,6 +606,28 @@ class FusionProject:
                 f"Archivage impossible : {e}"
             )
 
+            #
+            # Supprimer une éventuelle
+            # archive partiellement copiée.
+            #
+            try:
+
+                if os.path.exists(
+                    archive_file
+                ):
+
+                    os.remove(
+                        archive_file
+                    )
+
+            except OSError as cleanup_error:
+
+                print(
+                    "⚠ Nettoyage de l'archive "
+                    "partielle impossible :",
+                    cleanup_error
+                )
+
             return False
 
         #
