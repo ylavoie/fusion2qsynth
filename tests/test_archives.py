@@ -575,6 +575,115 @@ def test_archive_partial_copy_cleanup(
     )
 
 
+def test_archive_partial_copy_cleanup_failure(
+    project,
+    tmp_path,
+    monkeypatch,
+    capsys
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_content = (
+        Path(
+            project.filename
+        ).read_bytes()
+    )
+
+    def failing_copy(
+        src,
+        dst
+    ):
+
+        with open(
+            dst,
+            "wb"
+        ) as f:
+
+            f.write(
+                b'{"partial":'
+            )
+
+        raise OSError(
+            "Erreur simulée copie partielle"
+        )
+
+    def failing_remove(
+        filename
+    ):
+
+        raise OSError(
+            "Erreur simulée nettoyage"
+        )
+
+    monkeypatch.setattr(
+        fusion_project.shutil,
+        "copy",
+        failing_copy
+    )
+
+    monkeypatch.setattr(
+        fusion_project.os,
+        "remove",
+        failing_remove
+    )
+
+    #
+    # La copie échoue et le nettoyage
+    # échoue également.
+    #
+    assert project.archive() is False
+
+    #
+    # Les deux erreurs doivent être
+    # signalées sans exception propagée.
+    #
+    output = capsys.readouterr().out
+
+    assert (
+        "Erreur simulée copie partielle"
+        in output
+    )
+
+    assert (
+        "Erreur simulée nettoyage"
+        in output
+    )
+
+    #
+    # Le fichier partiel subsiste
+    # puisque sa suppression a échoué.
+    #
+    assert len(
+        list(
+            archive_dir.iterdir()
+        )
+    ) == 1
+
+    #
+    # Le projet original est intact.
+    #
+    assert (
+        Path(
+            project.filename
+        ).read_bytes()
+        == original_content
+    )
+
+
 def test_archive_directory_creation_failure(
     project,
     tmp_path,
