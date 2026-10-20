@@ -549,6 +549,89 @@ def test_list_archives_listdir_failure(
     )
 
 
+def test_list_archives_skips_file_disappearing_before_getmtime(
+    tmp_path,
+    monkeypatch
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    archive_dir.mkdir()
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    disappearing = (
+        archive_dir
+        / "fusion-2026-01-01_120000.json"
+    )
+
+    surviving = (
+        archive_dir
+        / "fusion-2026-01-02_120000.json"
+    )
+
+    disappearing.write_text(
+        '{"version": 1}',
+        encoding="utf-8"
+    )
+
+    surviving.write_text(
+        '{"version": 2}',
+        encoding="utf-8"
+    )
+
+    original_getmtime = (
+        fusion_project.os.path.getmtime
+    )
+
+    def failing_getmtime(
+        filename
+    ):
+
+        if os.fspath(
+            filename
+        ) == str(
+            disappearing
+        ):
+
+            raise FileNotFoundError(
+                "Archive disparue"
+            )
+
+        return original_getmtime(
+            filename
+        )
+
+    monkeypatch.setattr(
+        fusion_project.os.path,
+        "getmtime",
+        failing_getmtime
+    )
+
+    #
+    # L'archive disparue doit être
+    # ignorée sans interrompre
+    # l'énumération.
+    #
+    archives = (
+        FusionProject.list_archives()
+    )
+
+    assert [
+        archive["name"]
+        for archive in archives
+    ] == [
+        surviving.name
+    ]
+
+
 def test_archive_missing_project(
     project
 ):

@@ -1293,13 +1293,26 @@ class FusionProject:
 
                     continue
 
+                try:
+
+                    mtime = os.path.getmtime(
+                        full_path
+                    )
+
+                except OSError:
+
+                    #
+                    # L'archive a disparu ou
+                    # ses métadonnées sont
+                    # devenues inaccessibles.
+                    #
+                    continue
+
                 archives.append(
                     {
                         "filename": full_path,
                         "name": filename,
-                        "mtime": os.path.getmtime(
-                            full_path
-                        ),
+                        "mtime": mtime,
                     }
                 )
 
