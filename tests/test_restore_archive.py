@@ -842,7 +842,9 @@ def test_restore_aborts_when_prearchive_fails(
     # Simuler l'échec de création
     # de l'archive automatique.
     #
-    real_copy = fusion_project.shutil.copy
+    real_copyfileobj = (
+        fusion_project.shutil.copyfileobj
+    )
 
     def failing_copy(
         src,
@@ -851,13 +853,13 @@ def test_restore_aborts_when_prearchive_fails(
         **kwargs
     ):
 
-        if os.fspath(src) == "fusion.json":
+        if os.fspath(src.name) == "fusion.json":
 
             raise OSError(
                 "Erreur simulée archivage"
             )
 
-        return real_copy(
+        return real_copyfileobj(
             src,
             dst,
             *args,
@@ -866,7 +868,7 @@ def test_restore_aborts_when_prearchive_fails(
 
     monkeypatch.setattr(
         fusion_project.shutil,
-        "copy",
+        "copyfileobj",
         failing_copy
     )
 

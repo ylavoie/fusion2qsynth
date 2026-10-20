@@ -579,56 +579,73 @@ class FusionProject:
 
         suffix = 1
 
-        while os.path.exists(
-            archive_file
-        ):
-
-            archive_file = os.path.join(
-                ARCHIVE_DIR,
-                f"{archive_name}-{suffix}.json"
-            )
-
-            suffix += 1
-
         #
-        # Création de l'archive.
+        # Création exclusive de l'archive.
         #
-        try:
+        # Un fichier existant ne doit
+        # jamais être écrasé.
+        #
+        while True:
 
-            shutil.copy(
-                self.filename,
-                archive_file
-            )
-
-        except Exception as e:
-
-            print(
-                f"Archivage impossible : {e}"
-            )
-
-            #
-            # Supprimer une éventuelle
-            # archive partiellement copiée.
-            #
             try:
 
-                if os.path.exists(
-                    archive_file
-                ):
+                with open(
+                    archive_file,
+                    "xb"
+                ) as destination:
 
-                    os.remove(
-                        archive_file
-                    )
+                    try:
 
-            except OSError as cleanup_error:
+                        with open(
+                            self.filename,
+                            "rb"
+                        ) as source:
 
-                print(
-                    "⚠ Nettoyage de l'archive "
-                    "partielle impossible :",
-                    cleanup_error
+                            shutil.copyfileobj(
+                                source,
+                                destination
+                            )
+
+                    except Exception:
+
+                        #
+                        # Le fichier nous appartient :
+                        # tenter son nettoyage.
+                        #
+                        try:
+
+                            os.remove(
+                                archive_file
+                            )
+
+                        except OSError as cleanup_error:
+
+                            print(
+                                "⚠ Nettoyage de l'archive "
+                                "partielle impossible :",
+                                cleanup_error
+                            )
+
+                        raise
+
+                break
+
+            except FileExistsError:
+
+                archive_file = os.path.join(
+                    ARCHIVE_DIR,
+                    f"{archive_name}-{suffix}.json"
                 )
 
-            return False
+                suffix += 1
+
+            except Exception as e:
+
+                print(
+                    f"Archivage impossible : {e}"
+                )
+
+                return False
 
         #
         # Rotation des archives.
@@ -647,7 +664,6 @@ class FusionProject:
             )
 
         return True
-
 
     def _rotate_archives(
         self,

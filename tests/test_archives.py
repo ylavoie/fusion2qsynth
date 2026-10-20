@@ -493,7 +493,7 @@ def test_archive_copy_failure(
 
     monkeypatch.setattr(
         fusion_project.shutil,
-        "copy",
+        "copyfileobj",
         failing_copy
     )
 
@@ -531,14 +531,9 @@ def test_archive_partial_copy_cleanup(
         dst
     ):
 
-        with open(
-            dst,
-            "wb"
-        ) as f:
-
-            f.write(
-                b'{"partial":'
-            )
+        dst.write(
+            b'{"partial":'
+        )
 
         raise OSError(
             "Erreur simulée copie partielle"
@@ -546,7 +541,7 @@ def test_archive_partial_copy_cleanup(
 
     monkeypatch.setattr(
         fusion_project.shutil,
-        "copy",
+        "copyfileobj",
         failing_copy
     )
 
@@ -608,14 +603,9 @@ def test_archive_partial_copy_cleanup_failure(
         dst
     ):
 
-        with open(
-            dst,
-            "wb"
-        ) as f:
-
-            f.write(
-                b'{"partial":'
-            )
+        dst.write(
+            b'{"partial":'
+        )
 
         raise OSError(
             "Erreur simulée copie partielle"
@@ -631,7 +621,7 @@ def test_archive_partial_copy_cleanup_failure(
 
     monkeypatch.setattr(
         fusion_project.shutil,
-        "copy",
+        "copyfileobj",
         failing_copy
     )
 
@@ -2296,6 +2286,122 @@ def test_archive_rejects_invalid_type(
     ) is False
 
     assert not archive_dir.exists()
+
+
+def test_archive_concurrent_collision_does_not_overwrite(
+    project,
+    tmp_path,
+    monkeypatch
+):
+
+    archive_dir = (
+        tmp_path
+        / "archives"
+    )
+
+    monkeypatch.setattr(
+        fusion_project,
+        "ARCHIVE_DIR",
+        str(archive_dir)
+    )
+
+    monkeypatch.setattr(
+        fusion_project.time,
+        "strftime",
+        lambda format:
+            "2026-10-07_143000"
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    project_file = Path(
+        project.filename
+    )
+
+    project_file.write_text(
+        "new content",
+        encoding="utf-8"
+    )
+
+    original_open = open
+
+    archive_file = (
+        archive_dir
+        / "fusion-manual-2026-10-07_143000.json"
+    )
+
+    collision_simulated = False
+
+    def concurrent_open(
+        filename,
+        mode="r",
+        *args,
+        **kwargs
+    ):
+
+        nonlocal collision_simulated
+
+        #
+        # Simuler la création concurrente
+        # juste avant l'ouverture exclusive.
+        #
+        if (
+            mode == "xb"
+            and
+            Path(filename) == archive_file
+            and
+            not collision_simulated
+        ):
+
+            collision_simulated = True
+
+            archive_file.write_text(
+                "concurrent content",
+                encoding="utf-8"
+            )
+
+        return original_open(
+            filename,
+            mode,
+            *args,
+            **kwargs
+        )
+
+    monkeypatch.setattr(
+        "builtins.open",
+        concurrent_open
+    )
+
+    #
+    # La collision doit être détectée,
+    # puis un autre nom utilisé.
+    #
+    assert project.archive() is True
+
+    assert collision_simulated is True
+
+    #
+    # L'archive concurrente ne doit
+    # pas être modifiée.
+    #
+    assert archive_file.read_text(
+        encoding="utf-8"
+    ) == "concurrent content"
+
+    #
+    # Notre archive doit être créée
+    # avec le suffixe suivant.
+    #
+    collision_file = (
+        archive_dir
+        / "fusion-manual-2026-10-07_143000-1.json"
+    )
+
+    assert collision_file.read_text(
+        encoding="utf-8"
+    ) == "new content"
 
 
 @pytest.mark.parametrize(
