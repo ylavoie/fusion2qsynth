@@ -4,7 +4,13 @@ import fusion_editor
 import fusion_capture
 import fusion_controller
 import fusion_monitor
-from fusion_project import FusionProject, ProjectRecoveryError
+from fusion_project import (
+    FusionProject,
+    ProjectRecoveryError,
+    FUSION_FILE
+)
+
+from fusion_lock import ProjectLock
 
 from fusion_lib import(
     system_status
@@ -308,6 +314,50 @@ def main():
 
             break
 
+def run():
+
+    lock_file = (
+        FUSION_FILE
+        + ".lock"
+    )
+
+    try:
+
+        #
+        # Une seule instance de
+        # Fusion2QSynth peut modifier
+        # le projet à la fois.
+        #
+        with ProjectLock(
+            lock_file
+        ):
+
+            main()
+
+    except BlockingIOError:
+
+        print()
+        print(
+            "=========================="
+        )
+        print(
+            "Fusion2QSynth déjà actif"
+        )
+        print(
+            "=========================="
+        )
+        print()
+        print(
+            "Une autre instance utilise "
+            "déjà le projet."
+        )
+        print(
+            "Fermez cette instance avant "
+            "de relancer Fusion2QSynth."
+        )
+
+        raise SystemExit(1)
+
 if __name__ == "__main__":
 
-    main()
+    run()

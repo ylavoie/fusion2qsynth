@@ -2,6 +2,8 @@ import builtins
 
 import pytest
 
+from fusion_lock import ProjectLock
+
 import fusion2qsynth
 
 
@@ -789,3 +791,202 @@ def test_main_archive_restore_success(
         "Archive restaurée."
         in capsys.readouterr().out
     )
+
+
+def test_run_refuses_second_instance(
+    tmp_path,
+    monkeypatch
+):
+
+    fusion_file = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "FUSION_FILE",
+        str(fusion_file)
+    )
+
+    calls = []
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "main",
+        lambda: calls.append(
+            "main"
+        )
+    )
+
+    lock = ProjectLock(
+        str(fusion_file) + ".lock"
+    )
+
+    try:
+
+        lock.acquire()
+
+        #
+        # Une autre session détient
+        # déjà le verrou.
+        #
+        with pytest.raises(
+            SystemExit
+        ) as exc:
+
+            fusion2qsynth.run()
+
+        assert exc.value.code == 1
+
+        #
+        # Le programme principal
+        # ne doit pas être exécuté.
+        #
+        assert calls == []
+
+    finally:
+
+        lock.release()
+
+
+def test_run_releases_lock_after_normal_exit(
+    tmp_path,
+    monkeypatch
+):
+
+    fusion_file = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "FUSION_FILE",
+        str(fusion_file)
+    )
+
+    lock_file = (
+        str(fusion_file)
+        + ".lock"
+    )
+
+    calls = []
+
+    def fake_main():
+
+        #
+        # Le verrou doit déjà être
+        # détenu pendant main().
+        #
+        competing = ProjectLock(
+            lock_file
+        )
+
+        try:
+
+            with pytest.raises(
+                BlockingIOError
+            ):
+
+                competing.acquire()
+
+        finally:
+
+            competing.release()
+
+        calls.append(
+            "main"
+        )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "main",
+        fake_main
+    )
+
+    fusion2qsynth.run()
+
+    assert calls == [
+        "main"
+    ]
+
+    #
+    # Après la fermeture normale,
+    # le verrou doit être disponible.
+    #
+    next_session = ProjectLock(
+        lock_file
+    )
+
+    try:
+
+        next_session.acquire()
+
+    finally:
+
+        next_session.release()
+
+
+def test_run_releases_lock_after_exception(
+    tmp_path,
+    monkeypatch
+):
+
+    fusion_file = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "FUSION_FILE",
+        str(fusion_file)
+    )
+
+    lock_file = (
+        str(fusion_file)
+        + ".lock"
+    )
+
+    def failing_main():
+
+        #
+        # Simuler une erreur pendant
+        # la session applicative.
+        #
+        raise RuntimeError(
+            "Erreur simulée"
+        )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "main",
+        failing_main
+    )
+
+    #
+    # L'exception doit être propagée.
+    #
+    with pytest.raises(
+        RuntimeError,
+        match="Erreur simulée"
+    ):
+
+        fusion2qsynth.run()
+
+    #
+    # Le verrou doit être disponible
+    # malgré l'arrêt anormal.
+    #
+    next_session = ProjectLock(
+        lock_file
+    )
+
+    try:
+
+        next_session.acquire()
+
+    finally:
+
+        next_session.release()
