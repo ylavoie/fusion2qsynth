@@ -1883,6 +1883,14 @@ class FusionProject:
             self.filename
         ):
 
+            #
+            # La disparition du fichier
+            # invalide une tentative échouée.
+            # Une éventuelle recréation doit
+            # permettre un nouveau chargement.
+            #
+            self.failed_reload_signature = None
+
             return False
 
         try:

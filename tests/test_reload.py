@@ -893,6 +893,193 @@ def test_reload_deleted_then_recreated_file(
     )
 
 
+def test_reload_invalid_file_recreated_same_signature(
+    project
+):
+
+    #
+    # Sauvegarder un projet valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_data = project.snapshot()
+
+    #
+    # Préparer le contenu valide
+    # qui servira à la recréation.
+    #
+    data = copy.deepcopy(
+        original_data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Recreated after failure"
+    )
+
+    valid_content = json.dumps(
+        data
+    )
+
+    #
+    # Construire un JSON invalide
+    # de longueur identique.
+    #
+    invalid_content = (
+        "{"
+        + " " * (len(valid_content) - 1)
+    )
+
+    #
+    # Rendre le fichier invalide.
+    #
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(
+            invalid_content
+        )
+
+    #
+    # Garantir une signature différente
+    # de celle du projet valide.
+    #
+    old_file_time = project.file_time
+
+    os.utime(
+        project.filename,
+        (
+            old_file_time + 10,
+            old_file_time + 10
+        )
+    )
+
+    stat = os.stat(
+        project.filename
+    )
+
+    failed_signature = (
+        stat.st_mtime_ns,
+        stat.st_size
+    )
+
+    #
+    # Premier chargement invalide.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert (
+        project.failed_reload_signature
+        == failed_signature
+    )
+
+    #
+    # Supprimer le fichier.
+    #
+    os.unlink(
+        project.filename
+    )
+
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    #
+    # La disparition observée doit
+    # permettre un nouvel essai.
+    #
+    assert (
+        project.failed_reload_signature
+        is None
+    )
+
+    assert (
+        project.data
+        == original_data
+    )
+
+    #
+    # Recréer un fichier valide.
+    #
+    data = copy.deepcopy(
+        original_data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Recreated after failure"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(
+            valid_content
+        )
+
+    #
+    # Restaurer exactement la date
+    # du fichier invalide précédent.
+    #
+    os.utime(
+        project.filename,
+        ns=(
+            failed_signature[0],
+            failed_signature[0]
+        )
+    )
+
+    #
+    # Vérifier que la signature est
+    # exactement identique.
+    #
+    stat = os.stat(
+        project.filename
+    )
+
+    assert (
+        stat.st_mtime_ns,
+        stat.st_size
+    ) == failed_signature
+
+    #
+    # La recréation doit permettre
+    # un nouveau chargement.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Recreated after failure"
+    )
+
+    assert (
+        project.failed_reload_signature
+        is None
+    )
+
+    #
+    # Aucun rechargement supplémentaire.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+
 def test_save_safe_resets_failed_reload_signature(
     project
 ):
