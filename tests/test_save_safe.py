@@ -1299,3 +1299,42 @@ def test_save_safe_blocking_errors_exception(
         project.data["banks"]["program"]["1"]
         == "Unsaved modification"
     )
+
+
+def test_save_safe_allowed_errors_none(
+    project
+):
+
+    #
+    # Aucune erreur de validation :
+    # None doit permettre la sauvegarde.
+    #
+    assert project.save_safe(
+        allowed_errors=None
+    ) is True
+
+    #
+    # Introduire une erreur bloquante.
+    #
+    project.data[
+        "mixes"
+    ][
+        "invalid"
+    ] = {
+        "name": "Invalid",
+        "channels": {}
+    }
+
+    errors = project.get_blocking_errors(
+        project.validate()
+    )
+
+    assert errors
+
+    #
+    # None ne doit autoriser
+    # aucune erreur bloquante.
+    #
+    assert project.save_safe(
+        allowed_errors=None
+    ) is False
