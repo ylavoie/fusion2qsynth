@@ -926,3 +926,62 @@ def test_load_migration_preserves_allowed_errors(
     # élimine ces erreurs.
     #
     assert loaded.validate() == []
+
+
+def test_load_rejects_invalid_migrated_song(
+    tmp_path
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = project._empty_project_data()
+
+    data["songs"]["Legacy"] = {
+        "name": "Legacy",
+        "channels": {
+            "1": {
+                "bank": 128,
+                "program": 35
+            }
+        }
+    }
+
+    write_json(
+        filename,
+        data
+    )
+
+    #
+    # Conserver le contenu original.
+    #
+    original = filename.read_bytes()
+
+    #
+    # La migration introduit une erreur
+    # de validation : Bank invalide (128).
+    #
+    with pytest.raises(
+        RuntimeError,
+        match="Impossible de sauvegarder la migration"
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
+
+    #
+    # La migration refusée ne doit
+    # pas modifier le fichier original.
+    #
+    assert filename.read_bytes() == original
