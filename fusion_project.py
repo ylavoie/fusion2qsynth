@@ -153,12 +153,35 @@ class FusionProject:
             self.validate()
         )
 
-        mix_migration = (
-            self._migrate_legacy_mixes()
+        #
+        # Conserver les données originales
+        # pendant les migrations.
+        #
+        original_data = self.data
+
+        self.data = copy.deepcopy(
+            original_data
         )
-        song_migration = (
-            self._migrate_legacy_songs()
-        )
+
+        try:
+
+            mix_migration = (
+                self._migrate_legacy_mixes()
+            )
+
+            song_migration = (
+                self._migrate_legacy_songs()
+            )
+
+        except Exception:
+
+            #
+            # Une migration a échoué :
+            # restaurer les données originales.
+            #
+            self.data = original_data
+
+            raise
 
         migration_needed = (
             mix_migration["mixes"] > 0

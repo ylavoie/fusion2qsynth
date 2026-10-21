@@ -1,3 +1,4 @@
+import copy
 import json
 import os
 
@@ -985,3 +986,117 @@ def test_load_rejects_invalid_migrated_song(
     # pas modifier le fichier original.
     #
     assert filename.read_bytes() == original
+
+
+def test_load_migrations_are_atomic(
+    tmp_path,
+    monkeypatch
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = project._empty_project_data()
+
+    #
+    # MIX historique valide.
+    #
+    data["mixes"]["0:0"] = {
+        "name": "Legacy Mix",
+        "parts": {
+            "1": {
+                "midi_channel": 2
+            }
+        }
+    }
+
+    #
+    # SONG historique invalide.
+    #
+    data["songs"]["Broken"] = {
+        "name": "Broken",
+        "channels": {
+            "1": {
+                "bank": 0
+            }
+        }
+    }
+
+    write_json(
+        filename,
+        data
+    )
+
+    original_file = filename.read_bytes()
+
+    #
+    # Déclencher le chargement.
+    #
+    #
+    # Conserver les données originales.
+    #
+    original = copy.deepcopy(
+        data
+    )
+
+    #
+    # Capturer l'instance utilisée
+    # pendant le chargement.
+    #
+    loaded = {}
+
+    original_migrate = (
+        FusionProject._migrate_legacy_songs
+    )
+
+    def failing_song_migration(
+        self
+    ):
+
+        loaded["project"] = self
+
+        return original_migrate(
+            self
+        )
+
+    monkeypatch.setattr(
+        FusionProject,
+        "_migrate_legacy_songs",
+        failing_song_migration
+    )
+
+    #
+    # La migration SONG échoue après
+    # la migration MIX.
+    #
+    with pytest.raises(
+        ValueError,
+        match="bank/program incomplets"
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
+
+    #
+    # Le fichier original est conservé.
+    #
+    assert filename.read_bytes() == original_file
+
+    #
+    # Aucune migration partielle
+    # ne doit subsister en mémoire.
+    #
+    assert loaded[
+        "project"
+    ].data == original
