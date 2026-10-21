@@ -1205,10 +1205,9 @@ class FusionProject:
 
                 #
                 # Créer un fichier temporaire
-                # unique pour conserver
-                # l'ancienne version.
+                # pour conserver l'ancienne version.
                 #
-                fd, old_file = tempfile.mkstemp(
+                with tempfile.NamedTemporaryFile(
                     prefix=(
                         os.path.basename(
                             self.filename
@@ -1220,12 +1219,11 @@ class FusionProject:
                         os.path.abspath(
                             self.filename
                         )
-                    )
-                )
+                    ),
+                    delete=False
+                ) as old_temp:
 
-                os.close(
-                    fd
-                )
+                    old_file = old_temp.name
 
                 shutil.copy2(
                     self.filename,

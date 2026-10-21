@@ -1718,28 +1718,48 @@ def test_save_safe_second_mkstemp_failure(
     )
 
     #
-    # Simuler l'échec de création
-    # du fichier temporaire .old-.
+    # Intercepter les deux méthodes
+    # de création des fichiers temporaires.
     #
     real_mkstemp = tempfile.mkstemp
 
     old_creation_attempted = False
     save_creation_succeeded = False
 
-    def failing_mkstemp(
+    def tracking_mkstemp(
+        *args,
+        **kwargs
+    ):
+
+        nonlocal save_creation_succeeded
+
+        result = real_mkstemp(
+            *args,
+            **kwargs
+        )
+
+        if kwargs.get(
+            "prefix",
+            ""
+        ).endswith(
+            ".save-"
+        ):
+
+            save_creation_succeeded = True
+
+        return result
+
+    def failing_named_temp(
         *args,
         **kwargs
     ):
 
         nonlocal old_creation_attempted
-        nonlocal save_creation_succeeded
 
-        prefix = kwargs.get(
+        if kwargs.get(
             "prefix",
             ""
-        )
-
-        if prefix.endswith(
+        ).endswith(
             ".old-"
         ):
 
@@ -1749,23 +1769,20 @@ def test_save_safe_second_mkstemp_failure(
                 "Erreur création .old simulée"
             )
 
-        result = real_mkstemp(
-            *args,
-            **kwargs
+        raise AssertionError(
+            "Création temporaire inattendue"
         )
-
-        if prefix.endswith(
-            ".save-"
-        ):
-
-            save_creation_succeeded = True
-
-        return result
 
     monkeypatch.setattr(
         tempfile,
         "mkstemp",
-        failing_mkstemp
+        tracking_mkstemp
+    )
+
+    monkeypatch.setattr(
+        tempfile,
+        "NamedTemporaryFile",
+        failing_named_temp
     )
 
     #
@@ -2286,3 +2303,173 @@ def test_save_safe_close_failure(
     ]
 
     assert remaining == []
+
+
+def test_save_safe_old_temp_close_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver le fichier original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    real_named_temp = tempfile.NamedTemporaryFile
+
+    close_attempted = False
+    old_file = None
+
+    class FailingTemporaryFile:
+
+        def __init__(
+            self,
+            file
+        ):
+
+            self.file = file
+            self.name = file.name
+
+        def __enter__(
+            self
+        ):
+
+            return self
+
+        def __exit__(
+            self,
+            exc_type,
+            exc_value,
+            traceback
+        ):
+
+            nonlocal close_attempted
+
+            close_attempted = True
+
+            #
+            # Fermer réellement le fichier
+            # puis simuler une exception.
+            #
+            self.file.close()
+
+            raise OSError(
+                "Erreur fermeture .old simulée"
+            )
+
+    def failing_named_temp(
+        *args,
+        **kwargs
+    ):
+
+        nonlocal old_file
+
+        file = real_named_temp(
+            *args,
+            **kwargs
+        )
+
+        old_file = file.name
+
+        return FailingTemporaryFile(
+            file
+        )
+
+    monkeypatch.setattr(
+        tempfile,
+        "NamedTemporaryFile",
+        failing_named_temp
+    )
+
+    #
+    # La sauvegarde doit échouer.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    assert close_attempted
+    assert old_file is not None
+
+    #
+    # Le fichier original
+    # doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
+
+    #
+    # Aucun nouveau backup.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
+
+    #
+    # Aucun fichier temporaire
+    # ne doit subsister.
+    #
+    directory = os.path.dirname(
+        os.path.abspath(
+            project.filename
+        )
+    )
+
+    basename = os.path.basename(
+        project.filename
+    )
+
+    remaining = [
+        name
+        for name in os.listdir(
+            directory
+        )
+        if name.startswith(
+            (
+                basename + ".save-",
+                basename + ".old-"
+            )
+        )
+    ]
+
+    assert remaining == []
+
+    #
+    # Vérifier la fermeture effective
+    # du fichier temporaire.
+    #
+    assert not os.path.exists(
+        old_file
+    )
