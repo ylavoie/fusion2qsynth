@@ -395,6 +395,7 @@ def test_reload_invalid_file_not_retried(
         is None
     )
 
+
 def test_reload_getmtime_failure_then_retry(
     project,
     monkeypatch,
@@ -681,3 +682,34 @@ def test_reload_after_save_getmtime_failure(
     # ne doit être nécessaire.
     #
     assert project.reload_if_changed() is False
+
+
+def test_save_safe_resets_failed_reload_signature(
+    project
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    #
+    # Simuler une tentative de
+    # rechargement échouée.
+    #
+    project.failed_reload_signature = (
+        123456789,
+        1024
+    )
+
+    #
+    # Une sauvegarde réussie doit
+    # effacer cet état d'échec.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    assert (
+        project.failed_reload_signature
+        is None
+    )
