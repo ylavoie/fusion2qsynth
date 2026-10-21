@@ -440,6 +440,79 @@ def test_migrate_legacy_song_preserves_unknown_structure(
     assert project.data == before
 
 
+def test_migrate_legacy_song_preserves_unmigrated_channels(
+    project
+):
+
+    project.data["songs"]["Mixed"] = {
+        "name": "Mixed",
+        "channels": {
+            "1": {
+                "bank": 0,
+                "program": 35,
+                "volume": 100
+            },
+            "2": {
+                "bank": 0,
+                "program": 10,
+                "unexpected": 42
+            },
+            "3": {
+                "programs": {
+                    "0:5": {}
+                }
+            }
+        }
+    }
+
+    result = (
+        project._migrate_legacy_songs()
+    )
+
+    assert result == {
+        "songs": 1,
+        "channels": 1,
+        "programs": 1,
+        "instruments": 0
+    }
+
+    channels = project.data[
+        "songs"
+    ][
+        "Mixed"
+    ][
+        "channels"
+    ]
+
+    #
+    # Canal historique migré.
+    #
+    assert channels["1"] == {
+        "volume": 100,
+        "programs": {
+            "0:35": {}
+        }
+    }
+
+    #
+    # Canal inconnu conservé.
+    #
+    assert channels["2"] == {
+        "bank": 0,
+        "program": 10,
+        "unexpected": 42
+    }
+
+    #
+    # Canal moderne conservé.
+    #
+    assert channels["3"] == {
+        "programs": {
+            "0:5": {}
+        }
+    }
+
+
 def test_migrate_legacy_song_rejects_bank_without_program(
     project
 ):
