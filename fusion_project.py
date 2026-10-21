@@ -54,6 +54,8 @@ class FusionProject:
         self.data = {}
         self.file_time = 0
 
+        self.failed_reload_signature = None
+
         self.load()
 
     def _empty_project_data(
@@ -1292,6 +1294,12 @@ class FusionProject:
                     e
                 )
 
+        #
+        # Une sauvegarde réussie invalide
+        # toute ancienne tentative échouée.
+        #
+        self.failed_reload_signature = None
+
         return True
 
     def archive_if_changed(
@@ -1849,6 +1857,10 @@ class FusionProject:
                 self.filename
             )
 
+            stat = os.stat(
+                self.filename
+            )
+
         except OSError as exc:
 
             log_warning(
@@ -1858,7 +1870,23 @@ class FusionProject:
 
             return False
 
+        signature = (
+            stat.st_mtime_ns,
+            stat.st_size
+        )
+
         if new_time == self.file_time:
+
+            return False
+
+        #
+        # Ne pas répéter une tentative
+        # pour le même fichier invalide.
+        #
+        if (
+            signature
+            == self.failed_reload_signature
+        ):
 
             return False
 
@@ -1887,7 +1915,24 @@ class FusionProject:
 
             self.file_time = original_file_time
 
+            #
+            # Une erreur système peut être
+            # temporaire : autoriser un nouvel essai.
+            #
+            if isinstance(
+                exc,
+                OSError
+            ):
+
+                self.failed_reload_signature = None
+
+            else:
+
+                self.failed_reload_signature = signature
+
             return False
+
+        self.failed_reload_signature = None
 
         return True
 

@@ -269,6 +269,80 @@ def test_reload_invalid_song_migration_preserves_state(
     )
 
 
+def test_reload_invalid_file_not_retried(
+    project,
+    monkeypatch
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    old_file_time = project.file_time
+
+    #
+    # Rendre le fichier invalide.
+    #
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        f.write(
+            '{"broken":'
+        )
+
+    os.utime(
+        project.filename,
+        (
+            old_file_time + 10,
+            old_file_time + 10
+        )
+    )
+
+    #
+    # Compter les appels à load().
+    #
+    original_load = project.load
+    attempts = 0
+
+    def counted_load():
+
+        nonlocal attempts
+
+        attempts += 1
+
+        return original_load()
+
+    monkeypatch.setattr(
+        project,
+        "load",
+        counted_load
+    )
+
+    #
+    # Premier échec : tentative autorisée.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert attempts == 1
+
+    #
+    # Fichier inchangé :
+    # aucune nouvelle tentative.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert attempts == 1
+
+
 def test_reload_getmtime_failure_then_retry(
     project,
     monkeypatch,
