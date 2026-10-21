@@ -1,6 +1,9 @@
 import copy
 import json
 import os
+import pytest
+
+from fusion_project import FusionProject
 
 from fusion_constants import (
     PROJECT_FORMAT_VERSION
@@ -1433,3 +1436,78 @@ def test_reload_load_stat_failure_preserves_state(
         project.reload_if_changed()
         is False
     )
+
+
+def test_initial_load_stat_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    real_stat = os.stat
+    failed = False
+
+    def failing_stat(
+        path,
+        *args,
+        **kwargs
+    ):
+
+        nonlocal failed
+
+        if (
+            os.fspath(path)
+            == os.fspath(project.filename)
+            and
+            not failed
+        ):
+
+            #
+            # Laisser passer les vérifications
+            # préalables et cibler le stat()
+            # final du chargement.
+            #
+            if stat_calls[0] == 2:
+
+                failed = True
+
+                raise OSError(
+                    "Erreur stat initial simulée"
+                )
+
+            stat_calls[0] += 1
+
+        return real_stat(
+            path,
+            *args,
+            **kwargs
+        )
+
+    stat_calls = [0]
+
+    monkeypatch.setattr(
+        os,
+        "stat",
+        failing_stat
+    )
+
+    #
+    # Le constructeur doit propager
+    # l'erreur système.
+    #
+    with pytest.raises(
+        OSError,
+        match="Erreur stat initial simulée"
+    ):
+
+        FusionProject(
+            filename=project.filename
+        )
+
+    assert failed is True
