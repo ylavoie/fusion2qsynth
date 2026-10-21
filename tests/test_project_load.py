@@ -674,3 +674,55 @@ def test_load_invalid_utf8_without_backup(
         FusionProject(
             filename=str(filename)
         )
+
+
+def test_load_read_error_propagates(
+    tmp_path,
+    monkeypatch
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    #
+    # Le fichier doit exister
+    # pour atteindre la lecture.
+    #
+    filename.write_text(
+        "{}",
+        encoding="utf-8"
+    )
+
+    #
+    # Simuler une erreur d'accès
+    # pendant la lecture du projet.
+    #
+    def failing_open(
+        *args,
+        **kwargs
+    ):
+
+        raise PermissionError(
+            "Permission denied"
+        )
+
+    monkeypatch.setattr(
+        "builtins.open",
+        failing_open
+    )
+
+    #
+    # L'erreur d'accès doit
+    # remonter sans déclencher
+    # une récupération du projet.
+    #
+    with pytest.raises(
+        PermissionError,
+        match="Permission denied"
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
