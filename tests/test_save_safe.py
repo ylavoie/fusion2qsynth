@@ -988,3 +988,62 @@ def test_save_safe_preserves_existing_old(
         assert f.read() == (
             old_content
         )
+
+
+def test_save_safe_respects_error_occurrences(
+    project,
+    monkeypatch
+):
+
+    #
+    # Simuler deux erreurs identiques.
+    #
+    error = "Erreur de validation simulée"
+
+    errors = [
+        error,
+        error
+    ]
+
+    monkeypatch.setattr(
+        project,
+        "validate",
+        lambda: errors
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_blocking_errors",
+        lambda validation_errors: (
+            validation_errors
+        )
+    )
+
+    #
+    # Une seule occurrence autorisée :
+    # sauvegarde refusée.
+    #
+    assert project.save_safe(
+        allowed_errors=[
+            error
+        ]
+    ) is False
+
+    assert not os.path.exists(
+        project.filename
+    )
+
+    #
+    # Deux occurrences autorisées :
+    # sauvegarde acceptée.
+    #
+    assert project.save_safe(
+        allowed_errors=[
+            error,
+            error
+        ]
+    ) is True
+
+    assert os.path.exists(
+        project.filename
+    )
