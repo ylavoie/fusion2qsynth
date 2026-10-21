@@ -410,6 +410,96 @@ def test_load_migration_save_failure(
     ].data == data
 
 
+def test_load_migration_save_exception(
+    tmp_path,
+    monkeypatch
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = project._empty_project_data()
+
+    #
+    # MIX historique valide.
+    #
+    data["mixes"]["0:0"] = {
+        "name": "Legacy",
+        "parts": {
+            "1": {
+                "midi_channel": 2
+            }
+        }
+    }
+
+    write_json(
+        filename,
+        data
+    )
+
+    original_file = filename.read_bytes()
+
+    #
+    # Simuler une exception provenant
+    # de save_safe().
+    #
+    loaded = {}
+
+    def failing_save_safe(
+        self,
+        allowed_errors
+    ):
+
+        loaded["project"] = self
+
+        raise RuntimeError(
+            "Erreur simulée de sauvegarde"
+        )
+
+    monkeypatch.setattr(
+        FusionProject,
+        "save_safe",
+        failing_save_safe
+    )
+
+    #
+    # La migration réussit,
+    # mais la sauvegarde échoue.
+    #
+    with pytest.raises(
+        RuntimeError,
+        match="Erreur simulée de sauvegarde"
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
+
+    #
+    # Le fichier original
+    # doit rester inchangé.
+    #
+    assert filename.read_bytes() == original_file
+
+    #
+    # Les modifications non sauvegardées
+    # ne doivent pas subsister en mémoire.
+    #
+    assert loaded[
+        "project"
+    ].data == data
+
+
 def test_load_missing_file_creates_empty_project(
     tmp_path
 ):

@@ -217,14 +217,27 @@ class FusionProject:
 
         if migration_needed:
 
-            if not self.save_safe(
-                allowed_errors=allowed_errors
-            ):
+            try:
+
+                saved = self.save_safe(
+                    allowed_errors=allowed_errors
+                )
+
+            except Exception:
 
                 #
-                # La migration n'a pas été
-                # sauvegardée : restaurer
-                # les données originales.
+                # Exception pendant la sauvegarde :
+                # restaurer les données originales.
+                #
+                self.data = original_data
+
+                raise
+
+            if not saved:
+
+                #
+                # Sauvegarde refusée :
+                # restaurer les données originales.
                 #
                 self.data = original_data
 
