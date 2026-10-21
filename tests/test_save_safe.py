@@ -1364,3 +1364,74 @@ def test_save_safe_rejects_string_allowed_errors(
     assert not os.path.exists(
         project.filename
     )
+
+
+def test_save_safe_blocking_error_preserves_existing_file(
+    project
+):
+
+    #
+    # Créer un projet valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver le contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Introduire une erreur bloquante.
+    #
+    project.data["mixes"]["invalid"] = {
+        "name": "Invalid",
+        "channels": {}
+    }
+
+    errors = project.get_blocking_errors(
+        project.validate()
+    )
+
+    assert errors
+
+    #
+    # Refuser la sauvegarde.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    #
+    # Le fichier existant doit
+    # rester strictement inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        "invalid"
+        in project.data["mixes"]
+    )
+
+    #
+    # Aucun backup ne doit
+    # avoir été créé.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
