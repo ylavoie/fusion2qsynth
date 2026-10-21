@@ -277,6 +277,19 @@ def test_save_safe_replace_failure_preserves_original(
         allowed_errors=[]
     ) is False
 
+    #
+    # Simuler un rechargement
+    # précédemment échoué.
+    #
+    failed_signature = (
+        123456789,
+        1024
+    )
+
+    project.failed_reload_signature = (
+        failed_signature
+    )
+
     with open(
         project.filename,
         encoding="utf-8"
@@ -290,6 +303,15 @@ def test_save_safe_replace_failure_preserves_original(
 
     assert not os.path.exists(
         project.filename + ".old"
+    )
+
+    #
+    # Une sauvegarde échouée ne doit
+    # pas effacer l'état d'échec.
+    #
+    assert (
+        project.failed_reload_signature
+        == failed_signature
     )
 
 
