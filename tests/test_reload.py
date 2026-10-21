@@ -1156,6 +1156,7 @@ def test_reload_stat_failure_then_retry(
     # de os.stat().
     #
     real_stat = os.stat
+    stat_calls = 0
     failed = False
 
     def failing_stat(
@@ -1164,20 +1165,33 @@ def test_reload_stat_failure_then_retry(
         **kwargs
     ):
 
+        nonlocal stat_calls
         nonlocal failed
 
         if (
             os.fspath(path)
             == os.fspath(project.filename)
-            and
-            not failed
         ):
 
-            failed = True
+            stat_calls += 1
 
-            raise OSError(
-                "Erreur stat simulée"
-            )
+            #
+            # Premier appel :
+            # os.path.exists().
+            #
+            # Deuxième appel :
+            # os.path.getmtime().
+            #
+            # Troisième appel :
+            # os.stat() explicite.
+            #
+            if stat_calls == 3:
+
+                failed = True
+
+                raise OSError(
+                    "Erreur stat simulée"
+                )
 
         return real_stat(
             path,
@@ -1199,6 +1213,8 @@ def test_reload_stat_failure_then_retry(
         project.reload_if_changed()
         is False
     )
+
+    assert stat_calls == 3
 
     assert failed is True
 
