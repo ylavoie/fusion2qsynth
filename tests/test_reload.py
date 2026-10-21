@@ -342,6 +342,58 @@ def test_reload_invalid_file_not_retried(
 
     assert attempts == 1
 
+    #
+    # Corriger le fichier externe.
+    #
+    data = copy.deepcopy(
+        project.data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Recovered"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f
+        )
+
+    #
+    # Garantir une nouvelle signature.
+    #
+    os.utime(
+        project.filename,
+        (
+            old_file_time + 20,
+            old_file_time + 20
+        )
+    )
+
+    #
+    # Le rechargement doit reprendre.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert attempts == 2
+
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Recovered"
+    )
+
+    assert (
+        project.failed_reload_signature
+        is None
+    )
 
 def test_reload_getmtime_failure_then_retry(
     project,
