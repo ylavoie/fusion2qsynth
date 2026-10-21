@@ -179,7 +179,8 @@ def test_reload_invalid_project_preserves_state(
 
 
 def test_reload_invalid_song_migration_preserves_state(
-    project
+    project,
+    caplog
 ):
 
     assert project.save_safe(
@@ -251,6 +252,20 @@ def test_reload_invalid_song_migration_preserves_state(
     assert (
         project.file_time
         == old_file_time
+    )
+
+    #
+    # L'échec du rechargement
+    # doit être journalisé.
+    #
+    assert (
+        "Rechargement impossible"
+        in caplog.text
+    )
+
+    assert (
+        "bank/program incomplets"
+        in caplog.text
     )
 
 

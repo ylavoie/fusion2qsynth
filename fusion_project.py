@@ -1874,7 +1874,12 @@ class FusionProject:
             RuntimeError,
             ValueError,
             OSError
-        ):
+        ) as exc:
+
+            log_warning(
+                f"Rechargement impossible de "
+                f"{self.filename} : {exc}"
+            )
 
             self.restore_snapshot(
                 original_data
