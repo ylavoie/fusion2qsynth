@@ -1841,3 +1841,131 @@ def test_save_safe_second_mkstemp_failure(
     ]
 
     assert remaining == []
+
+
+def test_save_safe_json_dump_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver son contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Simuler une écriture JSON
+    # partielle suivie d'une erreur.
+    #
+    real_dump = json.dump
+
+    dump_attempted = False
+
+    def failing_dump(
+        obj,
+        fp,
+        *args,
+        **kwargs
+    ):
+
+        nonlocal dump_attempted
+
+        dump_attempted = True
+
+        fp.write(
+            '{"banks":'
+        )
+
+        raise OSError(
+            "Erreur écriture JSON simulée"
+        )
+
+    monkeypatch.setattr(
+        json,
+        "dump",
+        failing_dump
+    )
+
+    #
+    # La sauvegarde doit échouer.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    assert dump_attempted
+
+    #
+    # Le fichier principal
+    # doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
+
+    #
+    # Aucun nouveau backup.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
+
+    #
+    # Aucun fichier temporaire
+    # ne doit subsister.
+    #
+    directory = os.path.dirname(
+        os.path.abspath(
+            project.filename
+        )
+    )
+
+    basename = os.path.basename(
+        project.filename
+    )
+
+    remaining = [
+        name
+        for name in os.listdir(
+            directory
+        )
+        if name.startswith(
+            (
+                basename + ".save-",
+                basename + ".old-"
+            )
+        )
+    ]
+
+    assert remaining == []
