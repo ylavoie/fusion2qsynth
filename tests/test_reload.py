@@ -1109,3 +1109,143 @@ def test_save_safe_resets_failed_reload_signature(
         project.failed_reload_signature
         is None
     )
+
+
+def test_reload_stat_failure_then_retry(
+    project,
+    monkeypatch
+):
+
+    #
+    # Sauvegarder un projet valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_data = project.snapshot()
+    original_file_time = project.file_time
+    original_signature = (
+        project.loaded_file_signature
+    )
+
+    #
+    # Modifier le fichier sur disque.
+    #
+    data = copy.deepcopy(
+        original_data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Changed externally"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f
+        )
+
+    #
+    # Simuler une erreur ponctuelle
+    # de os.stat().
+    #
+    real_stat = os.stat
+    failed = False
+
+    def failing_stat(
+        path,
+        *args,
+        **kwargs
+    ):
+
+        nonlocal failed
+
+        if (
+            os.fspath(path)
+            == os.fspath(project.filename)
+            and
+            not failed
+        ):
+
+            failed = True
+
+            raise OSError(
+                "Erreur stat simulée"
+            )
+
+        return real_stat(
+            path,
+            *args,
+            **kwargs
+        )
+
+    monkeypatch.setattr(
+        os,
+        "stat",
+        failing_stat
+    )
+
+    #
+    # Premier appel : erreur système.
+    # Le projet doit rester intact.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert failed is True
+
+    assert project.data == original_data
+
+    assert (
+        project.file_time
+        == original_file_time
+    )
+
+    assert (
+        project.loaded_file_signature
+        == original_signature
+    )
+
+    assert (
+        project.failed_reload_signature
+        is None
+    )
+
+    #
+    # Rétablir os.stat().
+    #
+    monkeypatch.setattr(
+        os,
+        "stat",
+        real_stat
+    )
+
+    #
+    # Deuxième appel :
+    # le rechargement doit réussir.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Changed externally"
+    )
+
+    #
+    # Aucun rechargement supplémentaire.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
