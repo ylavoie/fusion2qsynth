@@ -1356,3 +1356,24 @@ def test_program_has_part(
     assert project.program_has_part(
         "99:99"
     )
+
+def test_program_has_part_invalid_parts(
+    project
+):
+
+    #
+    # Programme existant avec
+    # une structure PART invalide.
+    #
+    project.data["programs"]["0:0"] = {
+        "name": "Invalid Program",
+        "parts": []
+    }
+
+    #
+    # Une liste ne constitue pas
+    # un dictionnaire de PARTs.
+    #
+    assert project.program_has_part(
+        "0:0"
+    ) is False
