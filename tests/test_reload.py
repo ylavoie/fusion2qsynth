@@ -1511,3 +1511,207 @@ def test_initial_load_stat_failure(
         )
 
     assert failed is True
+
+
+def test_save_safe_both_metadata_failures(
+    project,
+    monkeypatch
+):
+
+    #
+    # État initial valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_file_time = (
+        project.file_time
+    )
+
+    #
+    # Modifier le projet en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Saved despite metadata errors"
+    )
+
+    real_getmtime = os.path.getmtime
+    real_stat = os.stat
+
+    def failing_getmtime(
+        path
+    ):
+
+        if (
+            os.fspath(path)
+            == os.fspath(project.filename)
+        ):
+
+            raise OSError(
+                "Erreur getmtime simulée"
+            )
+
+        return real_getmtime(
+            path
+        )
+
+    def failing_stat(
+        path,
+        *args,
+        **kwargs
+    ):
+
+        if (
+            os.fspath(path)
+            == os.fspath(project.filename)
+        ):
+
+            #
+            # Échec uniquement lors
+            # de la synchronisation finale.
+            #
+            if (
+                failing_stat.enabled
+            ):
+
+                raise OSError(
+                    "Erreur stat simulée"
+                )
+
+        return real_stat(
+            path,
+            *args,
+            **kwargs
+        )
+
+    failing_stat.enabled = False
+
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        failing_getmtime
+    )
+
+    monkeypatch.setattr(
+        os,
+        "stat",
+        failing_stat
+    )
+
+    #
+    # Activer l'erreur stat uniquement
+    # après l'installation du fichier.
+    #
+    real_replace = os.replace
+
+    def replace_then_fail_stat(
+        src,
+        dst
+    ):
+
+        result = real_replace(
+            src,
+            dst
+        )
+
+        failing_stat.enabled = True
+
+        return result
+
+    monkeypatch.setattr(
+        os,
+        "replace",
+        replace_then_fail_stat
+    )
+
+    #
+    # La sauvegarde doit réussir.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    assert (
+        project.file_time
+        == original_file_time
+    )
+
+    assert (
+        project.loaded_file_signature
+        is None
+    )
+
+    assert (
+        project.failed_reload_signature
+        is None
+    )
+
+    #
+    # Rétablir les fonctions système.
+    #
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        real_getmtime
+    )
+
+    monkeypatch.setattr(
+        os,
+        "stat",
+        real_stat
+    )
+
+    monkeypatch.setattr(
+        os,
+        "replace",
+        real_replace
+    )
+
+    #
+    # Le fichier sauvegardé doit
+    # contenir les nouvelles données.
+    #
+    with open(
+        project.filename,
+        encoding="utf-8"
+    ) as f:
+
+        saved_data = json.load(
+            f
+        )
+
+    assert (
+        saved_data["banks"]["program"]["1"]
+        == "Saved despite metadata errors"
+    )
+
+    #
+    # Le rechargement doit synchroniser
+    # les métadonnées.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert (
+        project.loaded_file_signature
+        is not None
+    )
+
+    assert (
+        project.file_time
+        == os.path.getmtime(
+            project.filename
+        )
+    )
+
+    #
+    # Le fichier est maintenant
+    # considéré comme inchangé.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
