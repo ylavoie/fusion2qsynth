@@ -2121,3 +2121,168 @@ def test_save_safe_fdopen_failure(
             "Descripteur laissé ouvert après "
             "l'échec de os.fdopen()"
         )
+
+
+def test_save_safe_close_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver son contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Intercepter os.fdopen().
+    #
+    real_fdopen = os.fdopen
+
+    close_attempted = False
+
+    class FailingClose:
+
+        def __init__(
+            self,
+            file
+        ):
+
+            self.file = file
+
+        def __enter__(
+            self
+        ):
+
+            return self
+
+        def __exit__(
+            self,
+            exc_type,
+            exc_value,
+            traceback
+        ):
+
+            nonlocal close_attempted
+
+            close_attempted = True
+
+            #
+            # Fermer réellement le fichier
+            # avant de simuler l'erreur.
+            #
+            self.file.close()
+
+            raise OSError(
+                "Erreur fermeture simulée"
+            )
+
+        def write(
+            self,
+            data
+        ):
+
+            return self.file.write(
+                data
+            )
+
+    def failing_fdopen(
+        *args,
+        **kwargs
+    ):
+
+        return FailingClose(
+            real_fdopen(
+                *args,
+                **kwargs
+            )
+        )
+
+    monkeypatch.setattr(
+        os,
+        "fdopen",
+        failing_fdopen
+    )
+
+    #
+    # La sauvegarde doit échouer.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    assert close_attempted
+
+    #
+    # Le fichier principal
+    # doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
+
+    #
+    # Aucun nouveau backup.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
+
+    #
+    # Aucun fichier temporaire
+    # ne doit subsister.
+    #
+    directory = os.path.dirname(
+        os.path.abspath(
+            project.filename
+        )
+    )
+
+    basename = os.path.basename(
+        project.filename
+    )
+
+    remaining = [
+        name
+        for name in os.listdir(
+            directory
+        )
+        if name.startswith(
+            (
+                basename + ".save-",
+                basename + ".old-"
+            )
+        )
+    ]
+
+    assert remaining == []
