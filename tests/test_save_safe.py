@@ -1047,3 +1047,55 @@ def test_save_safe_respects_error_occurrences(
     assert os.path.exists(
         project.filename
     )
+
+
+def test_save_safe_rejects_replaced_error(
+    project,
+    monkeypatch
+):
+
+    #
+    # Erreur initialement autorisée.
+    #
+    original_error = (
+        "Erreur A"
+    )
+
+    #
+    # Nouvelle erreur non autorisée.
+    #
+    new_error = (
+        "Erreur B"
+    )
+
+    monkeypatch.setattr(
+        project,
+        "validate",
+        lambda: [
+            new_error
+        ]
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_blocking_errors",
+        lambda errors: errors
+    )
+
+    #
+    # Même nombre d'erreurs,
+    # mais erreur différente.
+    #
+    assert project.save_safe(
+        allowed_errors=[
+            original_error
+        ]
+    ) is False
+
+    #
+    # Aucun fichier ne doit
+    # avoir été créé.
+    #
+    assert not os.path.exists(
+        project.filename
+    )
