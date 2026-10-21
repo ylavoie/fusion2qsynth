@@ -1872,6 +1872,7 @@ class FusionProject:
         except (
             ProjectRecoveryError,
             RuntimeError,
+            ValueError,
             OSError
         ):
 
