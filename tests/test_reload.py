@@ -1265,3 +1265,171 @@ def test_reload_stat_failure_then_retry(
         project.reload_if_changed()
         is False
     )
+
+
+def test_reload_load_stat_failure_preserves_state(
+    project,
+    monkeypatch
+):
+
+    #
+    # Sauvegarder un projet valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_data = project.snapshot()
+    original_file_time = project.file_time
+
+    original_signature = (
+        project.loaded_file_signature
+    )
+
+    #
+    # Modifier le fichier sur disque.
+    #
+    data = copy.deepcopy(
+        original_data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Changed externally"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f
+        )
+
+    #
+    # Garantir une modification détectable.
+    #
+    os.utime(
+        project.filename,
+        (
+            original_file_time + 10,
+            original_file_time + 10
+        )
+    )
+
+    #
+    # Simuler une erreur de os.stat()
+    # à la fin de load().
+    #
+    real_stat = os.stat
+    stat_calls = 0
+    failed = False
+
+    def failing_stat(
+        path,
+        *args,
+        **kwargs
+    ):
+
+        nonlocal stat_calls
+        nonlocal failed
+
+        if (
+            os.fspath(path)
+            == os.fspath(project.filename)
+        ):
+
+            stat_calls += 1
+
+            #
+            # 1 : exists() de reload
+            # 2 : getmtime() de reload
+            # 3 : stat() de reload
+            # 4 : exists() de load
+            # 5 : getmtime() de load
+            # 6 : stat() final de load
+            #
+            if stat_calls == 6:
+
+                failed = True
+
+                raise OSError(
+                    "Erreur stat finale simulée"
+                )
+
+        return real_stat(
+            path,
+            *args,
+            **kwargs
+        )
+
+    monkeypatch.setattr(
+        os,
+        "stat",
+        failing_stat
+    )
+
+    #
+    # Premier rechargement :
+    # échec pendant load().
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert failed is True
+    assert stat_calls == 6
+
+    #
+    # L'état doit être restauré.
+    #
+    assert project.data == original_data
+
+    assert (
+        project.file_time
+        == original_file_time
+    )
+
+    assert (
+        project.loaded_file_signature
+        == original_signature
+    )
+
+    assert (
+        project.failed_reload_signature
+        is None
+    )
+
+    #
+    # Rétablir os.stat().
+    #
+    monkeypatch.setattr(
+        os,
+        "stat",
+        real_stat
+    )
+
+    #
+    # Nouvelle tentative :
+    # le rechargement doit réussir.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Changed externally"
+    )
+
+    #
+    # Aucun rechargement supplémentaire.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
