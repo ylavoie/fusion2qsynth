@@ -751,6 +751,59 @@ def test_reload_after_save_getmtime_failure(
     assert project.reload_if_changed() is False
 
 
+def test_reload_deleted_file_preserves_state(
+    project
+):
+
+    #
+    # Sauvegarder un projet valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_data = project.snapshot()
+
+    original_file_time = (
+        project.file_time
+    )
+
+    original_signature = (
+        project.loaded_file_signature
+    )
+
+    #
+    # Simuler une suppression externe.
+    #
+    os.unlink(
+        project.filename
+    )
+
+    #
+    # L'absence du fichier ne doit pas
+    # effacer le projet en mémoire.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    assert (
+        project.data
+        == original_data
+    )
+
+    assert (
+        project.file_time
+        == original_file_time
+    )
+
+    assert (
+        project.loaded_file_signature
+        == original_signature
+    )
+
+
 def test_save_safe_resets_failed_reload_signature(
     project
 ):
