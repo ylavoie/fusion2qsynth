@@ -83,6 +83,73 @@ def test_reload_changed_file(
     )
 
 
+def test_reload_changed_content_same_mtime(
+    project
+):
+
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    old_file_time = project.file_time
+
+    #
+    # Modifier le contenu du fichier
+    # sans modifier sa date.
+    #
+    data = copy.deepcopy(
+        project.data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Changed externally"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f
+        )
+
+    #
+    # Restaurer exactement
+    # l'ancienne date de modification.
+    #
+    os.utime(
+        project.filename,
+        (
+            old_file_time,
+            old_file_time
+        )
+    )
+
+    assert (
+        os.path.getmtime(
+            project.filename
+        )
+        == old_file_time
+    )
+
+    #
+    # Le contenu a changé :
+    # le rechargement est attendu.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Changed externally"
+    )
+
+
 def test_reload_invalid_json_preserves_state(
     project
 ):

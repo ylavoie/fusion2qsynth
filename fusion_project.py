@@ -55,6 +55,7 @@ class FusionProject:
         self.file_time = 0
 
         self.failed_reload_signature = None
+        self.loaded_file_signature = None
 
         self.load()
 
@@ -87,6 +88,7 @@ class FusionProject:
         ):
 
             self.data = self._empty_project_data()
+            self.loaded_file_signature = None
 
             return
 
@@ -246,6 +248,19 @@ class FusionProject:
                 raise RuntimeError(
                     "Impossible de sauvegarder la migration du projet."
                 )
+
+        #
+        # Le chargement et les migrations
+        # sont terminés avec succès.
+        #
+        stat = os.stat(
+            self.filename
+        )
+
+        self.loaded_file_signature = (
+            stat.st_mtime_ns,
+            stat.st_size
+        )
 
     def _validate_format_version(
         self
@@ -1300,6 +1315,25 @@ class FusionProject:
         #
         self.failed_reload_signature = None
 
+        #
+        # Mémoriser la signature
+        # du fichier sauvegardé.
+        #
+        try:
+
+            stat = os.stat(
+                self.filename
+            )
+
+            self.loaded_file_signature = (
+                stat.st_mtime_ns,
+                stat.st_size
+            )
+
+        except OSError:
+
+            self.loaded_file_signature = None
+
         return True
 
     def archive_if_changed(
@@ -1875,7 +1909,10 @@ class FusionProject:
             stat.st_size
         )
 
-        if new_time == self.file_time:
+        if (
+            signature
+            == self.loaded_file_signature
+        ):
 
             return False
 
@@ -1895,6 +1932,9 @@ class FusionProject:
 
         try:
 
+            original_loaded_signature = (
+                self.loaded_file_signature
+            )
             self.load()
 
         except (
@@ -1914,6 +1954,10 @@ class FusionProject:
             )
 
             self.file_time = original_file_time
+
+            self.loaded_file_signature = (
+                original_loaded_signature
+            )
 
             #
             # Une erreur système peut être
