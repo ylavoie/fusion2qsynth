@@ -1220,3 +1220,82 @@ def test_save_safe_validation_exception(
         project.data["banks"]["program"]["1"]
         == "Unsaved modification"
     )
+
+
+def test_save_safe_blocking_errors_exception(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver le contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Simuler une exception pendant
+    # l'analyse des erreurs bloquantes.
+    #
+    def failing_get_blocking_errors(
+        errors
+    ):
+
+        raise RuntimeError(
+            "Erreur blocking simulée"
+        )
+
+    monkeypatch.setattr(
+        project,
+        "get_blocking_errors",
+        failing_get_blocking_errors
+    )
+
+    #
+    # L'exception doit être propagée.
+    #
+    with pytest.raises(
+        RuntimeError,
+        match="Erreur blocking simulée"
+    ):
+
+        project.save_safe(
+            allowed_errors=[]
+        )
+
+    #
+    # Le fichier doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
