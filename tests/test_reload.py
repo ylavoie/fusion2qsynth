@@ -804,6 +804,95 @@ def test_reload_deleted_file_preserves_state(
     )
 
 
+def test_reload_deleted_then_recreated_file(
+    project
+):
+
+    #
+    # Sauvegarder un projet valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    original_data = project.snapshot()
+
+    original_signature = (
+        project.loaded_file_signature
+    )
+
+    #
+    # Supprimer le fichier.
+    #
+    os.unlink(
+        project.filename
+    )
+
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+    #
+    # Recréer le fichier avec
+    # une modification externe.
+    #
+    data = copy.deepcopy(
+        original_data
+    )
+
+    data["banks"]["program"]["1"] = (
+        "Recreated externally"
+    )
+
+    with open(
+        project.filename,
+        "w",
+        encoding="utf-8"
+    ) as f:
+
+        json.dump(
+            data,
+            f
+        )
+
+    #
+    # Garantir une signature différente.
+    #
+    assert (
+        (
+            os.stat(
+                project.filename
+            ).st_mtime_ns,
+            os.stat(
+                project.filename
+            ).st_size
+        )
+        != original_signature
+    )
+
+    #
+    # La réapparition doit être détectée.
+    #
+    assert (
+        project.reload_if_changed()
+        is True
+    )
+
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Recreated externally"
+    )
+
+    #
+    # Aucun deuxième rechargement.
+    #
+    assert (
+        project.reload_if_changed()
+        is False
+    )
+
+
 def test_save_safe_resets_failed_reload_signature(
     project
 ):
