@@ -118,8 +118,36 @@ class FusionProject:
                 f"Fichier {self.filename} invalide."
             )
 
+        #
+        # Vérifier la compatibilité du format.
+        # Une version incompatible ne doit pas
+        # déclencher une récupération.
+        #
         self._validate_format_version()
-        self._validate_root_structure()
+
+        #
+        # Vérifier la structure racine.
+        # Si elle est invalide et qu'un backup
+        # existe, proposer une récupération.
+        #
+        try:
+
+            self._validate_root_structure()
+
+        except RuntimeError as e:
+
+            backup = self.filename + ".bak"
+
+            if os.path.exists(
+                backup
+            ):
+
+                raise ProjectRecoveryError(
+                    f"{e} "
+                    f"Une sauvegarde {backup} est disponible."
+                ) from e
+
+            raise
 
         allowed_errors = self.get_blocking_errors(
             self.validate()

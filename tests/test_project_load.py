@@ -97,6 +97,7 @@ def test_validate_format_version_missing(
 
         project._validate_format_version()
 
+
 def test_validate_format_version_too_new(
     project
 ):
@@ -721,6 +722,68 @@ def test_load_read_error_propagates(
     with pytest.raises(
         PermissionError,
         match="Permission denied"
+    ):
+
+        FusionProject(
+            filename=str(filename)
+        )
+
+
+def test_load_invalid_root_with_backup(
+    tmp_path
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    backup = (
+        tmp_path
+        / "fusion.json.bak"
+    )
+
+    #
+    # Préparer un projet valide.
+    #
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = project._empty_project_data()
+
+    #
+    # Corrompre la structure racine.
+    #
+    del data[
+        "songs"
+    ]
+
+    write_json(
+        filename,
+        data
+    )
+
+    #
+    # Une sauvegarde est disponible.
+    #
+    write_json(
+        backup,
+        project._empty_project_data()
+    )
+
+    #
+    # Une structure invalide doit
+    # permettre de proposer la
+    # récupération du projet.
+    #
+    with pytest.raises(
+        ProjectRecoveryError,
+        match=r"Une sauvegarde .*fusion\.json\.bak est disponible"
     ):
 
         FusionProject(
