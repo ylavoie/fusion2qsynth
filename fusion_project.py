@@ -1129,6 +1129,7 @@ class FusionProject:
 
         temp_file = None
         old_file = None
+        fd = None
 
         try:
 
@@ -1156,11 +1157,37 @@ class FusionProject:
             # Écrire les données dans
             # le fichier temporaire.
             #
-            with os.fdopen(
-                fd,
-                "w",
-                encoding="utf-8"
-            ) as f:
+            try:
+
+                f = os.fdopen(
+                    fd,
+                    "w",
+                    encoding="utf-8"
+                )
+
+            except Exception:
+
+                #
+                # os.fdopen() a échoué :
+                # le descripteur appartient
+                # toujours à save_safe().
+                #
+                os.close(
+                    fd
+                )
+
+                fd = None
+
+                raise
+
+            #
+            # os.fdopen() a réussi :
+            # le fichier prend maintenant
+            # possession du descripteur.
+            #
+            fd = None
+
+            with f:
 
                 json.dump(
                     self.data,

@@ -1,6 +1,7 @@
 import os
 import json
 import copy
+import errno
 import pytest
 import shutil
 import tempfile
@@ -1969,3 +1970,154 @@ def test_save_safe_json_dump_failure(
     ]
 
     assert remaining == []
+
+
+def test_save_safe_fdopen_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver son contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Intercepter os.fdopen().
+    #
+    real_fdopen = os.fdopen
+
+    captured_fd = None
+
+    def failing_fdopen(
+        fd,
+        *args,
+        **kwargs
+    ):
+
+        nonlocal captured_fd
+
+        captured_fd = fd
+
+        raise OSError(
+            "Erreur fdopen simulée"
+        )
+
+    monkeypatch.setattr(
+        os,
+        "fdopen",
+        failing_fdopen
+    )
+
+    #
+    # La sauvegarde doit échouer.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    assert captured_fd is not None
+
+    #
+    # Le fichier original
+    # doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
+
+    #
+    # Aucun nouveau backup.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
+
+    #
+    # Aucun fichier temporaire
+    # ne doit subsister.
+    #
+    directory = os.path.dirname(
+        os.path.abspath(
+            project.filename
+        )
+    )
+
+    basename = os.path.basename(
+        project.filename
+    )
+
+    remaining = [
+        name
+        for name in os.listdir(
+            directory
+        )
+        if name.startswith(
+            (
+                basename + ".save-",
+                basename + ".old-"
+            )
+        )
+    ]
+
+    assert remaining == []
+
+    #
+    # Vérifier que le descripteur
+    # a été fermé.
+    #
+    try:
+
+        os.fstat(
+            captured_fd
+        )
+
+    except OSError as e:
+
+        assert e.errno == errno.EBADF
+
+    else:
+
+        #
+        # Éviter une fuite réelle
+        # pendant les tests.
+        #
+        os.close(
+            captured_fd
+        )
+
+        pytest.fail(
+            "Descripteur laissé ouvert après "
+            "l'échec de os.fdopen()"
+        )
