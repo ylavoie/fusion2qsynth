@@ -1099,3 +1099,44 @@ def test_save_safe_rejects_replaced_error(
     assert not os.path.exists(
         project.filename
     )
+
+
+def test_save_safe_allows_resolved_error(
+    project,
+    monkeypatch
+):
+
+    #
+    # Une erreur était autorisée,
+    # mais elle a été corrigée.
+    #
+    original_error = "Erreur A"
+
+    monkeypatch.setattr(
+        project,
+        "validate",
+        lambda: []
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_blocking_errors",
+        lambda errors: errors
+    )
+
+    #
+    # L'ancienne erreur autorisée
+    # n'existe plus.
+    #
+    assert project.save_safe(
+        allowed_errors=[
+            original_error
+        ]
+    ) is True
+
+    #
+    # Le fichier doit être créé.
+    #
+    assert os.path.exists(
+        project.filename
+    )
