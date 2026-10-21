@@ -617,3 +617,62 @@ def test_migrate_legacy_mix_ignores_invalid_mix(
     }
 
     assert project.data == before
+
+
+def test_migrate_legacy_songs_is_idempotent(
+    project
+):
+
+    project.data["songs"]["Legacy"] = {
+        "name": "Legacy",
+        "channels": {
+            "1": {
+                "bank": 0,
+                "program": 35,
+                "volume": 100
+            }
+        }
+    }
+
+    #
+    # Première migration.
+    #
+    first = (
+        project._migrate_legacy_songs()
+    )
+
+    assert first == {
+        "songs": 1,
+        "channels": 1,
+        "programs": 1,
+        "instruments": 0
+    }
+
+    #
+    # Conserver les données migrées.
+    #
+    migrated_data = copy.deepcopy(
+        project.data
+    )
+
+    #
+    # Deuxième migration.
+    #
+    second = (
+        project._migrate_legacy_songs()
+    )
+
+    #
+    # Aucune nouvelle migration.
+    #
+    assert second == {
+        "songs": 0,
+        "channels": 0,
+        "programs": 0,
+        "instruments": 0
+    }
+
+    #
+    # Aucune modification des données.
+    #
+    assert project.data == migrated_data
