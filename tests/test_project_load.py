@@ -841,3 +841,88 @@ def test_load_preserves_internal_validation_errors(
     # par le mécanisme de validation.
     #
     assert loaded.validate()
+
+
+def test_load_migration_preserves_allowed_errors(
+    tmp_path,
+    monkeypatch
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = project._empty_project_data()
+
+    #
+    # MIX historique nécessitant
+    # une migration.
+    #
+    data["mixes"]["0:0"] = {
+        "name": "Legacy",
+        "parts": {
+            "1": {
+                "midi_channel": 2
+            }
+        }
+    }
+
+    write_json(
+        filename,
+        data
+    )
+
+    #
+    # Capturer les erreurs autorisées
+    # transmises à save_safe().
+    #
+    received = {}
+
+    def fake_save_safe(
+        self,
+        allowed_errors
+    ):
+
+        received["allowed_errors"] = list(
+            allowed_errors
+        )
+
+        return True
+
+    monkeypatch.setattr(
+        FusionProject,
+        "save_safe",
+        fake_save_safe
+    )
+
+    #
+    # Déclencher le chargement
+    # et la migration du MIX.
+    #
+    loaded = FusionProject(
+        filename=str(filename)
+    )
+
+    #
+    # Vérifier les erreurs présentes
+    # avant la migration.
+    #
+    assert received["allowed_errors"] == [
+        "0:0 : champ inconnu 'parts'.",
+        "0:0 : channels absent."
+    ]
+
+    #
+    # Vérifier que la migration
+    # élimine ces erreurs.
+    #
+    assert loaded.validate() == []
