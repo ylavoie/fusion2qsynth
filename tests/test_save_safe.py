@@ -1,6 +1,7 @@
 import os
 import json
 import copy
+import pytest
 
 def test_save_safe_new_file(
     project
@@ -1139,4 +1140,83 @@ def test_save_safe_allows_resolved_error(
     #
     assert os.path.exists(
         project.filename
+    )
+
+
+def test_save_safe_validation_exception(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver son contenu exact.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Simuler une exception pendant
+    # la validation.
+    #
+    def failing_validate():
+
+        raise RuntimeError(
+            "Erreur de validation simulée"
+        )
+
+    monkeypatch.setattr(
+        project,
+        "validate",
+        failing_validate
+    )
+
+    #
+    # Vérifier la propagation
+    # de l'exception.
+    #
+    with pytest.raises(
+        RuntimeError,
+        match="Erreur de validation simulée"
+    ):
+
+        project.save_safe(
+            allowed_errors=[]
+        )
+
+    #
+    # Le fichier existant doit
+    # demeurer inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # ne doivent pas être perdues.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
     )
