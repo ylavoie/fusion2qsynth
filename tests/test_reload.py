@@ -357,3 +357,110 @@ def test_reload_load_getmtime_failure_preserves_state(
         project.file_time
         == old_file_time
     )
+
+
+def test_reload_after_save_getmtime_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Première sauvegarde normale.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    )
+
+    old_file_time = project.file_time
+
+    #
+    # Modifier les données.
+    #
+    project.data[
+        "banks"
+    ][
+        "program"
+    ][
+        "1"
+    ] = "Changed"
+
+    real_getmtime = os.path.getmtime
+
+    def failing_getmtime(
+        filename
+    ):
+
+        if filename == project.filename:
+
+            raise OSError(
+                "Erreur getmtime simulée"
+            )
+
+        return real_getmtime(
+            filename
+        )
+
+    #
+    # Simuler l'échec de getmtime
+    # après la sauvegarde.
+    #
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        failing_getmtime
+    )
+
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    assert project.file_time == old_file_time
+
+    #
+    # Rétablir getmtime.
+    #
+    monkeypatch.setattr(
+        os.path,
+        "getmtime",
+        real_getmtime
+    )
+
+    #
+    # Forcer une date distincte
+    # pour éviter toute ambiguïté
+    # liée à la résolution du système
+    # de fichiers.
+    #
+    os.utime(
+        project.filename,
+        (
+            old_file_time + 10,
+            old_file_time + 10
+        )
+    )
+
+    #
+    # Le rechargement doit rétablir
+    # la synchronisation.
+    #
+    assert project.reload_if_changed() is True
+
+    assert project.file_time == (
+        real_getmtime(
+            project.filename
+        )
+    )
+
+    assert project.data[
+        "banks"
+    ][
+        "program"
+    ][
+        "1"
+    ] == "Changed"
+
+    #
+    # Aucun nouveau rechargement
+    # ne doit être nécessaire.
+    #
+    assert project.reload_if_changed() is False
