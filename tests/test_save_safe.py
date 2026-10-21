@@ -1685,3 +1685,159 @@ def test_save_safe_first_mkstemp_failure(
     ]
 
     assert remaining == []
+
+
+def test_save_safe_second_mkstemp_failure(
+    project,
+    monkeypatch
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver son contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Simuler l'échec de création
+    # du fichier temporaire .old-.
+    #
+    real_mkstemp = tempfile.mkstemp
+
+    old_creation_attempted = False
+    save_creation_succeeded = False
+
+    def failing_mkstemp(
+        *args,
+        **kwargs
+    ):
+
+        nonlocal old_creation_attempted
+        nonlocal save_creation_succeeded
+
+        prefix = kwargs.get(
+            "prefix",
+            ""
+        )
+
+        if prefix.endswith(
+            ".old-"
+        ):
+
+            old_creation_attempted = True
+
+            raise OSError(
+                "Erreur création .old simulée"
+            )
+
+        result = real_mkstemp(
+            *args,
+            **kwargs
+        )
+
+        if prefix.endswith(
+            ".save-"
+        ):
+
+            save_creation_succeeded = True
+
+        return result
+
+    monkeypatch.setattr(
+        tempfile,
+        "mkstemp",
+        failing_mkstemp
+    )
+
+    #
+    # La sauvegarde doit échouer.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    #
+    # Vérifier que le premier
+    # fichier temporaire a été créé.
+    #
+    assert save_creation_succeeded
+
+    #
+    # Vérifier que la création
+    # du second a été tentée.
+    #
+    assert old_creation_attempted
+
+    #
+    # Le fichier principal
+    # doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
+
+    #
+    # Aucun nouveau backup.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
+
+    #
+    # Aucun fichier temporaire
+    # ne doit subsister.
+    #
+    directory = os.path.dirname(
+        os.path.abspath(
+            project.filename
+        )
+    )
+
+    basename = os.path.basename(
+        project.filename
+    )
+
+    remaining = [
+        name
+        for name in os.listdir(
+            directory
+        )
+        if name.startswith(
+            (
+                basename + ".save-",
+                basename + ".old-"
+            )
+        )
+    ]
+
+    assert remaining == []
