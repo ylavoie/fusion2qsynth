@@ -1072,6 +1072,20 @@ class FusionProject:
         allowed_errors
     ):
 
+        #
+        # Une chaîne seule ne constitue pas
+        # une collection de messages d'erreur.
+        #
+        if isinstance(
+            allowed_errors,
+            (str, bytes)
+        ):
+
+            raise TypeError(
+                "allowed_errors doit être une collection "
+                "de messages d'erreur, pas une chaîne."
+            )
+
         errors = self.validate()
 
         blocking_errors = self.get_blocking_errors(

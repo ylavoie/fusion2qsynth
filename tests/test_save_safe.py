@@ -1338,3 +1338,29 @@ def test_save_safe_allowed_errors_none(
     assert project.save_safe(
         allowed_errors=None
     ) is False
+
+
+def test_save_safe_rejects_string_allowed_errors(
+    project
+):
+
+    #
+    # Une chaîne seule n'est pas
+    # une collection de messages.
+    #
+    with pytest.raises(
+        TypeError,
+        match="allowed_errors"
+    ):
+
+        project.save_safe(
+            allowed_errors="Erreur A"
+        )
+
+    #
+    # Aucun fichier ne doit
+    # avoir été créé.
+    #
+    assert not os.path.exists(
+        project.filename
+    )
