@@ -221,9 +221,15 @@ class FusionProject:
                 allowed_errors=allowed_errors
             ):
 
+                #
+                # La migration n'a pas été
+                # sauvegardée : restaurer
+                # les données originales.
+                #
+                self.data = original_data
+
                 raise RuntimeError(
-                    "Impossible de sauvegarder "
-                    "la migration du projet."
+                    "Impossible de sauvegarder la migration du projet."
                 )
 
     def _validate_format_version(

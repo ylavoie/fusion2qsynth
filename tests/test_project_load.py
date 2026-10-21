@@ -357,10 +357,30 @@ def test_load_migration_save_failure(
         data
     )
 
+    #
+    # Conserver le fichier original.
+    #
+    original_file = filename.read_bytes()
+
+    #
+    # Capturer l'instance dont
+    # le chargement échoue.
+    #
+    loaded = {}
+
+    def failing_save_safe(
+        self,
+        allowed_errors=None
+    ):
+
+        loaded["project"] = self
+
+        return False
+
     monkeypatch.setattr(
         FusionProject,
         "save_safe",
-        lambda self, allowed_errors=None: False
+        failing_save_safe
     )
 
     with pytest.raises(
@@ -374,6 +394,20 @@ def test_load_migration_save_failure(
         FusionProject(
             filename=str(filename)
         )
+
+    #
+    # Le fichier original doit
+    # demeurer inchangé.
+    #
+    assert filename.read_bytes() == original_file
+
+    #
+    # Les migrations non sauvegardées
+    # ne doivent pas subsister en mémoire.
+    #
+    assert loaded[
+        "project"
+    ].data == data
 
 
 def test_load_missing_file_creates_empty_project(
