@@ -2,6 +2,7 @@ import os
 import json
 import copy
 import pytest
+import shutil
 
 def test_save_safe_new_file(
     project
@@ -1435,3 +1436,125 @@ def test_save_safe_blocking_error_preserves_existing_file(
     assert not os.path.exists(
         project.filename + ".bak"
     )
+
+
+def test_save_safe_copy_failure_preserves_original(
+    project,
+    monkeypatch,
+    tmp_path
+):
+
+    #
+    # Créer un fichier valide.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is True
+
+    #
+    # Conserver son contenu original.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        original_content = f.read()
+
+    #
+    # Modifier les données en mémoire.
+    #
+    project.data["banks"]["program"]["1"] = (
+        "Unsaved modification"
+    )
+
+    #
+    # Simuler une copie partielle
+    # suivie d'une exception.
+    #
+    def failing_copy2(
+        src,
+        dst
+    ):
+
+        with open(
+            dst,
+            "wb"
+        ) as f:
+
+            f.write(
+                b"partial backup"
+            )
+
+        raise OSError(
+            "Erreur copie simulée"
+        )
+
+    monkeypatch.setattr(
+        shutil,
+        "copy2",
+        failing_copy2
+    )
+
+    #
+    # La sauvegarde doit échouer.
+    #
+    assert project.save_safe(
+        allowed_errors=[]
+    ) is False
+
+    #
+    # Le fichier principal
+    # doit rester inchangé.
+    #
+    with open(
+        project.filename,
+        "rb"
+    ) as f:
+
+        assert f.read() == original_content
+
+    #
+    # Les modifications en mémoire
+    # doivent être conservées.
+    #
+    assert (
+        project.data["banks"]["program"]["1"]
+        == "Unsaved modification"
+    )
+
+    #
+    # Aucun nouveau backup.
+    #
+    assert not os.path.exists(
+        project.filename + ".bak"
+    )
+
+    #
+    # Aucun fichier temporaire
+    # ne doit subsister.
+    #
+    directory = os.path.dirname(
+        os.path.abspath(
+            project.filename
+        )
+    )
+
+    basename = os.path.basename(
+        project.filename
+    )
+
+    remaining = [
+        name
+        for name in os.listdir(
+            directory
+        )
+        if name.startswith(
+            (
+                basename + ".save-",
+                basename + ".old-"
+            )
+        )
+    ]
+
+    assert remaining == []
