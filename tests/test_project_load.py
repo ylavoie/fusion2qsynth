@@ -29,6 +29,7 @@ def write_json(
             f
         )
 
+
 def test_empty_project_data(
     project
 ):
@@ -789,3 +790,54 @@ def test_load_invalid_root_with_backup(
         FusionProject(
             filename=str(filename)
         )
+
+
+def test_load_preserves_internal_validation_errors(
+    tmp_path
+):
+
+    filename = (
+        tmp_path
+        / "fusion.json"
+    )
+
+    project = FusionProject.__new__(
+        FusionProject
+    )
+
+    project.filename = str(filename)
+    project.data = {}
+    project.file_time = 0
+
+    data = project._empty_project_data()
+
+    #
+    # Introduire une erreur interne
+    # sans modifier la structure racine.
+    #
+    data["banks"]["program"]["0"] = ""
+
+    write_json(
+        filename,
+        data
+    )
+
+    #
+    # Le projet doit pouvoir être
+    # chargé pour permettre sa correction.
+    #
+    loaded = FusionProject(
+        filename=str(filename)
+    )
+
+    #
+    # Aucune modification automatique
+    # des données invalides.
+    #
+    assert loaded.data == data
+
+    #
+    # L'erreur doit rester détectable
+    # par le mécanisme de validation.
+    #
+    assert loaded.validate()
