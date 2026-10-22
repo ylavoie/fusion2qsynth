@@ -173,3 +173,68 @@ def test_project_lock_released_after_exception(
     finally:
 
         second.release()
+
+
+def test_project_lock_rejects_double_acquire(
+    tmp_path
+):
+
+    lock_file = (
+        tmp_path
+        / "fusion.json.lock"
+    )
+
+    first = ProjectLock(
+        lock_file
+    )
+
+    second = ProjectLock(
+        lock_file
+    )
+
+    try:
+
+        #
+        # Première acquisition.
+        #
+        first.acquire()
+
+        #
+        # La même instance ne doit
+        # pas acquérir deux fois
+        # le verrou.
+        #
+        with pytest.raises(
+            RuntimeError,
+            match="Verrou déjà acquis"
+        ):
+
+            first.acquire()
+
+        #
+        # Le premier verrou doit
+        # toujours être actif.
+        #
+        with pytest.raises(
+            BlockingIOError
+        ):
+
+            second.acquire()
+
+        #
+        # Libérer le premier verrou.
+        #
+        first.release()
+
+        #
+        # Une autre instance doit
+        # maintenant pouvoir
+        # acquérir le verrou.
+        #
+        second.acquire()
+
+    finally:
+
+        second.release()
+
+        first.release()
