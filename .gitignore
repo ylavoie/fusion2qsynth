@@ -34,3 +34,6 @@ FUSION_HD/*
 
 # Couverture de tests
 .coverage
+
+# Verrous
+fusion.json.lock
