@@ -415,22 +415,12 @@ def capture_mix(
                                     part["midi_channel"]
                                 )
 
-                            if len(used_channels) != len(set(used_channels)):
+                            print()
 
-                                print()
-                                print("ERREUR :")
-                                print("Plusieurs PARTS utilisent le même canal MIDI.")
-                                print("Réglage Fusion requis.")
-                                print()
-
-                            else:
-
-                                print()
-
-                                print(
-                                    "PARTS détectées :",
-                                    len(parts_seen)
-                                )
+                            print(
+                                "PARTS détectées :",
+                                len(parts_seen)
+                            )
 
                             print(
                                 "CH"

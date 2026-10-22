@@ -8542,6 +8542,31 @@ Les fonctionnalités envisagées mais non encore implantées doivent être suivi
 
 ---
 
+### Limitation — Plusieurs PARTS sur un même canal MIDI
+
+Certains MIX du Fusion 8HD, notamment dans les banques ROM, utilisent plusieurs PARTS associées à un même canal MIDI.
+
+La capture MIDI actuelle de Fusion2QSynth identifie les canaux transmettant des notes, mais ne permet pas de distinguer individuellement plusieurs PARTS partageant un canal.
+
+Par conséquent :
+
+* Le nombre de PARTS détectées peut être inférieur au nombre réel de PARTS du MIX.
+* La représentation du MIX dans `fusion.json` peut être partielle.
+* La restitution par FluidSynth peut différer de celle du Fusion 8HD.
+
+Cette limitation ne constitue pas une erreur de configuration du Fusion.
+
+**Évolutions envisagées :**
+
+1. Dénombrer les MIX ROM utilisant plusieurs PARTS sur un même canal MIDI.
+2. Étudier les possibilités d'identification de ces PARTS à partir des informations disponibles sur le Fusion.
+3. Faire évoluer le modèle de données pour permettre plusieurs instruments ou PARTS sur un même canal MIDI.
+4. Adapter le contrôleur Live pour restituer ces configurations lorsque cela sera techniquement possible.
+
+Le dénombrement nécessitera une source décrivant les affectations des PARTS aux canaux MIDI. Les données MIDI capturées actuellement ne suffisent pas à identifier ces MIX de manière fiable.
+
+---
+
 ## Philosophie du projet
 
 Fusion2QSynth est né d'un objectif simple : permettre au Fusion 8HD de piloter naturellement un environnement logiciel moderne tout en conservant la logique de travail de l'instrument.
