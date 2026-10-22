@@ -497,7 +497,6 @@ def test_capture_program_existing_refused(
     )
 
 
-
 def test_capture_program_update_failure(
     monkeypatch,
     capsys
@@ -1227,6 +1226,58 @@ def test_capture_mix_existing_declined(
         "Mix déjà existant."
         in capsys.readouterr().out
     )
+
+
+def test_capture_mix_debug_output(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def get_mix_bank_name(
+            self,
+            bank
+        ):
+
+            return f"Bank {bank}"
+
+        def mix_has_channels(
+            self,
+            mix_id
+        ):
+
+            return True
+
+    project = Project()
+
+    monkeypatch.setattr(
+        fusion_capture,
+        "DEBUG",
+        True
+    )
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            "n"
+    )
+
+    run_capture_mix(
+        monkeypatch,
+        project,
+        mix_messages()
+    )
+
+    output = capsys.readouterr().out
+
+    assert "Capture :" in output
+
+    assert "PARTS :" in output
+
+    assert "Fin de capture" in output
+
+    assert "Mix déjà existant." in output
 
 
 def test_capture_mix_replace_failure(

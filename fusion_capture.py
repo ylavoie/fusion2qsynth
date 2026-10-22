@@ -918,29 +918,20 @@ def capture_song(
 
                         for program_id in programs:
 
-                            try:
-
-                                bank_str, program_str = (
-                                    program_id.split(
-                                        ":",
-                                        1
-                                    )
+                            bank_str, program_str = (
+                                program_id.split(
+                                    ":",
+                                    1
                                 )
+                            )
 
-                                bank = int(
-                                    bank_str
-                                )
+                            bank = int(
+                                bank_str
+                            )
 
-                                program = int(
-                                    program_str
-                                )
-
-                            except (
-                                ValueError,
-                                AttributeError
-                            ):
-
-                                continue
+                            program = int(
+                                program_str
+                            )
 
                             if project.get_program(
                                 program_id
