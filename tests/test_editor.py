@@ -13506,6 +13506,66 @@ def test_main_mixes_category_filter(
     ]
 
 
+def test_main_mixes_category_filter_cancel(
+    monkeypatch
+):
+
+    calls = []
+
+    class Project:
+        pass
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        Project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "list_mixes",
+        lambda *args, **kwargs:
+            calls.append(
+                (args, kwargs)
+            )
+    )
+
+    responses = iter([
+        "1",
+        "2",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.run()
+
+    assert calls == []
+
+
 def test_main_programs_category_filter(
     monkeypatch
 ):
@@ -13581,6 +13641,66 @@ def test_main_programs_category_filter(
             "A"
         )
     ]
+
+
+def test_main_programs_category_filter_cancel(
+    monkeypatch
+):
+
+    calls = []
+
+    class Project:
+        pass
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "FusionProject",
+        Project
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "validate_and_repair",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "print_project_summary",
+        lambda project: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "choose_fusion_category",
+        lambda: None
+    )
+
+    monkeypatch.setattr(
+        fusion_editor,
+        "list_programs",
+        lambda *args, **kwargs:
+            calls.append(
+                (args, kwargs)
+            )
+    )
+
+    responses = iter([
+        "2",
+        "2",
+        "q",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            next(responses)
+    )
+
+    fusion_editor.run()
+
+    assert calls == []
 
 
 def test_main_delete_mix_cancel_and_unknown(
@@ -16691,3 +16811,40 @@ def test_edit_fusion_category_setter_failure(
         "Modification refusée."
         in capsys.readouterr().out
     )
+
+
+def test_edit_fusion_category_invalid_object_type(
+    monkeypatch
+):
+
+    class Project:
+
+        def __getattr__(
+            self,
+            name
+        ):
+
+            raise AssertionError(
+                f"Accès inattendu au projet : {name}"
+            )
+
+    def unexpected_input(
+        prompt=""
+    ):
+
+        raise AssertionError(
+            "Aucune saisie attendue."
+        )
+
+    monkeypatch.setattr(
+        "builtins.input",
+        unexpected_input
+    )
+
+    result = fusion_editor.edit_fusion_category(
+        Project(),
+        "8:12",
+        "invalid"
+    )
+
+    assert result is None
