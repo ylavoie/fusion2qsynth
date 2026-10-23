@@ -199,6 +199,19 @@ def test_detect_families_square_lead():
     assert "square_lead" in families
 
 
+def test_detect_families_square_bass():
+
+    families = fusion_suggestions.detect_families(
+        "Square Bass"
+    )
+
+    assert "bass" in families
+
+    assert "square_lead" not in families
+
+    assert "square_wave" not in families
+
+
 def test_similarity():
 
     assert (
