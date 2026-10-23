@@ -1269,6 +1269,73 @@ def test_load_song_program_unknown_program(
         in output
     )
 
+
+def test_load_song_program_unknown_program_no_debug(
+    project,
+    monkeypatch,
+    capsys
+):
+
+    monkeypatch.setattr(
+        fusion_performance,
+        "DEBUG",
+        False
+    )
+
+    project.data["songs"]["Test"] = {
+        "name": "Test",
+        "channels": {
+            "2": {
+                "programs": {}
+            }
+        }
+    }
+
+    fusion_performance.state.current_performance = (
+        "Test"
+    )
+
+    fusion_performance.state.current_parts = {
+        2: {
+            "old": True
+        }
+    }
+
+    fusion_performance.state.current_song_programs = {
+        2: {
+            "old": True
+        }
+    }
+
+    out = DummyOutput()
+
+    result = fusion_performance.load_song_program(
+        2,
+        "0:35",
+        out,
+        project
+    )
+
+    assert result is False
+
+    assert (
+        2
+        not in fusion_performance.state.current_parts
+    )
+
+    assert (
+        2
+        not in fusion_performance.state.current_song_programs
+    )
+
+    assert out.messages == []
+
+    assert (
+        "PROGRAM SONG ignoré"
+        not in capsys.readouterr().out
+    )
+
+
 def test_load_song_program_instrument_not_ready(
     project,
     monkeypatch,
@@ -1582,3 +1649,49 @@ def test_reload_current_song(
     ]
 
 
+def test_reload_current_without_mode(
+    project,
+    monkeypatch
+):
+
+    out = DummyOutput()
+
+    monkeypatch.setattr(
+        fusion_performance.state,
+        "current_mode",
+        None
+    )
+
+    monkeypatch.setattr(
+        fusion_performance.state,
+        "current_performance",
+        None
+    )
+
+    def unexpected_load(
+        *args,
+        **kwargs
+    ):
+
+        raise AssertionError(
+            "Aucun chargement attendu."
+        )
+
+    for name in (
+        "load_program",
+        "load_mix",
+        "load_song"
+    ):
+
+        monkeypatch.setattr(
+            fusion_performance,
+            name,
+            unexpected_load
+        )
+
+    result = fusion_performance.reload_current_performance(
+        out,
+        project
+    )
+
+    assert result is None
