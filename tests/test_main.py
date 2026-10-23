@@ -535,6 +535,59 @@ def test_main_dispatches_modules(
     ]
 
 
+def test_main_invalid_choice(
+    monkeypatch,
+    capsys
+):
+
+    archives = []
+
+    class DummyProject:
+
+        def archive_if_changed(self):
+
+            archives.append(
+                True
+            )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "FusionProject",
+        DummyProject
+    )
+
+    monkeypatch.setattr(
+        fusion2qsynth,
+        "show_status",
+        lambda project: None
+    )
+
+    choices = iter([
+        "x",
+        "q"
+    ])
+
+    monkeypatch.setattr(
+        builtins,
+        "input",
+        lambda prompt: next(
+            choices
+        )
+    )
+
+    fusion2qsynth.main()
+
+    output = capsys.readouterr().out
+
+    assert output.count(
+        "Fusion → FluidSynth"
+    ) == 2
+
+    assert archives == [
+        True
+    ]
+
+
 @pytest.mark.parametrize(
     (
         "archive_result",
