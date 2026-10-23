@@ -82,6 +82,7 @@ def test_main_dispatch(
 
     choices = iter([
         choice,
+        "x",
         "q",
     ])
 
@@ -277,6 +278,13 @@ def test_capture_program_success(
                     fusion_capture.fusion_default_channel,
                 note=72,
                 velocity=110
+            ),
+            Message(
+                "note_off",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                note=72,
+                velocity=0
             ),
         ],
         [],
@@ -495,6 +503,163 @@ def test_capture_program_existing_refused(
         "Program non modifié."
         in output
     )
+
+
+def test_capture_program_existing_accepted(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def __init__(self):
+
+            self.updated = None
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def get_program_bank_name(
+            self,
+            bank
+        ):
+
+            return f"Bank {bank}"
+
+        def program_has_part(
+            self,
+            program_id
+        ):
+
+            return True
+
+        def snapshot(self):
+
+            return {"original": True}
+
+        def update_program_part(
+            self,
+            program_id,
+            part_id,
+            data
+        ):
+
+            self.updated = (
+                program_id,
+                part_id,
+                data
+            )
+
+            return True, []
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            self.saved = True
+
+            return True
+
+    project = Project()
+
+    batches = [
+        [
+            Message(
+                "control_change",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                control=0,
+                value=8
+            ),
+            Message(
+                "program_change",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                program=12
+            ),
+            Message(
+                "note_on",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                note=60,
+                velocity=80
+            ),
+        ],
+        [],
+    ]
+
+    monkeypatch.setattr(
+        fusion_capture.mido,
+        "open_input",
+        lambda port:
+            PendingInput(
+                batches
+            )
+    )
+
+    times = iter([
+        0,
+        0,
+        fusion_capture.CAPTURE_TIME + 1,
+    ])
+
+    monkeypatch.setattr(
+        fusion_capture.time,
+        "time",
+        lambda:
+            next(
+                times,
+                fusion_capture.CAPTURE_TIME + 1
+            )
+    )
+
+    monkeypatch.setattr(
+        fusion_capture.time,
+        "sleep",
+        lambda value:
+            None
+    )
+
+    monkeypatch.setattr(
+        "builtins.input",
+        lambda prompt:
+            "o"
+    )
+
+    fusion_capture.capture_program(
+        project,
+        "Fusion MIDI"
+    )
+
+    assert project.updated is not None
+
+    program_id, part_id, data = project.updated
+
+    assert program_id == "8:12"
+    assert part_id == "1"
+
+    assert data["bank"] == 8
+    assert data["program"] == 12
+    assert data["note_min"] == 60
+    assert data["note_max"] == 60
+    assert data["velocity_min"] == 80
+    assert data["velocity_max"] == 80
+
+    assert project.saved is True
+
+    output = capsys.readouterr().out
+
+    assert "Program déjà existant." in output
+    assert "Program sauvegardé." in output
 
 
 def test_capture_program_update_failure(
@@ -984,6 +1149,26 @@ def test_capture_mix_success(
                 control=0,
                 value=8
             ),
+            #
+            # Contrôleur MIDI autre que Bank Select :
+            # doit être ignoré
+            #
+            Message(
+                "control_change",
+                channel=
+                    fusion_capture.fusion_default_channel,
+                control=7,
+                value=100
+            ),
+            #
+            # Program Change sur un canal secondaire :
+            # ne doit pas déclencher de capture
+            #
+            Message(
+                "program_change",
+                channel=4,
+                program=25
+            ),
             Message(
                 "program_change",
                 channel=
@@ -1027,6 +1212,16 @@ def test_capture_mix_success(
                 channel=0,
                 note=72,
                 velocity=110
+            ),
+            #
+            # Note Off :
+            # doit être ignorée par la capture
+            #
+            Message(
+                "note_off",
+                channel=0,
+                note=48,
+                velocity=0
             ),
         ],
         [],
@@ -1109,6 +1304,131 @@ def test_capture_mix_success(
     assert "Mix sauvegardé." in output
 
 
+def test_capture_mix_existing_accepted(
+    monkeypatch,
+    capsys
+):
+
+    class Project:
+
+        def __init__(self):
+
+            self.replaced = None
+            self.saved = False
+
+        def get_mix_bank_name(
+            self,
+            bank
+        ):
+
+            return f"Bank {bank}"
+
+        def mix_has_channels(
+            self,
+            mix_id
+        ):
+
+            return True
+
+        def get_mix(
+            self,
+            mix_id
+        ):
+
+            return {
+                "name": "Mix existant"
+            }
+
+        def validate(self):
+
+            return []
+
+        def get_blocking_errors(
+            self,
+            errors
+        ):
+
+            return []
+
+        def snapshot(self):
+
+            return {
+                "original": True
+            }
+
+        def replace_mix_channels(
+            self,
+            mix_id,
+            channels
+        ):
+
+            self.replaced = (
+                mix_id,
+                channels
+            )
+
+            return True, []
+
+        def save_safe(
+            self,
+            allowed_errors=None
+        ):
+
+            self.saved = True
+
+            return True
+
+    project = Project()
+
+    prompts = []
+
+    def fake_input(prompt):
+
+        prompts.append(prompt)
+
+        if prompt == "Remplacer ? (o/n) : ":
+
+            return "o"
+
+        return ""
+
+    monkeypatch.setattr(
+        "builtins.input",
+        fake_input
+    )
+
+    run_capture_mix(
+        monkeypatch,
+        project,
+        mix_messages()
+    )
+
+    assert prompts == [
+        "Remplacer ? (o/n) : ",
+        "Nouveau nom (Entrée = conserver) : "
+    ]
+
+    assert project.replaced == (
+        "0:12",
+        {
+            "1": {
+                "note_min": 60,
+                "note_max": 60,
+                "velocity_min": 80,
+                "velocity_max": 80
+            }
+        }
+    )
+
+    assert project.saved is True
+
+    output = capsys.readouterr().out
+
+    assert "Mix déjà existant." in output
+    assert "Nom actuel : Mix existant" in output
+    assert "Mix sauvegardé." in output
+
+
 def run_capture_mix(
     monkeypatch,
     project,
@@ -1132,6 +1452,7 @@ def run_capture_mix(
     times = iter([
         0,
         0,
+        fusion_capture.CAPTURE_TIME / 2,
         fusion_capture.CAPTURE_TIME + 1,
     ])
 
@@ -1806,6 +2127,17 @@ def test_capture_song_success(
         ),
 
         #
+        # Message non traité par la capture SONG :
+        # doit être ignoré.
+        #
+        Message(
+            "note_on",
+            channel=0,
+            note=60,
+            velocity=100
+        ),
+
+        #
         # Fin capture
         #
         Message(
@@ -1926,6 +2258,27 @@ def test_capture_song_merge_existing(
                             "8:11": {
                                 "instrument":
                                     "local-piano"
+                            },
+                            #
+                            # PROGRAM sans instrument local :
+                            # conserver les autres propriétés.
+                            #
+                            "8:12": {
+                                "custom": 456
+                            },
+                            #
+                            # Instrument local sans PROGRAM global :
+                            # doit être conservé.
+                            #
+                            "8:13": {
+                                "instrument": "local-organ"
+                            },
+                            #
+                            # PROGRAM global avec plusieurs PARTS :
+                            # conserver l'instrument local.
+                            #
+                            "8:14": {
+                                "instrument": "local-strings"
                             }
                         },
                         "volume": 90,
@@ -1973,6 +2326,19 @@ def test_capture_song_merge_existing(
                         "1": {
                             "instrument":
                                 "piano"
+                        }
+                    }
+                }
+
+            if program_id == "8:14":
+
+                return {
+                    "parts": {
+                        "1": {
+                            "instrument": "violin"
+                        },
+                        "2": {
+                            "instrument": "cello"
                         }
                     }
                 }
@@ -2095,6 +2461,15 @@ def test_capture_song_merge_existing(
                     "8:11": {
                         "instrument":
                             "local-piano"
+                    },
+                    "8:12": {
+                        "custom": 456
+                    },
+                    "8:13": {
+                        "instrument": "local-organ"
+                    },
+                    "8:14": {
+                        "instrument": "local-strings"
                     }
                 },
                 "expression": 100,

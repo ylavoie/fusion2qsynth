@@ -405,129 +405,153 @@ def capture_mix(
                         print("Fin de capture")
                         print("====================")
 
-                        if current_mix:
+                        used_channels = []
 
-                            used_channels = []
+                        for part in parts_seen.values():
 
-                            for part in parts_seen.values():
+                            used_channels.append(
+                                part["midi_channel"]
+                            )
 
-                                used_channels.append(
-                                    part["midi_channel"]
+                        print()
+
+                        print(
+                            "PARTS détectées :",
+                            len(parts_seen)
+                        )
+
+                        print(
+                            "CH"
+                        )
+
+                        print(
+                            "--"
+                        )
+
+                        for part in sorted(
+                            parts_seen.values(),
+                            key=lambda p: p["midi_channel"]
+                        ):
+
+                            print(
+                                part["midi_channel"]
+                            )
+
+                        if project.mix_has_channels(
+                            current_mix
+                        ):
+
+                            print(
+                                "Mix déjà existant."
+                            )
+
+                            rep = input(
+                                "Remplacer ? (o/n) : "
+                            )
+
+                            if rep.lower() != "o":
+
+                                continue
+
+                        mix = project.get_mix(
+                            current_mix
+                        )
+
+                        current_name = (
+                            mix.get("name", current_mix)
+                            if mix
+                            else current_mix
+                        )
+
+                        print()
+                        print(
+                            "Nom actuel :",
+                            current_name
+                        )
+
+                        new_name = input(
+                            "Nouveau nom (Entrée = conserver) : "
+                        ).strip()
+
+                        allowed_errors = (
+                            project.get_blocking_errors(
+                                project.validate()
+                            )
+                        )
+
+                        channels = {}
+
+                        for part in sorted(
+                            parts_seen.values(),
+                            key=lambda p: p["midi_channel"]
+                        ):
+
+                            channel_id = str(
+                                part["midi_channel"]
+                            )
+
+                            observations = notes_seen[
+                                part["midi_channel"] - 1
+                            ]
+
+                            channels[
+                                channel_id
+                            ] = {
+                                "note_min": min(
+                                    observations["notes"]
+                                ),
+                                "note_max": max(
+                                    observations["notes"]
+                                ),
+                                "velocity_min": min(
+                                    observations["velocity"]
+                                ),
+                                "velocity_max": max(
+                                    observations["velocity"]
                                 )
+                            }
+
+                        original_data = project.snapshot()
+
+                        success, errors = (
+                            project.replace_mix_channels(
+                                current_mix,
+                                channels
+                            )
+                        )
+
+                        if not success:
 
                             print()
 
                             print(
-                                "PARTS détectées :",
-                                len(parts_seen)
+                                "Remplacement du Mix refusé :"
                             )
 
-                            print(
-                                "CH"
+                            print_error_messages(
+                                errors
                             )
 
-                            print(
-                                "--"
-                            )
+                            continue
 
-                            for part in sorted(
-                                parts_seen.values(),
-                                key=lambda p: p["midi_channel"]
-                            ):
-
-                                print(
-                                    part["midi_channel"]
-                                )
-
-                            if project.mix_has_channels(
-                                current_mix
-                            ):
-
-                                print(
-                                    "Mix déjà existant."
-                                )
-
-                                rep = input(
-                                    "Remplacer ? (o/n) : "
-                                )
-
-                                if rep.lower() != "o":
-
-                                    continue
-
-                            mix = project.get_mix(
-                                current_mix
-                            )
-
-                            current_name = (
-                                mix.get("name", current_mix)
-                                if mix
-                                else current_mix
-                            )
-
-                            print()
-                            print(
-                                "Nom actuel :",
-                                current_name
-                            )
-
-                            new_name = input(
-                                "Nouveau nom (Entrée = conserver) : "
-                            ).strip()
-
-                            allowed_errors = (
-                                project.get_blocking_errors(
-                                    project.validate()
-                                )
-                            )
-
-                            channels = {}
-
-                            for part in sorted(
-                                parts_seen.values(),
-                                key=lambda p: p["midi_channel"]
-                            ):
-
-                                channel_id = str(
-                                    part["midi_channel"]
-                                )
-
-                                observations = notes_seen[
-                                    part["midi_channel"] - 1
-                                ]
-
-                                channels[
-                                    channel_id
-                                ] = {
-                                    "note_min": min(
-                                        observations["notes"]
-                                    ),
-                                    "note_max": max(
-                                        observations["notes"]
-                                    ),
-                                    "velocity_min": min(
-                                        observations["velocity"]
-                                    ),
-                                    "velocity_max": max(
-                                        observations["velocity"]
-                                    )
-                                }
-
-                            original_data = project.snapshot()
+                        if new_name:
 
                             success, errors = (
-                                project.replace_mix_channels(
+                                project.rename_mix(
                                     current_mix,
-                                    channels
+                                    new_name
                                 )
                             )
 
                             if not success:
 
-                                print()
+                                project.restore_snapshot(
+                                    original_data
+                                )
 
+                                print()
                                 print(
-                                    "Remplacement du Mix refusé :"
+                                    "Renommage du Mix refusé :"
                                 )
 
                                 print_error_messages(
@@ -536,53 +560,27 @@ def capture_mix(
 
                                 continue
 
-                            if new_name:
+                        if project.save_safe(
+                            allowed_errors=allowed_errors
+                        ):
 
-                                success, errors = (
-                                    project.rename_mix(
-                                        current_mix,
-                                        new_name
-                                    )
-                                )
+                            print(
+                                "Mix sauvegardé."
+                            )
 
-                                if not success:
+                        else:
 
-                                    project.restore_snapshot(
-                                        original_data
-                                    )
+                            project.restore_snapshot(
+                                original_data
+                            )
 
-                                    print()
-                                    print(
-                                        "Renommage du Mix refusé :"
-                                    )
+                            print(
+                                "Le Mix n'a pas été sauvegardé."
+                            )
 
-                                    print_error_messages(
-                                        errors
-                                    )
-
-                                    continue
-
-                            if project.save_safe(
-                                allowed_errors=allowed_errors
-                            ):
-
-                                print(
-                                    "Mix sauvegardé."
-                                )
-
-                            else:
-
-                                project.restore_snapshot(
-                                    original_data
-                                )
-
-                                print(
-                                    "Le Mix n'a pas été sauvegardé."
-                                )
-
-                                print(
-                                    "État du projet restauré en mémoire."
-                                )
+                            print(
+                                "État du projet restauré en mémoire."
+                            )
 
                 #
                 # Poll MIDI
