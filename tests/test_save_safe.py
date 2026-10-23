@@ -1726,12 +1726,18 @@ def test_save_safe_second_mkstemp_failure(
     old_creation_attempted = False
     save_creation_succeeded = False
 
+    save_temp_path = None
+    old_creation_attempted = False
+    save_creation_succeeded = False
+    save_temp_removed = False
+
     def tracking_mkstemp(
         *args,
         **kwargs
     ):
 
         nonlocal save_creation_succeeded
+        nonlocal save_temp_path
 
         result = real_mkstemp(
             *args,
@@ -1746,6 +1752,7 @@ def test_save_safe_second_mkstemp_failure(
         ):
 
             save_creation_succeeded = True
+            save_temp_path = result[1]
 
         return result
 
@@ -1755,6 +1762,7 @@ def test_save_safe_second_mkstemp_failure(
     ):
 
         nonlocal old_creation_attempted
+        nonlocal save_temp_removed
 
         if kwargs.get(
             "prefix",
@@ -1764,6 +1772,14 @@ def test_save_safe_second_mkstemp_failure(
         ):
 
             old_creation_attempted = True
+
+            assert save_temp_path is not None
+
+            os.remove(
+                save_temp_path
+            )
+
+            save_temp_removed = True
 
             raise OSError(
                 "Erreur création .old simulée"
@@ -1803,6 +1819,8 @@ def test_save_safe_second_mkstemp_failure(
     # du second a été tentée.
     #
     assert old_creation_attempted
+
+    assert save_temp_removed
 
     #
     # Le fichier principal

@@ -597,6 +597,90 @@ def test_successful_restore_archives_current():
     )
 
 
+def test_restore_without_current_project(
+    monkeypatch
+):
+
+    #
+    # Projet valide à restaurer.
+    #
+    restored_project = make_valid_project()
+
+    restored_project[
+        "mixes"
+    ][
+        "1:1"
+    ] = {
+        "name": "Projet restauré",
+        "channels": {}
+    }
+
+    write_json(
+        "restore.json",
+        restored_project
+    )
+
+    #
+    # Aucun projet actif.
+    #
+    assert not os.path.exists(
+        "fusion.json"
+    )
+
+    #
+    # La restauration ne doit pas
+    # tenter d'archiver un projet absent.
+    #
+    def unexpected_archive(
+        self
+    ):
+
+        raise AssertionError(
+            "Archivage inattendu"
+        )
+
+    monkeypatch.setattr(
+        FusionProject,
+        "archive_if_changed",
+        unexpected_archive
+    )
+
+    #
+    # Restaurer directement l'archive.
+    #
+    result = (
+        FusionProject.restore_from_archive(
+            "restore.json"
+        )
+    )
+
+    assert result is not None
+
+    #
+    # Le fichier principal doit
+    # maintenant exister.
+    #
+    assert os.path.isfile(
+        "fusion.json"
+    )
+
+    assert read_json(
+        "fusion.json"
+    ) == restored_project
+
+    assert result.data == restored_project
+
+    #
+    # Aucun archivage préalable
+    # ne doit avoir été effectué.
+    #
+    assert not os.path.exists(
+        ARCHIVE_DIR
+    )
+
+    assert_no_restore_temp()
+
+
 def test_failed_restore_creates_no_archive():
 
     print()

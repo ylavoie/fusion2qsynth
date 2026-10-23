@@ -376,6 +376,13 @@ def test_find_instrument_usage_program(
                 "midi_channel": 1,
                 "instrument":
                     "test_instrument"
+            },
+            "2": {
+                "bank": 0,
+                "program": 1,
+                "midi_channel": 2,
+                "instrument":
+                    "other_instrument"
             }
         }
     }
@@ -411,6 +418,10 @@ def test_find_instrument_usage_mix(
             "1": {
                 "instrument":
                     "test_instrument"
+            },
+            "2": {
+                "instrument":
+                    "other_instrument"
             }
         }
     }
@@ -448,6 +459,10 @@ def test_find_instrument_usage_song(
                     "0:0": {
                         "instrument":
                             "test_instrument"
+                    },
+                    "0:1": {
+                        "instrument":
+                            "other_instrument"
                     }
                 }
             }

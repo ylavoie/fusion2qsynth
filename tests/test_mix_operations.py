@@ -493,6 +493,15 @@ def test_make_copy_name_skips_existing_numbers(
     ) == "Test (copie 4)"
 
 
+def test_make_copy_name_already_copy(
+    project
+):
+
+    assert project._make_copy_name(
+        "Test (copie)"
+    ) == "Test (copie) (copie 2)"
+
+
 def test_delete_empty_mixes(
     project
 ):
