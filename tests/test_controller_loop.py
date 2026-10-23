@@ -383,7 +383,8 @@ def test_controller_ignores_unknown_note_off_on_inactive_channel(
 
 def test_controller_forwards_note_off_for_previously_active_note(
     project,
-    monkeypatch
+    monkeypatch,
+    capsys
 ):
 
     out = DummyOutput()
@@ -414,6 +415,12 @@ def test_controller_forwards_note_off_for_previously_active_note(
     fusion_controller_loop.state.reload_wait_announced = False
 
     monkeypatch.setattr(
+        fusion_controller_loop,
+        "DEBUG",
+        True
+    )
+
+    monkeypatch.setattr(
         project,
         "reload_if_changed",
         lambda: False
@@ -438,6 +445,13 @@ def test_controller_forwards_note_off_for_previously_active_note(
         1,
         60
     ) not in fusion_controller_loop.state.active_notes
+
+    output = capsys.readouterr().out
+
+    assert (
+        "NOTE OFF CH 2 ? Note C4"
+        in output
+    )
 
 
 def test_controller_treats_zero_velocity_note_on_as_note_off(
@@ -997,6 +1011,80 @@ def test_controller_debug_program_note_on(
     ]
 
 
+def test_controller_debug_program_note_on_without_instrument(
+    project,
+    monkeypatch,
+    capsys
+):
+
+    msg = mido.Message(
+        "note_on",
+        channel=0,
+        note=60,
+        velocity=100
+    )
+
+    inp = DummyInput(
+        [
+            [msg]
+        ]
+    )
+
+    out = DummyOutput()
+
+    part = {
+        "midi_channel": 1
+    }
+
+    fusion_controller_loop.state.current_parts = {
+        1: part
+    }
+
+    fusion_controller_loop.state.active_notes.clear()
+    fusion_controller_loop.state.pending_reload = False
+    fusion_controller_loop.state.reload_wait_announced = False
+
+    monkeypatch.setattr(
+        fusion_controller_loop,
+        "DEBUG",
+        True
+    )
+
+    monkeypatch.setattr(
+        project,
+        "reload_if_changed",
+        lambda: False
+    )
+
+    monkeypatch.setattr(
+        project,
+        "resolve_part_instrument",
+        lambda value: None
+    )
+
+    with pytest.raises(
+        StopControllerLoop
+    ):
+
+        fusion_controller_loop.run_controller_loop(
+            inp,
+            out,
+            project,
+            "program"
+        )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "NOTE ON CH 1 ? Note C4 Vel 100"
+        in output
+    )
+
+    assert out.messages == [
+        msg
+    ]
+
+
 def test_controller_debug_mix_note_on(
     project,
     monkeypatch,
@@ -1138,6 +1226,143 @@ def test_controller_debug_song_note_on(
 
     assert (
         "NOTE ON CH 1 Test Violin Note C4 Vel 100"
+        in output
+    )
+
+    assert out.messages == [
+        msg
+    ]
+
+
+def test_controller_debug_song_note_on_without_program(
+    project,
+    monkeypatch,
+    capsys
+):
+
+    msg = mido.Message(
+        "note_on",
+        channel=0,
+        note=60,
+        velocity=100
+    )
+
+    inp = DummyInput(
+        [
+            [msg]
+        ]
+    )
+
+    out = DummyOutput()
+
+    fusion_controller_loop.state.current_parts = {
+        1: {}
+    }
+
+    fusion_controller_loop.state.current_song_programs = {}
+
+    fusion_controller_loop.state.active_notes.clear()
+    fusion_controller_loop.state.pending_reload = False
+    fusion_controller_loop.state.reload_wait_announced = False
+
+    monkeypatch.setattr(
+        fusion_controller_loop,
+        "DEBUG",
+        True
+    )
+
+    monkeypatch.setattr(
+        project,
+        "reload_if_changed",
+        lambda: False
+    )
+
+    with pytest.raises(
+        StopControllerLoop
+    ):
+
+        fusion_controller_loop.run_controller_loop(
+            inp,
+            out,
+            project,
+            "song"
+        )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "NOTE ON CH 1 ? Note C4 Vel 100"
+        in output
+    )
+
+    assert out.messages == [
+        msg
+    ]
+
+
+def test_controller_debug_song_note_on_without_instrument(
+    project,
+    monkeypatch,
+    capsys
+):
+
+    msg = mido.Message(
+        "note_on",
+        channel=0,
+        note=60,
+        velocity=100
+    )
+
+    inp = DummyInput(
+        [
+            [msg]
+        ]
+    )
+
+    out = DummyOutput()
+
+    fusion_controller_loop.state.current_parts = {
+        1: {}
+    }
+
+    fusion_controller_loop.state.current_song_programs = {
+        1: {
+            "program_id": "0:1",
+            "instrument": None
+        }
+    }
+
+    fusion_controller_loop.state.active_notes.clear()
+    fusion_controller_loop.state.pending_reload = False
+    fusion_controller_loop.state.reload_wait_announced = False
+
+    monkeypatch.setattr(
+        fusion_controller_loop,
+        "DEBUG",
+        True
+    )
+
+    monkeypatch.setattr(
+        project,
+        "reload_if_changed",
+        lambda: False
+    )
+
+    with pytest.raises(
+        StopControllerLoop
+    ):
+
+        fusion_controller_loop.run_controller_loop(
+            inp,
+            out,
+            project,
+            "song"
+        )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "NOTE ON CH 1 ? Note C4 Vel 100"
         in output
     )
 

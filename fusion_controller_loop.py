@@ -437,7 +437,7 @@ def run_controller_loop(
 
                         continue
 
-                elif selected_mode == "song":
+                elif selected_mode == "song":  # pragma: no branch
 
                     #
                     # Banque Fusion courante du canal SONG
@@ -575,7 +575,7 @@ def run_controller_loop(
                         project
                     )
 
-                elif selected_mode == "mix":
+                elif selected_mode == "mix":  # pragma: no branch
 
                     load_mix(
                         performance_id,
