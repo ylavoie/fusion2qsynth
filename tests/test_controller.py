@@ -132,7 +132,8 @@ def test_choose_song_without_songs(
 
 def test_choose_song_selects_song(
     project,
-    monkeypatch
+    monkeypatch,
+    capsys
 ):
 
     project.data["songs"] = {
@@ -141,7 +142,7 @@ def test_choose_song_selects_song(
             "channels": {}
         },
         "Song B": {
-            "name": "Deuxième SONG",
+            "name": "Song B",
             "channels": {}
         }
     }
@@ -156,6 +157,14 @@ def test_choose_song_selects_song(
     )
 
     assert result == "Song B"
+
+    output = capsys.readouterr().out
+
+    assert "Song A - Première SONG" in output
+
+    assert "Song B - Song B" not in output
+
+    assert "Song B" in output
 
 
 def test_choose_song_quit(
@@ -304,6 +313,54 @@ def test_print_mode_diagnostic_without_debug(
 
     assert (
         "1178 PROGRAM enregistrés"
+        in output
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_song_diagnostic",
+        unexpected_diagnostic
+    )
+
+    monkeypatch.setattr(
+        project,
+        "count_songs",
+        lambda: 42
+    )
+
+    fusion_controller.print_mode_diagnostic(
+        project,
+        "song"
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "42 SONG enregistrées"
+        in output
+    )
+
+    monkeypatch.setattr(
+        project,
+        "get_mix_diagnostic",
+        unexpected_diagnostic
+    )
+
+    monkeypatch.setattr(
+        project,
+        "count_mixes",
+        lambda: 24
+    )
+
+    fusion_controller.print_mode_diagnostic(
+        project,
+        "mix"
+    )
+
+    output = capsys.readouterr().out
+
+    assert (
+        "24 Mix chargés"
         in output
     )
 

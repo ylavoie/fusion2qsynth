@@ -418,7 +418,7 @@ def main():
 
                             continue
 
-                    elif selected_mode == "song":
+                    elif selected_mode == "song":  # pragma: no branch
 
                         while True:
 
