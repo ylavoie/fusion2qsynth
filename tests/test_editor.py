@@ -2114,11 +2114,13 @@ def test_edit_mix_test_menu(
     )
 
     responses = iter([
-        "3",
-        "1",
-        "2",
-        "q",
-        "q"
+        "3",  # Entrer dans Test Mix
+        "1",  # Tester un canal
+        "2",  # Tester tous les canaux
+        "x",  # Choix invalide dans Test Mix
+        "q",  # Retour au menu edit_mix
+        "x",  # Choix invalide dans edit_mix
+        "q"   # Quitter edit_mix
     ])
 
     monkeypatch.setattr(
@@ -2399,9 +2401,15 @@ def test_edit_mix_channel_display_and_quit(
                 "name": "Effective Piano"
             }
 
+    responses = iter([
+        "x",  # Choix invalide : retour au menu
+        "q"   # Quitter
+    ])
+
     monkeypatch.setattr(
         "builtins.input",
-        lambda prompt: "q"
+        lambda prompt:
+            next(responses)
     )
 
     fusion_editor.edit_mix_channel(
@@ -4842,11 +4850,13 @@ def test_choose_program_id_assisted(
             return None
 
     values = iter([
-        9,
-        2,
-        1,
-        15,
-        10
+        9,     # Banque invalide
+        2,     # Banque USER
+        2,     # Plage 16–31
+        None,  # Retour à la sélection des plages
+        1,     # Plage 0–15
+        15,    # PROGRAM non disponible
+        10     # PROGRAM valide
     ])
 
     monkeypatch.setattr(
@@ -4919,10 +4929,15 @@ def test_choose_program_id_assisted(
     )
 
     assert " 10 - Piano" in output
-    assert " 20 - ?" not in output
+    assert " 20 - ?" in output
 
     assert (
         "PROGRAM inconnu ou non disponible : 2:15"
+        in output
+    )
+
+    assert (
+        "PROGRAM 16 - 31"
         in output
     )
 
@@ -5191,7 +5206,8 @@ def test_choose_song_id_direct(
 
 
 def test_choose_song_id_direct_with_song_prefix(
-    monkeypatch
+    monkeypatch,
+    capsys
 ):
 
     class Project:
@@ -5210,6 +5226,7 @@ def test_choose_song_id_direct_with_song_prefix(
             ])
 
     responses = iter([
+        "Song Unknown",
         "Song Yesterday"
     ])
 
@@ -5226,6 +5243,10 @@ def test_choose_song_id_direct_with_song_prefix(
     )
 
     assert result == "Yesterday"
+    assert (
+        "SONG inconnue ou non disponible : Song Unknown"
+        in capsys.readouterr().out
+    )
 
 
 def test_choose_song_id_cancel_allowed(
@@ -7555,6 +7576,7 @@ def test_instruments_menu(
         "2",
         "3",
         "4",
+        "x",
         "q"
     ])
 
@@ -9673,9 +9695,15 @@ def test_edit_program_display_configured(
                 "sf2_program": 4
             }
 
+    responses = iter([
+        "x",
+        "q"
+    ])
+
     monkeypatch.setattr(
         "builtins.input",
-        lambda prompt: "q"
+        lambda prompt:
+            next(responses)
     )
 
     fusion_editor.edit_program(
@@ -11677,9 +11705,10 @@ def test_edit_song_single_program_display(
             }
 
     responses = iter([
-        "1",   # canal
-        "q",   # sous-menu PROGRAM
-        "q"    # SONG
+        "1",   # Canal
+        "x",   # Choix invalide dans le sous-menu PROGRAM
+        "q",   # Retour au menu SONG
+        "q"    # Quitter SONG
     ])
 
     monkeypatch.setattr(
@@ -12514,6 +12543,7 @@ def test_manage_banks_empty(
     responses = iter([
         "1",
         "2",
+        "x",
         "q"
     ])
 
@@ -13226,8 +13256,9 @@ def test_main_mixes_lists_empty(
         "1",       # liste complète
         "3",       # à configurer → vide
         "4",       # erreur → vide
-        "q",
-        "q"
+        "x",       # choix invalide → retour au menu MIX
+        "q",       # retour au menu principal
+        "q"        # quitter
     ])
 
     monkeypatch.setattr(
@@ -14248,12 +14279,13 @@ def test_main_programs_list_and_direct_edit(
     )
 
     responses = iter([
-        "2",
-        "1",
-        "5",
-        "5",
-        "q",
-        "q"
+        "2",   # Menu principal → PROGRAMS
+        "1",   # Liste complète
+        "5",   # Sélection annulée
+        "5",   # Édition du PROGRAM 2:42
+        "x",   # Choix invalide dans le menu PROGRAMS
+        "q",   # Retour au menu principal
+        "q"    # Quitter
     ])
 
     monkeypatch.setattr(
@@ -15198,12 +15230,14 @@ def test_main_songs_list_and_direct_edit(
     )
 
     responses = iter([
-        "3",
-        "1",
-        "4",
-        "4",
-        "q",
-        "q"
+        "3",   # Menu principal → SONG
+        "1",   # Liste complète
+        "4",   # Sélection annulée
+        "4",   # Édition de song1
+        "x",   # Choix invalide dans le menu SONG
+        "q",   # Retour au menu principal
+        "x",   # Choix invalide dans le menu principal
+        "q"    # Quitter
     ])
 
     monkeypatch.setattr(
