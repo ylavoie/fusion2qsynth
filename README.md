@@ -804,7 +804,7 @@ TODO
 ## 20. Version
 
 ```text
-Fusion2QSynth v2.26
+Fusion2QSynth v2.27
 ```
 
 Alesis Fusion 8HD → Fusion2QSynth → FluidSynth / SoundFonts SF2.

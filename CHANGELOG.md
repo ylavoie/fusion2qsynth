@@ -1,5 +1,117 @@
 # Changelog Fusion2QSynth
 
+## Fusion2QSynth v2.27
+
+### Fiabilité et intégrité du projet
+
+* Renforcement de la robustesse du chargement, de la sauvegarde et du rechargement du projet.
+* Préservation des données et de l'état du projet lorsqu'une opération échoue.
+* Gestion des erreurs de lecture, d'écriture, de validation et d'accès aux métadonnées.
+* Amélioration de la récupération après suppression, corruption ou remplacement externe du fichier de projet.
+* Renforcement des garanties d'atomicité des opérations sur les fichiers.
+
+### Sauvegarde sécurisée — `save_safe()`
+
+* Utilisation de fichiers temporaires uniques pour éviter les collisions.
+* Correction d'une fuite de descripteur de fichier lorsque `fdopen()` échoue.
+* Amélioration de la gestion des erreurs de création, de copie, d'écriture et de fermeture des fichiers temporaires.
+* Nettoyage des fichiers temporaires après une écriture JSON partielle ou une erreur de sauvegarde.
+* Préservation du fichier de projet existant lorsqu'une erreur bloquante empêche la sauvegarde.
+* Renforcement du traitement des erreurs de validation et des exceptions produites pendant la sauvegarde.
+* Rejet des valeurs de type chaîne pour le paramètre `allowed_errors`.
+* Vérification des erreurs de validation autorisées, de leur nombre d'occurrences et de leur évolution entre deux validations.
+* Ajout de tests de récupération après des erreurs de lecture des métadonnées.
+
+### Sauvegardes, archives et restauration
+
+* Utilisation de fichiers temporaires uniques lors de la restauration des sauvegardes et des archives.
+* Renforcement de la gestion des erreurs de copie, de remplacement et de nettoyage pendant la restauration.
+* Gestion des sauvegardes devenues inaccessibles ou disparues pendant leur énumération.
+* Gestion des archives dont les métadonnées ne peuvent pas être consultées.
+* Gestion des erreurs de création et de lecture du répertoire d'archives.
+* Prévention des collisions de noms d'archives par création exclusive.
+* Suppression des archives partielles lorsqu'une copie échoue.
+* Conservation d'une archive créée avec succès même lorsque sa rotation échoue.
+* Préservation de l'historique des sauvegardes en cas d'échec de rotation.
+* Interruption de la restauration d'une archive lorsque l'archivage préalable du projet courant échoue.
+* Ajout de tests de non-régression couvrant les différentes étapes critiques des opérations de restauration.
+
+### Chargement et rechargement du projet
+
+* Amélioration de la détection des modifications externes du fichier de projet à l'aide de signatures de fichier.
+* Préservation de l'état courant lorsqu'un rechargement échoue.
+* Prévention des tentatives répétées de rechargement d'un fichier invalide et inchangé.
+* Reprise du rechargement après correction, suppression ou recréation externe du fichier.
+* Gestion des erreurs `OSError`, des erreurs de lecture des métadonnées et des erreurs de décodage UTF-8.
+* Gestion des erreurs de migration pendant le chargement et le rechargement.
+* Journalisation des échecs de rechargement.
+* Possibilité de récupération lorsque la structure racine du projet est invalide.
+* Ajout de tests vérifiant la conservation et la récupération de l'état du projet après différents scénarios d'échec.
+
+### Migrations des données
+
+* Renforcement de l'atomicité des migrations des MIX et des SONG.
+* Restauration des données originales lorsqu'une migration ne peut pas être sauvegardée.
+* Vérification de l'idempotence de la migration des SONG.
+* Préservation des canaux non migrés lors d'une migration partielle.
+* Rejet des migrations SONG invalides.
+* Conservation des erreurs de validation existantes pendant les migrations MIX.
+* Ajout de tests couvrant les structures héritées, les migrations partielles et les échecs de sauvegarde.
+
+### Verrouillage des sessions
+
+* Ajout d'un verrouillage exclusif du projet pour empêcher les accès concurrents entre instances de l'application.
+* Intégration du verrouillage au programme principal.
+* Vérification du comportement lors d'une deuxième tentative d'acquisition du verrou.
+* Exclusion du fichier de verrouillage de session du suivi Git.
+
+### Validation et cohérence des données — PROJET-06
+
+* Ajout de la détection des erreurs de validation en double.
+* Renforcement des tests portant sur les structures invalides des PARTs de PROGRAM.
+* Suppression d'une vérification redondante et inaccessible concernant les canaux MIDI.
+* Documentation de la limitation correspondante pour les MIX.
+* Ajout d'un test de classification de la famille *Square Bass*.
+
+### Architecture et organisation
+
+* Réorganisation de la capture et de l'éditeur en modules internes.
+* Renforcement de la séparation entre les composants applicatifs et leurs points d'entrée.
+* Exclusion des points d'entrée CLI de la mesure de couverture lorsqu'ils ne constituent pas de la logique applicative à tester directement.
+
+### Tests automatisés et couverture
+
+* Renforcement systématique des tests de non-régression pour les opérations sur les fichiers, les migrations, le rechargement et la validation.
+* Ajout d'une vérification détectant les définitions de tests et les implémentations en double.
+* Complétion de la couverture des instructions pour l'ensemble du code mesuré.
+* Activation de la mesure de couverture des branches.
+* Utilisation du moteur `ctrace` pour fiabiliser la mesure des branches.
+* Complétion progressive de la couverture des branches des modules :
+  * `fusion_performance.py`
+  * `fusion_controller.py`
+  * `fusion_controller_loop.py`
+  * `fusion_project.py`
+  * `fusion_capture.py`
+  * `fusion_editor.py`
+* Couverture des choix invalides dans les menus interactifs et des chemins d'exécution rarement empruntés.
+* Ajout de tests pour les conditions limites et les scénarios d'erreur auparavant non exercés.
+
+### Validation
+
+* Vérification de la cohérence du code avec `git diff --check`.
+* Compilation syntaxique des modules Python avec `py_compile`.
+* Validation complète avec `integration-globale.py`.
+* Analyse de 1 158 noms Fusion et vérification de 1 285 alias GM.
+* Aucune erreur de suggestion, de normalisation ou de données GM.
+* Aucune régression détectée par les contrôles d'intégration.
+* **1 135 tests automatisés réussis**.
+* **100 % de couverture des instructions : 5 351 instructions, aucune manquante**.
+* **100 % de couverture des branches : 2 286 branches, aucune partiellement couverte**.
+* Validation des 16 modules Python inclus dans le rapport de couverture.
+* Copie de travail Git propre après validation.
+
+---
+
 ## Fusion2QSynth v2.26
 
 ### Sauvegarde du projet — PROJET-01A
